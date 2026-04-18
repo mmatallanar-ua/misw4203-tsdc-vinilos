@@ -1,17 +1,13 @@
 package com.misw4203.vinilos.presentation.ui.screens.album
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -25,8 +21,6 @@ import com.misw4203.vinilos.presentation.ui.components.EmptyState
 import com.misw4203.vinilos.presentation.ui.components.ErrorState
 import com.misw4203.vinilos.presentation.ui.components.LoadingState
 import com.misw4203.vinilos.presentation.ui.components.SearchBarStatic
-import com.misw4203.vinilos.presentation.ui.components.VinilosBottomNav
-import com.misw4203.vinilos.presentation.ui.components.VinilosDestination
 import com.misw4203.vinilos.presentation.ui.components.VinilosTopBar
 import com.misw4203.vinilos.presentation.viewmodel.AlbumListUiState
 import com.misw4203.vinilos.presentation.viewmodel.AlbumListViewModel
@@ -39,42 +33,12 @@ fun AlbumListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Scaffold(
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surface,
-        topBar = { VinilosTopBar(title = stringResource(R.string.albums_title)) },
-        bottomBar = {
-            VinilosBottomNav(
-                selected = VinilosDestination.Albums,
-                onSelect = { /* Artists & Collectors out of scope for HU-001 */ },
-            )
-        },
-    ) { innerPadding ->
-        AlbumListContent(
-            state = uiState,
-            onRetry = viewModel::retry,
-            onAlbumClick = onAlbumClick,
-            contentPadding = innerPadding,
-        )
-    }
-}
-
-@Composable
-private fun AlbumListContent(
-    state: AlbumListUiState,
-    onRetry: () -> Unit,
-    onAlbumClick: (Long) -> Unit,
-    contentPadding: PaddingValues,
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding),
-    ) {
-        when (state) {
+    Column(modifier = modifier.fillMaxSize()) {
+        VinilosTopBar(title = stringResource(R.string.albums_title))
+        when (val state = uiState) {
             is AlbumListUiState.Loading -> LoadingState()
             is AlbumListUiState.Error -> ErrorState(
-                onRetry = onRetry,
+                onRetry = viewModel::retry,
                 isNetworkError = state.isNetworkError,
             )
             is AlbumListUiState.Empty -> Column {
@@ -97,9 +61,7 @@ private fun AlbumListContent(
 
 @Composable
 private fun HeaderSection() {
-    Column(
-        modifier = Modifier.padding(horizontal = 0.dp, vertical = 0.dp),
-    ) {
+    Column {
         SearchBarStatic()
         Spacer(Modifier.size(8.dp))
     }

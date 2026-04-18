@@ -251,7 +251,7 @@ private fun AlbumsSection(albums: List<Album>) {
 private fun AlbumCard(album: Album) {
     Column(modifier = Modifier.width(120.dp)) {
         AsyncImage(
-            model = album.cover,
+            model = album.coverUrl,
             contentDescription = album.name,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -268,7 +268,7 @@ private fun AlbumCard(album: Album) {
             overflow = TextOverflow.Ellipsis
         )
         Text(
-            text = album.releaseDate.take(4),
+            text = album.releaseYear,
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

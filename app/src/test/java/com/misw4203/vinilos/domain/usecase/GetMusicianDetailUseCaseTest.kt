@@ -103,12 +103,11 @@ class GetMusicianDetailUseCaseTest {
         id: Int = 1,
         name: String = "Test Album"
     ) = Album(
-        id = id,
+        id = id.toLong(),
         name = name,
-        cover = "https://cover.url",
-        releaseDate = "1984-08-01T05:00:00.000Z",
-        description = "Test album description",
+        coverUrl = "https://cover.url",
+        artistName = "",
+        releaseYear = "1984",
         genre = "Salsa",
-        recordLabel = "Elektra"
     )
 }
