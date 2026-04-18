@@ -1,7 +1,6 @@
 package com.misw4203.vinilos.di
 
 import com.misw4203.vinilos.BuildConfig
-import com.misw4203.vinilos.data.remote.api.VinilosApi
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import dagger.Module
 import dagger.Provides
@@ -43,11 +42,6 @@ object NetworkModule {
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-
-    @Provides
-    @Singleton
-    fun provideVinilosApi(retrofit: Retrofit): VinilosApi =
-        retrofit.create(VinilosApi::class.java)
 
     @Provides
     @Singleton

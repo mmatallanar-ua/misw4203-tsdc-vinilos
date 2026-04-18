@@ -1,6 +1,6 @@
 package com.misw4203.vinilos.data.repository
 
-import com.misw4203.vinilos.data.remote.api.VinilosApi
+import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
@@ -11,7 +11,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class AlbumRepositoryImpl @Inject constructor(
-    private val api: VinilosApi,
+    private val api: VinilosApiService,
 ) : AlbumRepository {
 
     override suspend fun getAlbums(): List<Album> = withContext(Dispatchers.IO) {
