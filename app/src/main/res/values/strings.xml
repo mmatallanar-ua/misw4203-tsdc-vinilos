@@ -23,7 +23,10 @@
     <string name="detail_label_release">Fecha de lanzamiento</string>
     <string name="detail_label_record_label">Sello discográfico</string>
     <string name="detail_section_description">Descripción</string>
+    <string name="detail_section_performers">Artistas</string>
     <string name="detail_section_tracks">Canciones</string>
+    <string name="detail_tracks_total">%d en total</string>
+    <string name="detail_section_comments">Comentarios</string>
     <string name="detail_not_found_title">Álbum no encontrado</string>
     <string name="detail_not_found_body">El álbum solicitado no existe en el catálogo.</string>
 

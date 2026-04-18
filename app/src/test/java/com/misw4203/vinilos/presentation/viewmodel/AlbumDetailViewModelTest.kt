@@ -5,6 +5,8 @@ import app.cash.turbine.test
 import com.misw4203.vinilos.MainDispatcherRule
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
+import com.misw4203.vinilos.domain.model.Comment
+import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.Track
 import com.misw4203.vinilos.domain.repository.AlbumRepository
 import com.misw4203.vinilos.domain.usecase.GetAlbumDetailUseCase
@@ -154,5 +156,11 @@ private fun sampleDetail() = AlbumDetail(
     tracks = listOf(
         Track(id = 1L, name = "Decisiones", duration = "5:30"),
         Track(id = 2L, name = "Desapariciones", duration = "6:10"),
+    ),
+    performers = listOf(
+        Performer(id = 1L, name = "Rubén Blades", imageUrl = ""),
+    ),
+    comments = listOf(
+        Comment(id = 1L, description = "The most relevant album of Ruben Blades", rating = 5),
     ),
 )

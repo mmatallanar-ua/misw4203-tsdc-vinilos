@@ -4,6 +4,8 @@ import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
+import com.misw4203.vinilos.domain.model.Comment
+import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.Track
 import com.misw4203.vinilos.domain.repository.AlbumRepository
 import kotlinx.coroutines.Dispatchers
@@ -45,6 +47,20 @@ class AlbumRepositoryImpl @Inject constructor(
                 id = track.id,
                 name = track.name.orEmpty(),
                 duration = track.duration.orEmpty(),
+            )
+        }.orEmpty(),
+        performers = performers?.map { p ->
+            Performer(
+                id = p.id,
+                name = p.name.orEmpty(),
+                imageUrl = p.image.orEmpty(),
+            )
+        }.orEmpty(),
+        comments = comments?.map { c ->
+            Comment(
+                id = c.id,
+                description = c.description.orEmpty(),
+                rating = c.rating ?: 0,
             )
         }.orEmpty(),
     )
