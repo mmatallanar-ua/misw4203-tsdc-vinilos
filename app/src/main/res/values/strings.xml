@@ -1,3 +1,25 @@
 <resources>
     <string name="app_name">Vinilos</string>
+
+    <!-- Album catalog -->
+    <string name="albums_title">Álbumes</string>
+    <string name="search_placeholder">Buscar en tu colección…</string>
+    <string name="nav_albums">Albums</string>
+    <string name="nav_artists">Artists</string>
+    <string name="nav_collectors">Collectors</string>
+
+    <!-- States -->
+    <string name="state_loading">Cargando álbumes…</string>
+    <string name="state_empty_title">No hay álbumes disponibles</string>
+    <string name="state_empty_body">Aún no hay álbumes en el catálogo. Vuelve más tarde.</string>
+    <string name="state_error_title">No se pudo cargar el catálogo</string>
+    <string name="state_error_body_network">Revisa tu conexión a internet e inténtalo de nuevo.</string>
+    <string name="state_error_body_server">El servidor devolvió un error. Inténtalo de nuevo.</string>
+    <string name="action_retry">Reintentar</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_album_cover">Portada del álbum</string>
+    <string name="cd_menu">Menú</string>
+    <string name="cd_profile">Perfil</string>
+    <string name="cd_open_album">Abrir álbum</string>
 </resources>
