@@ -51,6 +51,15 @@ captures/
 # Google Services (e.g. APIs or Firebase)
 google-services.json
 
+# Claude files
+CLAUDE.md
+.agents/*
+.claude/*
+skills-lock.json
+
+# Stitch files
+stitch_vinilos_app_screen_design_HU01/*
+
 # Freeline
 freeline.py
 freeline/
