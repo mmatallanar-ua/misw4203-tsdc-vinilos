@@ -42,6 +42,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -316,7 +318,11 @@ private fun CommentItem(comment: Comment) {
         ),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            val ratingDesc = stringResource(R.string.cd_rating, comment.rating)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.semantics { contentDescription = ratingDesc },
+            ) {
                 repeat(comment.rating) {
                     Icon(
                         imageVector = Icons.Filled.Star,

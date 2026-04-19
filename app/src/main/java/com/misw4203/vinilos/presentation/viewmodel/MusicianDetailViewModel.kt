@@ -11,12 +11,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 import javax.inject.Inject
 
-sealed class MusicianDetailUiState {
-    object Loading : MusicianDetailUiState()
-    data class Success(val musician: Musician) : MusicianDetailUiState()
-    data class Error(val message: String) : MusicianDetailUiState()
+sealed interface MusicianDetailUiState {
+    data object Loading : MusicianDetailUiState
+    data class Success(val musician: Musician) : MusicianDetailUiState
+    data object NotFound : MusicianDetailUiState
+    data class Error(val isNetworkError: Boolean) : MusicianDetailUiState
 }
 
 @HiltViewModel
@@ -28,8 +31,10 @@ class MusicianDetailViewModel @Inject constructor(
     val uiState: StateFlow<MusicianDetailUiState> = _uiState.asStateFlow()
 
     private var loadJob: Job? = null
+    private var currentId: Int? = null
 
     fun loadMusician(id: Int) {
+        currentId = id
         loadJob?.cancel()
         _uiState.value = MusicianDetailUiState.Loading
         loadJob = viewModelScope.launch {
@@ -37,9 +42,18 @@ class MusicianDetailViewModel @Inject constructor(
                 MusicianDetailUiState.Success(getMusicianDetail(id))
             } catch (e: CancellationException) {
                 throw e
+            } catch (e: HttpException) {
+                if (e.code() == 404) MusicianDetailUiState.NotFound
+                else MusicianDetailUiState.Error(isNetworkError = false)
+            } catch (e: IOException) {
+                MusicianDetailUiState.Error(isNetworkError = true)
             } catch (e: Exception) {
-                MusicianDetailUiState.Error(e.message ?: "Error desconocido")
+                MusicianDetailUiState.Error(isNetworkError = false)
             }
         }
+    }
+
+    fun retry() {
+        currentId?.let { loadMusician(it) }
     }
 }
