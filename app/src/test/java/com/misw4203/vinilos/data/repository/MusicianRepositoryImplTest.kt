@@ -126,7 +126,7 @@ class MusicianRepositoryImplTest {
     fun `getMusicians falls back to cache on IOException`() = runTest {
         coEvery { api.getMusicians() } throws IOException("offline")
         coEvery { dao.getMusicians() } returns listOf(
-            MusicianListEntity(id = 7, name = "Cached", image = "i"),
+            MusicianListEntity(id = 7, name = "Cached", image = "i", birthDate = ""),
         )
 
         val result = repository.getMusicians()

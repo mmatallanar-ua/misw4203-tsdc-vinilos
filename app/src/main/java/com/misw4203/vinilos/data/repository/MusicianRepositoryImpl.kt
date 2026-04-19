@@ -65,6 +65,7 @@ class MusicianRepositoryImpl @Inject constructor(
         id = id,
         name = name,
         image = image,
+        birthDate = birthDate,
     )
 
     private fun MusicianDetailDto.toDomain(prizes: List<MusicianPrize>) = Musician(

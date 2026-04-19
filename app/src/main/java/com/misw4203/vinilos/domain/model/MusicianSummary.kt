@@ -4,4 +4,5 @@ data class MusicianSummary(
     val id: Int,
     val name: String,
     val image: String,
+    val birthDate: String,
 )

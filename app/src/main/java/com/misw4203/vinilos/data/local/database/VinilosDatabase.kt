@@ -23,7 +23,7 @@ import com.misw4203.vinilos.data.local.entity.MusicianListEntity
         CollectorEntity::class,
         CollectorDetailEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = false,
 )
 @TypeConverters(Converters::class)

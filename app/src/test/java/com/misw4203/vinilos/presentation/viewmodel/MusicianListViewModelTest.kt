@@ -39,8 +39,8 @@ class MusicianListViewModelTest {
         MusicianListViewModel(GetMusiciansUseCase(repo))
 
     private fun sampleMusicians() = listOf(
-        MusicianSummary(100, "Rubén Blades", "url1"),
-        MusicianSummary(101, "Queen", "url2"),
+        MusicianSummary(100, "Rubén Blades", "url1", "1948-07-16"),
+        MusicianSummary(101, "Queen", "url2", ""),
     )
 
     @Test
