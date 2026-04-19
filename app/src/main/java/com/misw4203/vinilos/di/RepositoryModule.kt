@@ -1,8 +1,10 @@
 package com.misw4203.vinilos.di
 
 import com.misw4203.vinilos.data.repository.AlbumRepositoryImpl
+import com.misw4203.vinilos.data.repository.CollectorRepositoryImpl
 import com.misw4203.vinilos.data.repository.MusicianRepositoryImpl
 import com.misw4203.vinilos.domain.repository.AlbumRepository
+import com.misw4203.vinilos.domain.repository.CollectorRepository
 import com.misw4203.vinilos.domain.repository.MusicianRepository
 import dagger.Binds
 import dagger.Module
@@ -21,4 +23,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindAlbumRepository(impl: AlbumRepositoryImpl): AlbumRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCollectorRepository(impl: CollectorRepositoryImpl): CollectorRepository
 }

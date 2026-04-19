@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.misw4203.vinilos.domain.usecase.GetAlbumsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,6 +36,8 @@ class AlbumListViewModel @Inject constructor(
                 val albums = getAlbums()
                 if (albums.isEmpty()) AlbumListUiState.Empty
                 else AlbumListUiState.Success(albums)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: IOException) {
                 AlbumListUiState.Error(isNetworkError = true)
             } catch (e: HttpException) {

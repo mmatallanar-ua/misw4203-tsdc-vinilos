@@ -1,5 +1,8 @@
 package com.misw4203.vinilos.data.repository
 
+import com.misw4203.vinilos.data.local.dao.AlbumDao
+import com.misw4203.vinilos.data.local.entity.AlbumDetailEntity
+import com.misw4203.vinilos.data.local.entity.AlbumEntity
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.domain.model.Album
@@ -10,18 +13,34 @@ import com.misw4203.vinilos.domain.model.Track
 import com.misw4203.vinilos.domain.repository.AlbumRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.IOException
 import javax.inject.Inject
 
 class AlbumRepositoryImpl @Inject constructor(
     private val api: VinilosApiService,
+    private val albumDao: AlbumDao,
 ) : AlbumRepository {
 
     override suspend fun getAlbums(): List<Album> = withContext(Dispatchers.IO) {
-        api.getAlbums().map { it.toAlbum() }
+        try {
+            val remote = api.getAlbums().map { it.toAlbum() }
+            albumDao.replaceAlbums(remote.map(AlbumEntity::fromDomain))
+            remote
+        } catch (e: IOException) {
+            val cached = albumDao.getAlbums()
+            if (cached.isEmpty()) throw e
+            cached.map(AlbumEntity::toDomain)
+        }
     }
 
     override suspend fun getAlbumById(id: Long): AlbumDetail = withContext(Dispatchers.IO) {
-        api.getAlbum(id).toAlbumDetail()
+        try {
+            val remote = api.getAlbum(id).toAlbumDetail()
+            albumDao.upsertAlbumDetail(AlbumDetailEntity.fromDomain(remote))
+            remote
+        } catch (e: IOException) {
+            albumDao.getAlbumDetail(id)?.toDomain() ?: throw e
+        }
     }
 
     private fun AlbumDto.toAlbum(): Album = Album(
