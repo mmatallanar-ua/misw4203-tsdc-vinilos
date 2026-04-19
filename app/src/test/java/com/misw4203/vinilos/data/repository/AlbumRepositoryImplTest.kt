@@ -29,7 +29,7 @@ class AlbumRepositoryImplTest {
     }
 
     @Test
-    fun `getAlbums on success returns mapped albums`() = runTest {
+    fun `getAlbums returns mapped list from API`() = runTest {
         coEvery { api.getAlbums() } returns listOf(
             albumDto(id = 1L, name = "Buscando América", genre = "Salsa"),
             albumDto(id = 2L, name = "A Night at the Opera", genre = "Rock"),
@@ -40,26 +40,25 @@ class AlbumRepositoryImplTest {
         assertEquals(2, result.size)
         assertEquals("Buscando América", result[0].name)
         assertEquals("Salsa", result[0].genre)
+        assertEquals(2L, result[1].id)
     }
 
     @Test(expected = IOException::class)
-    fun `getAlbums re-throws IOException`() = runTest {
+    fun `getAlbums propagates IOException`() = runTest {
         coEvery { api.getAlbums() } throws IOException("offline")
-
         repository.getAlbums()
     }
 
     @Test(expected = HttpException::class)
-    fun `getAlbums re-throws HttpException`() = runTest {
+    fun `getAlbums propagates HttpException`() = runTest {
         coEvery { api.getAlbums() } throws HttpException(
             Response.error<Any>(500, "".toResponseBody("text/plain".toMediaType()))
         )
-
         repository.getAlbums()
     }
 
     @Test
-    fun `getAlbumById on success returns mapped detail`() = runTest {
+    fun `getAlbumById returns mapped detail from API`() = runTest {
         coEvery { api.getAlbum(42L) } returns albumDto(
             id = 42L,
             name = "OK Computer",
@@ -77,12 +76,14 @@ class AlbumRepositoryImplTest {
         assertEquals("OK Computer", result.name)
         assertEquals("Radiohead", result.artistName)
         assertEquals(1, result.tracks.size)
+        assertEquals("Airbag", result.tracks[0].name)
+        assertEquals(1, result.comments.size)
+        assertEquals(5, result.comments[0].rating)
     }
 
     @Test(expected = IOException::class)
-    fun `getAlbumById re-throws IOException`() = runTest {
+    fun `getAlbumById propagates IOException`() = runTest {
         coEvery { api.getAlbum(7L) } throws IOException("offline")
-
         repository.getAlbumById(7L)
     }
 

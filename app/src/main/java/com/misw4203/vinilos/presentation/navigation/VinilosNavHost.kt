@@ -3,12 +3,9 @@ package com.misw4203.vinilos.presentation.navigation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -30,7 +27,6 @@ fun VinilosNavHost() {
     val currentRoute = backStackEntry?.destination?.route
 
     val selectedDestination = when {
-        currentRoute == Destinations.AlbumList || currentRoute?.startsWith("album_detail") == true -> VinilosDestination.Albums
         currentRoute == Destinations.ArtistList || currentRoute?.startsWith("artist/") == true -> VinilosDestination.Artists
         currentRoute == Destinations.Collectors -> VinilosDestination.Collectors
         else -> VinilosDestination.Albums
@@ -93,16 +89,7 @@ fun VinilosNavHost() {
                     )
                 }
                 composable(Destinations.Collectors) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = "",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    Box(modifier = Modifier.fillMaxSize())
                 }
             }
         }

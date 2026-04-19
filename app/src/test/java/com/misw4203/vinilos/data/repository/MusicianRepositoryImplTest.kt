@@ -28,7 +28,36 @@ class MusicianRepositoryImplTest {
     }
 
     @Test
-    fun `getMusicianDetail on success fetches prizes and returns musician`() = runTest {
+    fun `getMusicians returns mapped summaries from API`() = runTest {
+        coEvery { api.getMusicians() } returns listOf(
+            musicianDto(id = 100, name = "Rubén Blades", image = "url1", birthDate = "1948-07-16"),
+            musicianDto(id = 101, name = "Queen", image = "url2", birthDate = ""),
+        )
+
+        val result = repository.getMusicians()
+
+        assertEquals(2, result.size)
+        assertEquals("Rubén Blades", result[0].name)
+        assertEquals("1948-07-16", result[0].birthDate)
+        assertEquals("url2", result[1].image)
+    }
+
+    @Test(expected = IOException::class)
+    fun `getMusicians propagates IOException`() = runTest {
+        coEvery { api.getMusicians() } throws IOException("offline")
+        repository.getMusicians()
+    }
+
+    @Test(expected = HttpException::class)
+    fun `getMusicians propagates HttpException`() = runTest {
+        coEvery { api.getMusicians() } throws HttpException(
+            Response.error<Any>(500, "".toResponseBody("text/plain".toMediaType()))
+        )
+        repository.getMusicians()
+    }
+
+    @Test
+    fun `getMusicianDetail fetches prizes and returns full domain model`() = runTest {
         coEvery { api.getMusicianDetail(2) } returns MusicianDetailDto(
             id = 2,
             name = "Rubén Blades",
@@ -49,67 +78,29 @@ class MusicianRepositoryImplTest {
         val result = repository.getMusicianDetail(2)
 
         assertEquals("Rubén Blades", result.name)
+        assertEquals("1948-07-16", result.birthDate)
         assertEquals(1, result.prizes.size)
         assertEquals("Grammy", result.prizes[0].name)
         assertEquals("1985-01-01", result.prizes[0].premiationDate)
     }
 
     @Test(expected = IOException::class)
-    fun `getMusicianDetail re-throws IOException`() = runTest {
+    fun `getMusicianDetail propagates IOException`() = runTest {
         coEvery { api.getMusicianDetail(2) } throws IOException("offline")
-
         repository.getMusicianDetail(2)
-    }
-
-    @Test(expected = HttpException::class)
-    fun `getMusicianDetail re-throws HttpException`() = runTest {
-        coEvery { api.getMusicianDetail(2) } throws HttpException(
-            Response.error<Any>(500, "".toResponseBody("text/plain".toMediaType()))
-        )
-
-        repository.getMusicianDetail(2)
-    }
-
-    @Test
-    fun `getMusicians on success returns mapped summaries`() = runTest {
-        coEvery { api.getMusicians() } returns listOf(
-            musicianDto(id = 100, name = "Rubén Blades", image = "url1"),
-            musicianDto(id = 101, name = "Queen", image = "url2"),
-        )
-
-        val result = repository.getMusicians()
-
-        assertEquals(2, result.size)
-        assertEquals("Rubén Blades", result[0].name)
-        assertEquals("url2", result[1].image)
-    }
-
-    @Test(expected = IOException::class)
-    fun `getMusicians re-throws IOException`() = runTest {
-        coEvery { api.getMusicians() } throws IOException("offline")
-
-        repository.getMusicians()
-    }
-
-    @Test(expected = HttpException::class)
-    fun `getMusicians re-throws HttpException`() = runTest {
-        coEvery { api.getMusicians() } throws HttpException(
-            Response.error<Any>(500, "".toResponseBody("text/plain".toMediaType()))
-        )
-
-        repository.getMusicians()
     }
 
     private fun musicianDto(
         id: Int,
         name: String = "name",
         image: String = "img",
+        birthDate: String = "",
     ) = MusicianDetailDto(
         id = id,
         name = name,
         image = image,
         description = "",
-        birthDate = "",
+        birthDate = birthDate,
         albums = emptyList(),
         performerPrizes = emptyList(),
     )

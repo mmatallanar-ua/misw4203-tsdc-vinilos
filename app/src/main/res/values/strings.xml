@@ -4,6 +4,7 @@
     <!-- Album catalog -->
     <string name="albums_title">Álbumes</string>
     <string name="search_placeholder">Buscar en tu colección…</string>
+    <string name="search_placeholder_artists">¿Qué artista buscas?</string>
     <string name="nav_albums">Albums</string>
     <string name="nav_artists">Artists</string>
     <string name="nav_collectors">Collectors</string>
