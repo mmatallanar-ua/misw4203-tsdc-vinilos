@@ -10,26 +10,29 @@ Aplicación Android desarrollada con **Jetpack Compose** y arquitectura **MVVM +
 app/src/main/java/com/misw4203/vinilos/
 ├── data/
 │   ├── local/
-│   │   ├── dao/
-│   │   └── entities/
+│   │   ├── converter/   # TypeConverters de Room (listas ↔ JSON vía Gson)
+│   │   ├── dao/         # Interfaces DAO
+│   │   ├── database/    # VinilosDatabase (RoomDatabase)
+│   │   └── entity/      # Entidades @Entity
 │   ├── remote/
-│   │   ├── api/
-│   │   └── dto/
-│   └── repository/
+│   │   ├── api/         # Retrofit interfaces
+│   │   └── dto/         # DTOs JSON
+│   └── repository/      # Implementaciones de repositorios
 ├── domain/
-│   ├── model/
-│   ├── repository/
-│   └── usecase/
+│   ├── model/           # Modelos de dominio (sin deps de Android)
+│   ├── repository/      # Interfaces de repositorio
+│   └── usecase/         # Casos de uso (uno por acción)
 ├── presentation/
-│   ├── viewmodel/
+│   ├── navigation/      # NavHost + Destinations
+│   ├── viewmodel/       # ViewModels + UiStates
 │   └── ui/
 │       ├── screens/
 │       │   ├── album/
 │       │   ├── artist/
 │       │   └── collector/
-│       ├── components/
-│       └── theme/
-└── di/
+│       ├── components/  # Composables reutilizables
+│       └── theme/       # Material 3 theme
+└── di/                  # Módulos de Hilt
 ```
 
 ---
@@ -42,11 +45,21 @@ Responsable de obtener y persistir datos, ya sea desde la red o desde la base de
 
 | Carpeta | Contenido |
 |---|---|
-| `data/local/dao/` | Interfaces DAO de Room. Definen las operaciones de lectura y escritura sobre la base de datos local (consultas SQL). |
-| `data/local/entities/` | Clases de entidad de Room anotadas con `@Entity`. Representan las tablas de la base de datos local. |
-| `data/remote/api/` | Interfaces de Retrofit anotadas con `@GET`, `@POST`, etc. Definen los endpoints del API REST. |
-| `data/remote/dto/` | Data Transfer Objects (DTOs). Clases que modelan la respuesta JSON del API. Se mapean a modelos de dominio antes de llegar a la capa superior. |
-| `data/repository/` | Implementaciones concretas de las interfaces de repositorio definidas en `domain/repository/`. Coordinan las fuentes de datos (remota y local) y devuelven modelos de dominio. |
+| `data/local/converter/` | `Converters` de Room. Serializa/deserializa listas anidadas (tracks, performers, comments, etc.) a JSON vía Gson para evitar normalizar cada entidad. |
+| `data/local/dao/` | Interfaces DAO de Room con operaciones `@Upsert`, `@Query`, y transacciones (`replaceX` = clear + upsert). |
+| `data/local/database/` | `VinilosDatabase` — clase abstracta `RoomDatabase` que declara entidades y expone los DAOs. |
+| `data/local/entity/` | Entidades `@Entity` con mappers `toDomain()` / `fromDomain()`. |
+| `data/remote/api/` | `VinilosApiService` — interfaz Retrofit con los endpoints (`GET /albums`, `GET /musicians`, `GET /collectors`, etc.). |
+| `data/remote/dto/` | DTOs que modelan la respuesta JSON. Campos nullables para tolerar datos incompletos del servidor. |
+| `data/repository/` | Implementaciones de repositorio con estrategia **network-first + fallback a caché**. |
+
+### Estrategia de caché
+
+Todos los repositorios siguen el mismo patrón:
+
+1. Intenta red → si hay éxito, actualiza la caché (`replaceX` transaccional para listas, `upsert` para detalles) y retorna.
+2. Si la red falla con `IOException` (offline) → retorna la caché si existe; si no, re-lanza el error.
+3. Si falla con `HttpException` u otro → propaga (la UI clasifica 404, red, servidor, etc.).
 
 ---
 
@@ -56,9 +69,9 @@ Es el núcleo de la aplicación. No depende de ninguna otra capa y contiene la l
 
 | Carpeta | Contenido |
 |---|---|
-| `domain/model/` | Modelos de dominio. Son las entidades principales del negocio (ej. `Album`, `Artist`, `Collector`). No tienen dependencias de Android ni de librerías externas. |
-| `domain/repository/` | Interfaces de repositorio. Definen el contrato de acceso a datos que la capa de dominio necesita. Su implementación vive en `data/repository/`. |
-| `domain/usecase/` | Casos de uso. Cada clase encapsula una acción específica del negocio (ej. `GetAlbumsUseCase`, `GetArtistDetailUseCase`). Son invocados desde los ViewModels. |
+| `domain/model/` | Modelos de dominio (`Album`, `AlbumDetail`, `Musician`, `MusicianSummary`, `Collector`, `CollectorSummary`, `FavoritePerformer`, `MusicianPrize`, etc.). Sin dependencias de Android. |
+| `domain/repository/` | Interfaces de repositorio (`AlbumRepository`, `MusicianRepository`, `CollectorRepository`). |
+| `domain/usecase/` | Casos de uso (`GetAlbumsUseCase`, `GetAlbumDetailUseCase`, `GetMusiciansUseCase`, `GetMusicianDetailUseCase`, `GetCollectorsUseCase`, `GetCollectorDetailUseCase`). |
 
 ---
 
@@ -68,24 +81,23 @@ Contiene todo lo relacionado con la interfaz de usuario y el estado de la pantal
 
 | Carpeta | Contenido |
 |---|---|
-| `presentation/viewmodel/` | ViewModels de Jetpack. Exponen el estado de la UI mediante `StateFlow` y llaman a los casos de uso. Sobreviven a los cambios de configuración. |
-| `presentation/ui/screens/album/` | Composables de las pantallas relacionadas con álbumes (listado, detalle). |
-| `presentation/ui/screens/artist/` | Composables de las pantallas relacionadas con artistas. |
-| `presentation/ui/screens/collector/` | Composables de las pantallas relacionadas con coleccionistas. |
-| `presentation/ui/components/` | Composables reutilizables y genéricos que pueden ser usados en cualquier pantalla (ej. `LoadingIndicator`, `ErrorMessage`, `AlbumCard`). |
-| `presentation/ui/theme/` | Definición del tema de Material 3: colores, tipografía y formas. |
+| `presentation/navigation/` | `VinilosNavHost` + `Destinations` (rutas y argumentos de navegación). |
+| `presentation/viewmodel/` | ViewModels con `@HiltViewModel`. Exponen `StateFlow<UiState>` y clasifican excepciones (`IOException` → red, `HttpException` 404 → NotFound, otros → servidor). Re-lanzan `CancellationException` para preservar structured concurrency. |
+| `presentation/ui/screens/` | Composables por entidad (`album/`, `artist/`, `collector/`). |
+| `presentation/ui/components/` | `AlbumCard`, `MusicianCard`, `CollectorCard`, `LoadingState`, `EmptyState`, `ErrorState`, `VinilosTopBar`, `VinilosBottomNav`. |
+| `presentation/ui/theme/` | Material 3: `Color.kt`, `Theme.kt`, `Type.kt`. |
 
 ---
 
 ### `di/` — Inyección de dependencias
 
-Módulos de Hilt que proveen las dependencias de la aplicación.
+Módulos de Hilt instalados en `SingletonComponent`.
 
 | Archivo | Contenido |
 |---|---|
-| `NetworkModule` | Configura el cliente Retrofit y OkHttp. Provee la instancia del API service. |
-| `DatabaseModule` | Configura la base de datos Room y provee los DAOs. |
-| `RepositoryModule` | Vincula las interfaces de repositorio del dominio con sus implementaciones en la capa de datos. |
+| `NetworkModule` | Provee `OkHttpClient` (con `HttpLoggingInterceptor` solo en debug), `Retrofit` y `VinilosApiService`. |
+| `DatabaseModule` | Provee `VinilosDatabase` (con `fallbackToDestructiveMigration` — la caché es descartable) y los tres DAOs. |
+| `RepositoryModule` | `@Binds` de las interfaces de dominio a sus implementaciones. |
 
 ---
 
@@ -95,10 +107,56 @@ Módulos de Hilt que proveen las dependencias de la aplicación.
 |---|---|
 | Jetpack Compose | Framework de UI declarativo |
 | ViewModel + StateFlow | Gestión del estado de la UI |
-| Hilt | Inyección de dependencias |
-| Room | Persistencia local |
-| Retrofit + OkHttp | Comunicación con el API REST |
+| Hilt + KSP | Inyección de dependencias |
+| Room | Persistencia local (caché offline) |
+| Retrofit + Gson | Comunicación con el API REST |
+| OkHttp | HTTP client + logging |
 | Navigation Compose | Navegación entre pantallas |
 | Coroutines | Operaciones asíncronas |
 | Coil | Carga de imágenes |
 | Material 3 | Sistema de diseño |
+
+---
+
+## Testing
+
+| Ubicación | Tipo | Herramientas |
+|---|---|---|
+| `app/src/test/` | Unit tests JVM | JUnit 4, MockK, Turbine, `kotlinx-coroutines-test` |
+| `app/src/androidTest/` | Compose UI tests (instrumentados) | `ui-test-junit4`, `ui-test-manifest` |
+
+**Convenciones**:
+- ViewModel tests usan **fake repos inline** (clases anidadas que implementan la interfaz) para control explícito de resultados y conteo de llamadas.
+- Repository tests usan **MockK** sobre `VinilosApiService` y los DAOs.
+- Use-case tests mockean el repositorio y verifican delegación.
+- Compose UI tests reciben el VM como parámetro (los screens aceptan `viewModel: VM = hiltViewModel()` con default), evitando montar Hilt en tests.
+
+---
+
+## Comandos
+
+```bash
+# Compilar APK debug
+./gradlew assembleDebug
+
+# Tests unitarios
+./gradlew test
+
+# Tests instrumentados (requiere emulador/dispositivo)
+./gradlew connectedAndroidTest
+
+# Solo compilar tests instrumentados (sin ejecutar)
+./gradlew assembleDebugAndroidTest
+
+# Clean build
+./gradlew clean assembleDebug
+
+# Un test específico
+./gradlew test --tests "com.misw4203.vinilos.presentation.viewmodel.AlbumListViewModelTest"
+```
+
+---
+
+## Seguridad de red
+
+El tráfico HTTP en texto plano está restringido a hosts de desarrollo (`10.0.2.2`, `localhost`, `127.0.0.1`) mediante `app/src/main/res/xml/network_security_config.xml`. No existe `android:usesCleartextTraffic="true"` en el manifest — la configuración basta.

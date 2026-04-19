@@ -53,6 +53,7 @@ google-services.json
 
 # Claude files
 CLAUDE.md
+MEJORAS.md
 .agents/*
 .claude/*
 skills-lock.json
