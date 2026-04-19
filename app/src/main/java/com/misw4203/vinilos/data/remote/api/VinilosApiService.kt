@@ -14,6 +14,9 @@ interface VinilosApiService {
     @GET("albums/{id}")
     suspend fun getAlbum(@Path("id") id: Long): AlbumDto
 
+    @GET("musicians")
+    suspend fun getMusicians(): List<MusicianDetailDto>
+
     @GET("musicians/{id}")
     suspend fun getMusicianDetail(@Path("id") id: Int): MusicianDetailDto
 

@@ -30,6 +30,9 @@
     <string name="detail_not_found_title">Álbum no encontrado</string>
     <string name="detail_not_found_body">El álbum solicitado no existe en el catálogo.</string>
 
+    <!-- Artists -->
+    <string name="artists_title">Artistas</string>
+
     <!-- Navigation -->
     <string name="action_back">Volver</string>
 
@@ -38,4 +41,6 @@
     <string name="cd_menu">Menú</string>
     <string name="cd_profile">Perfil</string>
     <string name="cd_open_album">Abrir álbum</string>
+    <string name="cd_artist_image">Foto del artista</string>
+    <string name="cd_open_artist">Abrir artista</string>
 </resources>

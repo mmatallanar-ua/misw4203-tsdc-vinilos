@@ -2,7 +2,7 @@ package com.misw4203.vinilos.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.misw4203.vinilos.domain.usecase.GetAlbumsUseCase
+import com.misw4203.vinilos.domain.usecase.GetMusiciansUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,12 +14,12 @@ import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
-class AlbumListViewModel @Inject constructor(
-    private val getAlbums: GetAlbumsUseCase,
+class MusicianListViewModel @Inject constructor(
+    private val getMusicians: GetMusiciansUseCase,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<AlbumListUiState>(AlbumListUiState.Loading)
-    val uiState: StateFlow<AlbumListUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<MusicianListUiState>(MusicianListUiState.Loading)
+    val uiState: StateFlow<MusicianListUiState> = _uiState.asStateFlow()
 
     init {
         load()
@@ -30,20 +30,20 @@ class AlbumListViewModel @Inject constructor(
     }
 
     private fun load() {
-        _uiState.value = AlbumListUiState.Loading
+        _uiState.value = MusicianListUiState.Loading
         viewModelScope.launch {
             _uiState.value = try {
-                val albums = getAlbums()
-                if (albums.isEmpty()) AlbumListUiState.Empty
-                else AlbumListUiState.Success(albums)
+                val musicians = getMusicians()
+                if (musicians.isEmpty()) MusicianListUiState.Empty
+                else MusicianListUiState.Success(musicians)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: IOException) {
-                AlbumListUiState.Error(isNetworkError = true)
+                MusicianListUiState.Error(isNetworkError = true)
             } catch (e: HttpException) {
-                AlbumListUiState.Error(isNetworkError = false)
+                MusicianListUiState.Error(isNetworkError = false)
             } catch (e: Exception) {
-                AlbumListUiState.Error(isNetworkError = false)
+                MusicianListUiState.Error(isNetworkError = false)
             }
         }
     }

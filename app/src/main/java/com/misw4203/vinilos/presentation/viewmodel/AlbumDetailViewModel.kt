@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.misw4203.vinilos.domain.usecase.GetAlbumDetailUseCase
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,6 +39,8 @@ class AlbumDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = try {
                 AlbumDetailUiState.Success(getAlbumDetail(albumId))
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: HttpException) {
                 if (e.code() == 404) AlbumDetailUiState.NotFound
                 else AlbumDetailUiState.Error(isNetworkError = false)

@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.misw4203.vinilos.domain.model.Musician
 import com.misw4203.vinilos.domain.usecase.GetMusicianDetailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,20 +21,24 @@ sealed class MusicianDetailUiState {
 
 @HiltViewModel
 class MusicianDetailViewModel @Inject constructor(
-    private val getMusicianDetail: GetMusicianDetailUseCase
+    private val getMusicianDetail: GetMusicianDetailUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<MusicianDetailUiState>(MusicianDetailUiState.Loading)
     val uiState: StateFlow<MusicianDetailUiState> = _uiState.asStateFlow()
 
+    private var loadJob: Job? = null
+
     fun loadMusician(id: Int) {
-        viewModelScope.launch {
-            _uiState.value = MusicianDetailUiState.Loading
-            try {
-                val musician = getMusicianDetail(id)
-                _uiState.value = MusicianDetailUiState.Success(musician)
+        loadJob?.cancel()
+        _uiState.value = MusicianDetailUiState.Loading
+        loadJob = viewModelScope.launch {
+            _uiState.value = try {
+                MusicianDetailUiState.Success(getMusicianDetail(id))
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                _uiState.value = MusicianDetailUiState.Error(e.message ?: "Error desconocido")
+                MusicianDetailUiState.Error(e.message ?: "Error desconocido")
             }
         }
     }
