@@ -3,6 +3,7 @@ package com.misw4203.vinilos.presentation.viewmodel
 import app.cash.turbine.test
 import com.misw4203.vinilos.MainDispatcherRule
 import com.misw4203.vinilos.domain.model.Album
+import com.misw4203.vinilos.domain.model.AlbumDetail
 import com.misw4203.vinilos.domain.repository.AlbumRepository
 import com.misw4203.vinilos.domain.usecase.GetAlbumsUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,6 +32,7 @@ class AlbumListViewModelTest {
             callCount++
             return nextResult.getOrThrow()
         }
+        override suspend fun getAlbumById(id: Long): AlbumDetail = error("not used")
     }
 
     private fun sampleAlbums() = listOf(

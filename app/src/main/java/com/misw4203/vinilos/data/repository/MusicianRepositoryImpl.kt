@@ -47,11 +47,10 @@ class MusicianRepositoryImpl @Inject constructor(
 
     private fun AlbumDto.toDomain() = Album(
         id = id,
-        name = name,
-        cover = cover,
-        releaseDate = releaseDate,
-        description = description,
-        genre = genre,
-        recordLabel = recordLabel
+        name = name.orEmpty(),
+        coverUrl = cover.orEmpty(),
+        artistName = performers?.firstOrNull()?.name.orEmpty(),
+        releaseYear = releaseDate?.take(4).orEmpty(),
+        genre = genre.orEmpty(),
     )
 }

@@ -17,6 +17,22 @@
     <string name="state_error_body_server">El servidor devolvió un error. Inténtalo de nuevo.</string>
     <string name="action_retry">Reintentar</string>
 
+    <!-- Album detail -->
+    <string name="detail_title_default">Detalle del álbum</string>
+    <string name="detail_label_genre">Género</string>
+    <string name="detail_label_release">Fecha de lanzamiento</string>
+    <string name="detail_label_record_label">Sello discográfico</string>
+    <string name="detail_section_description">Descripción</string>
+    <string name="detail_section_performers">Artistas</string>
+    <string name="detail_section_tracks">Canciones</string>
+    <string name="detail_tracks_total">%d en total</string>
+    <string name="detail_section_comments">Comentarios</string>
+    <string name="detail_not_found_title">Álbum no encontrado</string>
+    <string name="detail_not_found_body">El álbum solicitado no existe en el catálogo.</string>
+
+    <!-- Navigation -->
+    <string name="action_back">Volver</string>
+
     <!-- Content descriptions -->
     <string name="cd_album_cover">Portada del álbum</string>
     <string name="cd_menu">Menú</string>
