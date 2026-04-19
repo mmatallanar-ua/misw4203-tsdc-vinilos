@@ -19,6 +19,7 @@ class MusicianCardTest {
         id = 100,
         name = "Rubén Blades",
         image = "",
+        birthDate = "1948-07-16T00:00:00.000Z",
     )
 
     @Test
@@ -30,6 +31,17 @@ class MusicianCardTest {
         }
 
         composeTestRule.onNodeWithText("Rubén Blades").assertIsDisplayed()
+    }
+
+    @Test
+    fun rendersBirthDate() {
+        composeTestRule.setContent {
+            MaterialTheme {
+                MusicianCard(musician = sample, onClick = {})
+            }
+        }
+
+        composeTestRule.onNodeWithText("1948-07-16").assertIsDisplayed()
     }
 
     @Test

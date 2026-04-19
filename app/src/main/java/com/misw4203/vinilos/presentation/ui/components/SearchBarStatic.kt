@@ -22,7 +22,10 @@ import androidx.compose.ui.unit.dp
 import com.misw4203.vinilos.R
 
 @Composable
-fun SearchBarStatic(modifier: Modifier = Modifier) {
+fun SearchBarStatic(
+    modifier: Modifier = Modifier,
+    placeholder: String = stringResource(R.string.search_placeholder),
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -44,7 +47,7 @@ fun SearchBarStatic(modifier: Modifier = Modifier) {
         )
         Spacer(Modifier.size(12.dp))
         Text(
-            text = stringResource(R.string.search_placeholder),
+            text = placeholder,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
         )

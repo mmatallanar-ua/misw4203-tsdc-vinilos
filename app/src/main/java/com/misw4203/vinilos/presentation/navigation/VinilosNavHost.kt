@@ -1,6 +1,7 @@
 package com.misw4203.vinilos.presentation.navigation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -18,8 +19,6 @@ import com.misw4203.vinilos.presentation.ui.screens.album.AlbumDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumListScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianListScreen
-import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorDetailScreen
-import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorListScreen
 
 @Composable
 fun VinilosNavHost() {
@@ -28,9 +27,8 @@ fun VinilosNavHost() {
     val currentRoute = backStackEntry?.destination?.route
 
     val selectedDestination = when {
-        currentRoute == Destinations.AlbumList || currentRoute?.startsWith("album_detail") == true -> VinilosDestination.Albums
         currentRoute == Destinations.ArtistList || currentRoute?.startsWith("artist/") == true -> VinilosDestination.Artists
-        currentRoute == Destinations.Collectors || currentRoute?.startsWith("collector/") == true -> VinilosDestination.Collectors
+        currentRoute == Destinations.Collectors -> VinilosDestination.Collectors
         else -> VinilosDestination.Albums
     }
 
@@ -91,19 +89,7 @@ fun VinilosNavHost() {
                     )
                 }
                 composable(Destinations.Collectors) {
-                    CollectorListScreen(
-                        onCollectorClick = { id ->
-                            navController.navigate(Destinations.collectorDetail(id))
-                        },
-                    )
-                }
-                composable(
-                    route = Destinations.CollectorDetail,
-                    arguments = listOf(navArgument(Destinations.CollectorDetailArg) { type = NavType.IntType }),
-                ) {
-                    CollectorDetailScreen(
-                        onBack = { navController.popBackStack() },
-                    )
+                    Box(modifier = Modifier.fillMaxSize())
                 }
             }
         }

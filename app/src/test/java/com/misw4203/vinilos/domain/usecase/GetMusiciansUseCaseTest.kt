@@ -25,8 +25,8 @@ class GetMusiciansUseCaseTest {
     @Test
     fun `invoke returns musicians from repository`() = runTest {
         val musicians = listOf(
-            MusicianSummary(100, "Rubén Blades", "url1"),
-            MusicianSummary(101, "Queen", "url2"),
+            MusicianSummary(100, "Rubén Blades", "url1", "1948-07-16"),
+            MusicianSummary(101, "Queen", "url2", ""),
         )
         coEvery { repository.getMusicians() } returns musicians
 

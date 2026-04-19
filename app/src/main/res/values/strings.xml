@@ -4,6 +4,7 @@
     <!-- Album catalog -->
     <string name="albums_title">Álbumes</string>
     <string name="search_placeholder">Buscar en tu colección…</string>
+    <string name="search_placeholder_artists">¿Qué artista buscas?</string>
     <string name="nav_albums">Albums</string>
     <string name="nav_artists">Artists</string>
     <string name="nav_collectors">Collectors</string>
@@ -41,18 +42,6 @@
     <string name="action_close">Cerrar</string>
     <string name="cd_rating">%1$d de 5 estrellas</string>
 
-    <!-- Collectors -->
-    <string name="collectors_title">Coleccionistas</string>
-    <string name="collector_detail_title">Detalle del coleccionista</string>
-    <string name="collector_section_favorite_performers">Artistas favoritos</string>
-    <string name="collector_section_albums">Álbumes</string>
-    <string name="collector_section_comments">Comentarios</string>
-    <string name="collector_empty_performers">Sin artistas favoritos.</string>
-    <string name="collector_empty_albums">Sin álbumes.</string>
-    <string name="collector_empty_comments">Sin comentarios.</string>
-    <string name="collector_album_id">Álbum #%d</string>
-    <string name="collector_album_price">$%d</string>
-
     <!-- Navigation -->
     <string name="action_back">Volver</string>
 
@@ -63,5 +52,4 @@
     <string name="cd_open_album">Abrir álbum</string>
     <string name="cd_artist_image">Foto del artista</string>
     <string name="cd_open_artist">Abrir artista</string>
-    <string name="cd_open_collector">Abrir coleccionista</string>
 </resources>
