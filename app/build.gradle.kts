@@ -17,17 +17,29 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 
-        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:3000/\"")
+    signingConfigs {
+        create("release") {
+            storeFile = file("vinilos-release.jks")
+            storePassword = "vinilos123"
+            keyAlias = "vinilos"
+            keyPassword = "vinilos123"
+        }
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:3000/\"")
+        }
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "BASE_URL", "\"https://vinilos-d3465b582eda.herokuapp.com/\"")
         }
     }
 

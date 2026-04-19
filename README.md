@@ -139,6 +139,10 @@ Módulos de Hilt instalados en `SingletonComponent`.
 # Compilar APK debug
 ./gradlew assembleDebug
 
+# Compilar APK release (firmado con vinilos-release.jks)
+./gradlew assembleRelease
+# APK generado en: app/build/outputs/apk/release/app-release.apk
+
 # Tests unitarios
 ./gradlew test
 
