@@ -1,0 +1,55 @@
+<resources>
+    <string name="app_name">Vinilos</string>
+
+    <!-- Album catalog -->
+    <string name="albums_title">Álbumes</string>
+    <string name="search_placeholder">Buscar en tu colección…</string>
+    <string name="search_placeholder_artists">¿Qué artista buscas?</string>
+    <string name="nav_albums">Albums</string>
+    <string name="nav_artists">Artists</string>
+    <string name="nav_collectors">Collectors</string>
+
+    <!-- States -->
+    <string name="state_loading">Cargando álbumes…</string>
+    <string name="state_empty_title">No hay álbumes disponibles</string>
+    <string name="state_empty_body">Aún no hay álbumes en el catálogo. Vuelve más tarde.</string>
+    <string name="state_error_title">No se pudo cargar el catálogo</string>
+    <string name="state_error_body_network">Revisa tu conexión a internet e inténtalo de nuevo.</string>
+    <string name="state_error_body_server">El servidor devolvió un error. Inténtalo de nuevo.</string>
+    <string name="action_retry">Reintentar</string>
+
+    <!-- Album detail -->
+    <string name="detail_title_default">Detalle del álbum</string>
+    <string name="detail_label_genre">Género</string>
+    <string name="detail_label_release">Fecha de lanzamiento</string>
+    <string name="detail_label_record_label">Sello discográfico</string>
+    <string name="detail_section_description">Descripción</string>
+    <string name="detail_section_performers">Artistas</string>
+    <string name="detail_section_tracks">Canciones</string>
+    <string name="detail_tracks_total">%d en total</string>
+    <string name="detail_section_comments">Comentarios</string>
+    <string name="detail_not_found_title">Álbum no encontrado</string>
+    <string name="detail_not_found_body">El álbum solicitado no existe en el catálogo.</string>
+
+    <!-- Artists -->
+    <string name="artists_title">Artistas</string>
+    <string name="artist_detail_title">Detalle del artista</string>
+    <string name="artist_badge">ARTISTA</string>
+    <string name="artist_section_albums">Álbumes</string>
+    <string name="artist_section_prizes">Premios</string>
+    <string name="artist_not_found_title">Artista no encontrado</string>
+    <string name="artist_not_found_body">El artista solicitado no existe.</string>
+    <string name="action_close">Cerrar</string>
+    <string name="cd_rating">%1$d de 5 estrellas</string>
+
+    <!-- Navigation -->
+    <string name="action_back">Volver</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_album_cover">Portada del álbum</string>
+    <string name="cd_menu">Menú</string>
+    <string name="cd_profile">Perfil</string>
+    <string name="cd_open_album">Abrir álbum</string>
+    <string name="cd_artist_image">Foto del artista</string>
+    <string name="cd_open_artist">Abrir artista</string>
+</resources>
