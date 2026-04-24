@@ -46,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -84,7 +85,7 @@ fun MusicianDetailScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = onBack, modifier = Modifier.testTag("artist_detail_back")) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.action_back),
@@ -137,7 +138,8 @@ private fun MusicianBody(musician: Musician) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .testTag("artist_detail_root"),
     ) {
         ArtistHeader(musician)
         Spacer(Modifier.height(24.dp))
@@ -316,7 +318,8 @@ private fun PrizeItem(prize: MusicianPrize, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .clickable { onClick() }
+            .testTag("prize_${prize.id}"),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         ),

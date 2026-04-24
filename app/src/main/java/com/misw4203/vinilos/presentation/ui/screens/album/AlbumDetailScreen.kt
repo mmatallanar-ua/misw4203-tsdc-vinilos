@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -81,7 +82,7 @@ fun AlbumDetailScreen(
 
 @Composable
 private fun AlbumDetailContent(album: AlbumDetail, onBack: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().testTag("album_detail_root")) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -186,7 +187,8 @@ private fun AlbumDetailContent(album: AlbumDetail, onBack: () -> Unit) {
                 .padding(top = 8.dp, start = 8.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.75f))
-                .size(40.dp),
+                .size(40.dp)
+                .testTag("album_detail_back"),
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,

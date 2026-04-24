@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -54,18 +55,21 @@ fun VinilosBottomNav(
             icon = if (selected == VinilosDestination.Albums) Icons.Filled.Album else Icons.Outlined.Album,
             active = selected == VinilosDestination.Albums,
             onClick = { onSelect(VinilosDestination.Albums) },
+            modifier = Modifier.testTag("bottom_nav_albums"),
         )
         NavTab(
             label = stringResource(R.string.nav_artists),
             icon = Icons.Outlined.PersonSearch,
             active = selected == VinilosDestination.Artists,
             onClick = { onSelect(VinilosDestination.Artists) },
+            modifier = Modifier.testTag("bottom_nav_artists"),
         )
         NavTab(
             label = stringResource(R.string.nav_collectors),
             icon = Icons.Outlined.Group,
             active = selected == VinilosDestination.Collectors,
             onClick = { onSelect(VinilosDestination.Collectors) },
+            modifier = Modifier.testTag("bottom_nav_collectors"),
         )
     }
 }
@@ -76,11 +80,12 @@ private fun NavTab(
     icon: ImageVector,
     active: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val tint = if (active) MaterialTheme.colorScheme.onSurface
     else MaterialTheme.colorScheme.outlineVariant
     Column(
-        modifier = Modifier
+        modifier = modifier
             .clickable(onClick = onClick)
             .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
