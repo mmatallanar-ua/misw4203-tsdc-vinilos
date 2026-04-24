@@ -28,8 +28,7 @@ app/src/main/java/com/misw4203/vinilos/
 │   └── ui/
 │       ├── screens/
 │       │   ├── album/
-│       │   ├── artist/
-│       │   └── collector/
+│       │   └── artist/
 │       ├── components/  # Composables reutilizables
 │       └── theme/       # Material 3 theme
 └── di/                  # Módulos de Hilt
@@ -49,7 +48,7 @@ Responsable de obtener y persistir datos, ya sea desde la red o desde la base de
 | `data/local/dao/` | Interfaces DAO de Room con operaciones `@Upsert`, `@Query`, y transacciones (`replaceX` = clear + upsert). |
 | `data/local/database/` | `VinilosDatabase` — clase abstracta `RoomDatabase` que declara entidades y expone los DAOs. |
 | `data/local/entity/` | Entidades `@Entity` con mappers `toDomain()` / `fromDomain()`. |
-| `data/remote/api/` | `VinilosApiService` — interfaz Retrofit con los endpoints (`GET /albums`, `GET /musicians`, `GET /collectors`, etc.). |
+| `data/remote/api/` | `VinilosApiService` — interfaz Retrofit con los endpoints (`GET /albums`, `GET /albums/{id}`, `GET /musicians`, `GET /musicians/{id}`, `GET /prizes/{id}`). |
 | `data/remote/dto/` | DTOs que modelan la respuesta JSON. Campos nullables para tolerar datos incompletos del servidor. |
 | `data/repository/` | Implementaciones de repositorio con estrategia **network-first + fallback a caché**. |
 
@@ -69,9 +68,9 @@ Es el núcleo de la aplicación. No depende de ninguna otra capa y contiene la l
 
 | Carpeta | Contenido |
 |---|---|
-| `domain/model/` | Modelos de dominio (`Album`, `AlbumDetail`, `Musician`, `MusicianSummary`, `Collector`, `CollectorSummary`, `FavoritePerformer`, `MusicianPrize`, etc.). Sin dependencias de Android. |
-| `domain/repository/` | Interfaces de repositorio (`AlbumRepository`, `MusicianRepository`, `CollectorRepository`). |
-| `domain/usecase/` | Casos de uso (`GetAlbumsUseCase`, `GetAlbumDetailUseCase`, `GetMusiciansUseCase`, `GetMusicianDetailUseCase`, `GetCollectorsUseCase`, `GetCollectorDetailUseCase`). |
+| `domain/model/` | Modelos de dominio (`Album`, `AlbumDetail`, `Musician`, `MusicianSummary`, `MusicianPrize`, `Track`, `Performer`, `Comment`). Sin dependencias de Android. |
+| `domain/repository/` | Interfaces de repositorio (`AlbumRepository`, `MusicianRepository`). |
+| `domain/usecase/` | Casos de uso (`GetAlbumsUseCase`, `GetAlbumDetailUseCase`, `GetMusiciansUseCase`, `GetMusicianDetailUseCase`). |
 
 ---
 
@@ -83,8 +82,8 @@ Contiene todo lo relacionado con la interfaz de usuario y el estado de la pantal
 |---|---|
 | `presentation/navigation/` | `VinilosNavHost` + `Destinations` (rutas y argumentos de navegación). |
 | `presentation/viewmodel/` | ViewModels con `@HiltViewModel`. Exponen `StateFlow<UiState>` y clasifican excepciones (`IOException` → red, `HttpException` 404 → NotFound, otros → servidor). Re-lanzan `CancellationException` para preservar structured concurrency. |
-| `presentation/ui/screens/` | Composables por entidad (`album/`, `artist/`, `collector/`). |
-| `presentation/ui/components/` | `AlbumCard`, `MusicianCard`, `CollectorCard`, `LoadingState`, `EmptyState`, `ErrorState`, `VinilosTopBar`, `VinilosBottomNav`. |
+| `presentation/ui/screens/` | Composables por entidad (`album/`, `artist/`). |
+| `presentation/ui/components/` | `AlbumCard`, `MusicianCard`, `LoadingState`, `EmptyState`, `ErrorState`, `VinilosTopBar`, `VinilosBottomNav`, `SearchBarStatic`. |
 | `presentation/ui/theme/` | Material 3: `Color.kt`, `Theme.kt`, `Type.kt`. |
 
 ---
@@ -96,7 +95,7 @@ Módulos de Hilt instalados en `SingletonComponent`.
 | Archivo | Contenido |
 |---|---|
 | `NetworkModule` | Provee `OkHttpClient` (con `HttpLoggingInterceptor` solo en debug), `Retrofit` y `VinilosApiService`. |
-| `DatabaseModule` | Provee `VinilosDatabase` (con `fallbackToDestructiveMigration` — la caché es descartable) y los tres DAOs. |
+| `DatabaseModule` | Provee `VinilosDatabase` (con `fallbackToDestructiveMigration` — la caché es descartable) y los DAOs (`AlbumDao`, `MusicianDao`). |
 | `RepositoryModule` | `@Binds` de las interfaces de dominio a sus implementaciones. |
 
 ---
