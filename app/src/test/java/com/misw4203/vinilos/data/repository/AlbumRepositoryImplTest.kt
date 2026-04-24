@@ -1,5 +1,6 @@
 package com.misw4203.vinilos.data.repository
 
+import com.misw4203.vinilos.data.local.dao.AlbumDao
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.CommentDto
@@ -20,12 +21,14 @@ import java.io.IOException
 class AlbumRepositoryImplTest {
 
     private lateinit var api: VinilosApiService
+    private lateinit var dao: AlbumDao
     private lateinit var repository: AlbumRepositoryImpl
 
     @Before
     fun setUp() {
         api = mockk()
-        repository = AlbumRepositoryImpl(api)
+        dao = mockk(relaxed = true)
+        repository = AlbumRepositoryImpl(api, dao)
     }
 
     @Test
@@ -82,8 +85,9 @@ class AlbumRepositoryImplTest {
     }
 
     @Test(expected = IOException::class)
-    fun `getAlbumById propagates IOException`() = runTest {
+    fun `getAlbumById propagates IOException when cache is empty`() = runTest {
         coEvery { api.getAlbum(7L) } throws IOException("offline")
+        coEvery { dao.getDetailById(7L) } returns null
         repository.getAlbumById(7L)
     }
 
