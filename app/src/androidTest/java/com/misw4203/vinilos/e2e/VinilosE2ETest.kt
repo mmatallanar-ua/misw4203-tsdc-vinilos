@@ -1,7 +1,9 @@
 package com.misw4203.vinilos.e2e
 
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -59,10 +61,9 @@ class VinilosE2ETest {
     fun albumList_tapFirstCard_opensDetail_andBackReturns() {
         waitForTag("albums_list")
 
-        val firstTag = firstExistingTag("album_card_", 1L..50L)
-        composeRule.onNodeWithTag("albums_list")
-            .performScrollToNode(hasTestTag(firstTag))
-        composeRule.onNodeWithTag(firstTag).performClick()
+        val firstCard = tagStartsWith("album_card_")
+        composeRule.onNodeWithTag("albums_list").performScrollToNode(firstCard)
+        composeRule.onAllNodes(firstCard)[0].performClick()
 
         waitForTag("album_detail_root")
         composeRule.onNodeWithTag("album_detail_root").assertIsDisplayed()
@@ -90,8 +91,8 @@ class VinilosE2ETest {
         composeRule.onNodeWithTag("bottom_nav_artists").performClick()
 
         waitForTag("artists_list")
-        val firstTag = firstExistingTag("musician_card_", 1..200)
-        composeRule.onNodeWithTag(firstTag).performClick()
+        val firstCard = tagStartsWith("musician_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
 
         waitForTag("artist_detail_root")
         composeRule.onNodeWithTag("artist_detail_root").assertIsDisplayed()
@@ -128,8 +129,9 @@ class VinilosE2ETest {
     fun systemBack_fromAlbumDetail_returnsToList() {
         waitForTag("albums_list")
 
-        val firstTag = firstExistingTag("album_card_", 1L..50L)
-        composeRule.onNodeWithTag(firstTag).performClick()
+        val firstCard = tagStartsWith("album_card_")
+        composeRule.onNodeWithTag("albums_list").performScrollToNode(firstCard)
+        composeRule.onAllNodes(firstCard)[0].performClick()
         waitForTag("album_detail_root")
 
         Espresso.pressBack()
@@ -144,8 +146,9 @@ class VinilosE2ETest {
     @Test
     fun albumDetail_ratingHasAccessibleContentDescription_ifCommentsPresent() {
         waitForTag("albums_list")
-        val firstTag = firstExistingTag("album_card_", 1L..50L)
-        composeRule.onNodeWithTag(firstTag).performClick()
+        val firstCard = tagStartsWith("album_card_")
+        composeRule.onNodeWithTag("albums_list").performScrollToNode(firstCard)
+        composeRule.onAllNodes(firstCard)[0].performClick()
         waitForTag("album_detail_root")
 
         // cd_rating en strings.xml tiene el texto "… de 5 estrellas". Si el álbum
@@ -173,13 +176,10 @@ class VinilosE2ETest {
         }
     }
 
-    private fun firstExistingTag(prefix: String, range: LongRange): String =
-        range.map { "$prefix$it" }.first { tag ->
-            composeRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
-        }
-
-    private fun firstExistingTag(prefix: String, range: IntRange): String =
-        range.map { "$prefix$it" }.first { tag ->
-            composeRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
+    /** Matcher que encuentra cualquier nodo cuyo testTag empiece con el prefijo dado. */
+    private fun tagStartsWith(prefix: String): SemanticsMatcher =
+        SemanticsMatcher("TestTag starts with '$prefix'") { node ->
+            val tag = node.config.getOrNull(SemanticsProperties.TestTag) ?: return@SemanticsMatcher false
+            tag.startsWith(prefix)
         }
 }
