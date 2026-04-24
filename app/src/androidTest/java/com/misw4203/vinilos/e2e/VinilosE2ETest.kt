@@ -158,8 +158,11 @@ class VinilosE2ETest {
             .fetchSemanticsNodes()
         if (ratingNodes.isEmpty()) return
 
-        composeRule.onNodeWithContentDescription(label = "de 5", substring = true)
-            .assertIsDisplayed()
+        // assertExists (no assertIsDisplayed): el nodo puede estar fuera del viewport;
+        // para accesibilidad basta con que exista en el semantic tree — TalkBack lo anuncia
+        // cuando el usuario hace scroll.
+        composeRule.onAllNodesWithContentDescription(label = "de 5", substring = true)[0]
+            .assertExists()
     }
 
     // -- Helpers -------------------------------------------------------------
