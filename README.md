@@ -123,14 +123,14 @@ Módulos de Hilt instalados en `SingletonComponent`.
 |---|---|---|
 | `app/src/test/` | Unit tests JVM | JUnit 4, MockK, Turbine, `kotlinx-coroutines-test` |
 | `app/src/androidTest/` | Compose UI tests (instrumentados) | `ui-test-junit4`, `ui-test-manifest`, `hilt-android-testing` |
-| `app/src/androidTest/.../e2e/` | Pruebas E2E contra `MainActivity` real y backend | Compose Test + Hilt + backend docker local |
+| `app/src/androidTest/.../e2e/` | Pruebas E2E contra `MainActivity` real con datos fake | Compose Test + Hilt + `FakeRepositoryModule` |
 
 **Convenciones**:
 - ViewModel tests usan **fake repos inline** (clases anidadas que implementan la interfaz) para control explícito de resultados y conteo de llamadas.
 - Repository tests usan **MockK** sobre `VinilosApiService` y los DAOs.
 - Use-case tests mockean el repositorio y verifican delegación.
 - Compose UI tests de componentes reciben el VM como parámetro (los screens aceptan `viewModel: VM = hiltViewModel()` con default), evitando montar Hilt.
-- **Tests E2E** (`VinilosE2ETest`): atacan `MainActivity` real, arrancan Hilt con `HiltTestApplication`, y asumen backend corriendo en `http://10.0.2.2:3000`. Ver [`E2E_TESTS.md`](./E2E_TESTS.md).
+- **Tests E2E** (`VinilosE2ETest`): atacan `MainActivity` real con Hilt. Un módulo `@TestInstallIn` (`FakeRepositoryModule`) reemplaza los repositorios de producción por implementaciones en memoria, por lo que **no requieren backend ni Docker**. Solo necesitan el emulador.
 
 ---
 
@@ -150,7 +150,7 @@ Módulos de Hilt instalados en `SingletonComponent`.
 # Tests instrumentados (requiere emulador/dispositivo)
 # IMPORTANTE: usar emulador API 33 o 34. API 35+ rompe Espresso 3.6.1
 # (NoSuchMethodException: InputManager.getInstance).
-# Los E2E además requieren backend docker-compose up en puertos 3000 y 5432.
+# No se requiere backend ni Docker — los repositorios están reemplazados por fakes.
 ./gradlew connectedAndroidTest
 
 # Solo compilar tests instrumentados (sin ejecutar)

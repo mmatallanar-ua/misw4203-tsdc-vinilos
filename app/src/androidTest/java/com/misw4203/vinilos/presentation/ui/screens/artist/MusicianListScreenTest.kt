@@ -13,6 +13,7 @@ import com.misw4203.vinilos.domain.usecase.GetMusiciansUseCase
 import com.misw4203.vinilos.presentation.viewmodel.MusicianListViewModel
 import org.junit.Rule
 import org.junit.Test
+import java.io.IOException
 
 class MusicianListScreenTest {
 
@@ -84,5 +85,31 @@ class MusicianListScreenTest {
 
         val ctx = composeTestRule.activity
         composeTestRule.onNodeWithText(ctx.getString(R.string.search_placeholder_artists)).assertIsDisplayed()
+    }
+
+    @Test
+    fun rendersNetworkErrorState() {
+        val viewModel = vm(Result.failure(IOException("sin red")))
+        composeTestRule.setContent {
+            MaterialTheme {
+                MusicianListScreen(onMusicianClick = {}, viewModel = viewModel)
+            }
+        }
+        val ctx = composeTestRule.activity
+        composeTestRule.onNodeWithText(ctx.getString(R.string.state_error_body_network))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun rendersServerErrorState() {
+        val viewModel = vm(Result.failure(RuntimeException("error servidor")))
+        composeTestRule.setContent {
+            MaterialTheme {
+                MusicianListScreen(onMusicianClick = {}, viewModel = viewModel)
+            }
+        }
+        val ctx = composeTestRule.activity
+        composeTestRule.onNodeWithText(ctx.getString(R.string.state_error_body_server))
+            .assertIsDisplayed()
     }
 }

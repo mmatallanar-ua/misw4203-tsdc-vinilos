@@ -8,7 +8,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -23,13 +22,9 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * Pruebas E2E (scope B): atacan MainActivity real con Hilt y el backend levantado
- * en http://10.0.2.2:3000 (docker backvynils-web-1).
- *
- * Requisitos para ejecutar:
- *   - Emulador Android corriendo.
- *   - Backend docker-compose up en el host (puertos 3000 y 5432).
- *   - testInstrumentationRunner = com.misw4203.vinilos.HiltTestRunner.
+ * Pruebas E2E: lanzan MainActivity real con Hilt usando FakeRepositoryModule,
+ * por lo que no requieren backend externo. Solo necesitan el emulador y
+ * testInstrumentationRunner = com.misw4203.vinilos.HiltTestRunner.
  */
 @HiltAndroidTest
 class VinilosE2ETest {
@@ -40,7 +35,7 @@ class VinilosE2ETest {
     @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<MainActivity>()
 
-    private val timeoutMs = 10_000L
+    private val timeoutMs = 3_000L
 
     @Before
     fun setUp() {
@@ -49,14 +44,16 @@ class VinilosE2ETest {
 
     // -- Albums --------------------------------------------------------------
 
-    /** AL-01: la pantalla de álbumes carga y muestra la lista. */
+    /** AL-01: la pantalla de álbumes carga y muestra los álbumes del catálogo. */
     @Test
-    fun albumList_rendersListFromBackend() {
+    fun albumList_rendersList() {
         waitForTag("albums_list")
         composeRule.onNodeWithTag("albums_list").assertIsDisplayed()
+        composeRule.onNodeWithText("Buscando América").assertIsDisplayed()
+        composeRule.onNodeWithText("A Night at the Opera").assertIsDisplayed()
     }
 
-    /** AL-05 + AD-01 + AD-02: tap en primer álbum abre detalle y back regresa. */
+    /** AL-05 + AD-01 + AD-02: tap en primer álbum abre detalle con contenido y back regresa. */
     @Test
     fun albumList_tapFirstCard_opensDetail_andBackReturns() {
         waitForTag("albums_list")
@@ -67,6 +64,7 @@ class VinilosE2ETest {
 
         waitForTag("album_detail_root")
         composeRule.onNodeWithTag("album_detail_root").assertIsDisplayed()
+        composeRule.onNodeWithText("Buscando América").assertIsDisplayed()
 
         composeRule.onNodeWithTag("album_detail_back").performClick()
 
@@ -76,16 +74,18 @@ class VinilosE2ETest {
 
     // -- Artists -------------------------------------------------------------
 
-    /** ML-01: la pantalla de artistas carga al entrar desde bottom nav. */
+    /** ML-01: la pantalla de artistas carga y muestra los músicos del catálogo. */
     @Test
-    fun artistList_rendersListFromBackend() {
+    fun artistList_rendersList() {
         composeRule.onNodeWithTag("bottom_nav_artists").performClick()
 
         waitForTag("artists_list")
         composeRule.onNodeWithTag("artists_list").assertIsDisplayed()
+        composeRule.onNodeWithText("Rubén Blades").assertIsDisplayed()
+        composeRule.onNodeWithText("Freddie Mercury").assertIsDisplayed()
     }
 
-    /** ML-04 + MD-01 + MD-04: tap en artista abre detalle y back regresa. */
+    /** ML-04 + MD-01 + MD-04: tap en artista abre detalle con contenido y back regresa. */
     @Test
     fun artistList_tapFirstCard_opensDetail_andBackReturns() {
         composeRule.onNodeWithTag("bottom_nav_artists").performClick()
@@ -96,6 +96,8 @@ class VinilosE2ETest {
 
         waitForTag("artist_detail_root")
         composeRule.onNodeWithTag("artist_detail_root").assertIsDisplayed()
+        composeRule.onNodeWithText("Rubén Blades").assertIsDisplayed()
+        composeRule.onNodeWithText("1948-07-16").assertIsDisplayed()
 
         composeRule.onNodeWithTag("artist_detail_back").performClick()
 
@@ -124,6 +126,18 @@ class VinilosE2ETest {
         composeRule.onNodeWithText(albumsTitle).assertIsDisplayed()
     }
 
+    /** NAV-02: el tab Collectors es alcanzable sin errores. */
+    @Test
+    fun collectorsTab_isReachableFromBottomNav() {
+        waitForTag("albums_list")
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        // Verificar que salimos de la lista de álbumes
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("albums_list").fetchSemanticsNodes().isEmpty()
+        }
+        composeRule.onNodeWithTag("bottom_nav_collectors").assertIsDisplayed()
+    }
+
     /** NAV-03: back del sistema desde detalle de álbum regresa a lista. */
     @Test
     fun systemBack_fromAlbumDetail_returnsToList() {
@@ -142,25 +156,17 @@ class VinilosE2ETest {
 
     // -- Accessibility -------------------------------------------------------
 
-    /** AD-05: si el álbum tiene comentarios, el rating expone contentDescription. */
+    /** AD-05: el rating del álbum expone contentDescription accesible (el fake siempre tiene comentarios). */
     @Test
-    fun albumDetail_ratingHasAccessibleContentDescription_ifCommentsPresent() {
+    fun albumDetail_ratingHasAccessibleContentDescription() {
         waitForTag("albums_list")
         val firstCard = tagStartsWith("album_card_")
         composeRule.onNodeWithTag("albums_list").performScrollToNode(firstCard)
         composeRule.onAllNodes(firstCard)[0].performClick()
         waitForTag("album_detail_root")
 
-        // cd_rating en strings.xml tiene el texto "… de 5 estrellas". Si el álbum
-        // no tiene comentarios este nodo no existirá y el test sale como no-op.
-        val ratingNodes = composeRule
-            .onAllNodesWithContentDescription(label = "de 5", substring = true)
-            .fetchSemanticsNodes()
-        if (ratingNodes.isEmpty()) return
-
         // assertExists (no assertIsDisplayed): el nodo puede estar fuera del viewport;
-        // para accesibilidad basta con que exista en el semantic tree — TalkBack lo anuncia
-        // cuando el usuario hace scroll.
+        // para accesibilidad basta con que exista en el semantic tree — TalkBack lo anuncia.
         composeRule.onAllNodesWithContentDescription(label = "de 5", substring = true)[0]
             .assertExists()
     }

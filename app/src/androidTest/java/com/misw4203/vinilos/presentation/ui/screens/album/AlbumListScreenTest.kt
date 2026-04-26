@@ -13,6 +13,7 @@ import com.misw4203.vinilos.domain.usecase.GetAlbumsUseCase
 import com.misw4203.vinilos.presentation.viewmodel.AlbumListViewModel
 import org.junit.Rule
 import org.junit.Test
+import java.io.IOException
 
 class AlbumListScreenTest {
 
@@ -59,5 +60,31 @@ class AlbumListScreenTest {
         }
         val ctx = composeTestRule.activity
         composeTestRule.onNodeWithText(ctx.getString(R.string.state_empty_title)).assertIsDisplayed()
+    }
+
+    @Test
+    fun rendersNetworkErrorState() {
+        val viewModel = vm(Result.failure(IOException("sin red")))
+        composeTestRule.setContent {
+            MaterialTheme {
+                AlbumListScreen(onAlbumClick = {}, viewModel = viewModel)
+            }
+        }
+        val ctx = composeTestRule.activity
+        composeTestRule.onNodeWithText(ctx.getString(R.string.state_error_body_network))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun rendersServerErrorState() {
+        val viewModel = vm(Result.failure(RuntimeException("error servidor")))
+        composeTestRule.setContent {
+            MaterialTheme {
+                AlbumListScreen(onAlbumClick = {}, viewModel = viewModel)
+            }
+        }
+        val ctx = composeTestRule.activity
+        composeTestRule.onNodeWithText(ctx.getString(R.string.state_error_body_server))
+            .assertIsDisplayed()
     }
 }

@@ -39,7 +39,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            buildConfigField("String", "BASE_URL", "\"https://vinilos-d3465b582eda.herokuapp.com/\"")
+            buildConfigField("String", "BASE_URL", "\"http://54.82.57.177:3000/\"")
         }
     }
 
