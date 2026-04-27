@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,12 +47,17 @@ fun AlbumListScreen(
                 EmptyState()
             }
             is AlbumListUiState.Success -> LazyColumn(
+                modifier = Modifier.testTag("albums_list"),
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 item { HeaderSection() }
                 items(state.albums, key = { it.id }) { album ->
-                    AlbumCard(album = album, onClick = { onAlbumClick(album.id) })
+                    AlbumCard(
+                        album = album,
+                        onClick = { onAlbumClick(album.id) },
+                        modifier = Modifier.testTag("album_card_${album.id}"),
+                    )
                 }
                 item { Spacer(Modifier.size(24.dp)) }
             }
