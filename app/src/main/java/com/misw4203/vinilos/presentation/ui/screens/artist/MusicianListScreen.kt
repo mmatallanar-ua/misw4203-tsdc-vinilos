@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -48,6 +49,7 @@ fun MusicianListScreen(
                 EmptyState()
             }
             is MusicianListUiState.Success -> LazyColumn(
+                modifier = Modifier.testTag("artists_list"),
                 state = listState,
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
@@ -57,6 +59,7 @@ fun MusicianListScreen(
                     MusicianCard(
                         musician = musician,
                         onClick = { onMusicianClick(musician.id) },
+                        modifier = Modifier.testTag("musician_card_${musician.id}"),
                     )
                 }
                 item { Spacer(Modifier.size(24.dp)) }
