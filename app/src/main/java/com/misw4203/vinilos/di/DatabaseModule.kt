@@ -3,6 +3,7 @@ package com.misw4203.vinilos.di
 import android.content.Context
 import androidx.room.Room
 import com.misw4203.vinilos.data.local.dao.AlbumDao
+import com.misw4203.vinilos.data.local.dao.CollectorDao
 import com.misw4203.vinilos.data.local.dao.MusicianDao
 import com.misw4203.vinilos.data.local.database.VinilosDatabase
 import dagger.Module
@@ -28,4 +29,7 @@ object DatabaseModule {
 
     @Provides
     fun provideMusicianDao(db: VinilosDatabase): MusicianDao = db.musicianDao()
+
+    @Provides
+    fun provideCollectorDao(db: VinilosDatabase): CollectorDao = db.collectorDao()
 }

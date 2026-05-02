@@ -138,6 +138,41 @@ class VinilosE2ETest {
         composeRule.onNodeWithTag("bottom_nav_collectors").assertIsDisplayed()
     }
 
+    // -- Collectors ----------------------------------------------------------
+
+    /** CL-01: la pantalla de coleccionistas carga y muestra los coleccionistas del catálogo. */
+    @Test
+    fun collectorList_rendersList() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+
+        waitForTag("collectors_list")
+        composeRule.onNodeWithTag("collectors_list").assertIsDisplayed()
+        composeRule.onNodeWithText("Jaime Andrés Monsalve").assertIsDisplayed()
+        composeRule.onNodeWithText("María Alejandra Palacios").assertIsDisplayed()
+    }
+
+    /** CL-02: cada tarjeta de coleccionista expone su testTag individual. */
+    @Test
+    fun collectorList_cardTagsArePresent() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+
+        waitForTag("collectors_list")
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard).fetchSemanticsNodes().let { nodes ->
+            assert(nodes.isNotEmpty()) { "No se encontraron tarjetas de coleccionista" }
+        }
+    }
+
+    /** CL-03: la lista de coleccionistas muestra el título de la pantalla. */
+    @Test
+    fun collectorList_showsTitle() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+
+        waitForTag("collectors_list")
+        val ctx = composeRule.activity
+        composeRule.onNodeWithText(ctx.getString(R.string.collectors_title)).assertIsDisplayed()
+    }
+
     /** NAV-03: back del sistema desde detalle de álbum regresa a lista. */
     @Test
     fun systemBack_fromAlbumDetail_returnsToList() {
