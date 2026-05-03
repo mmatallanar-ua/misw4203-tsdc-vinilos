@@ -69,14 +69,10 @@ fun AddCommentScreen(
 
     val networkErrorMessage = stringResource(R.string.add_comment_error_network)
     val serverErrorMessage = stringResource(R.string.add_comment_error_server)
-    val successMessage = stringResource(R.string.add_comment_success)
 
     LaunchedEffect(uiState) {
         when (val state = uiState) {
-            is AddCommentUiState.Success -> {
-                snackbarHostState.showSnackbar(successMessage)
-                onSuccess()
-            }
+            is AddCommentUiState.Success -> onSuccess()
             is AddCommentUiState.Error -> {
                 val message = if (state.isNetworkError) networkErrorMessage else serverErrorMessage
                 snackbarHostState.showSnackbar(message)

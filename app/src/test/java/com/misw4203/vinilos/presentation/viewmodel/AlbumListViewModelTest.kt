@@ -40,6 +40,7 @@ class AlbumListViewModelTest {
             rating: Int,
             collectorId: Int,
         ): Comment = error("not used")
+        override suspend fun createAlbum(input: com.misw4203.vinilos.domain.model.CreateAlbumInput): Album = error("not used")
     }
 
     private fun sampleAlbums() = listOf(

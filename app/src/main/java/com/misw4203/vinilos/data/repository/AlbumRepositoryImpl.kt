@@ -7,9 +7,11 @@ import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.CollectorRef
 import com.misw4203.vinilos.data.remote.dto.CreateCommentRequest
+import com.misw4203.vinilos.data.remote.dto.CreateAlbumRequestDto
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
 import com.misw4203.vinilos.domain.model.Comment
+import com.misw4203.vinilos.domain.model.CreateAlbumInput
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.Track
 import com.misw4203.vinilos.domain.repository.AlbumRepository
@@ -63,6 +65,20 @@ class AlbumRepositoryImpl @Inject constructor(
             description = response.description.orEmpty(),
             rating = response.rating ?: rating,
         )
+    }
+
+    override suspend fun createAlbum(input: CreateAlbumInput): Album = withContext(Dispatchers.IO) {
+        val dto = api.createAlbum(
+            CreateAlbumRequestDto(
+                name = input.name,
+                cover = input.cover,
+                releaseDate = input.releaseDate,
+                description = input.description,
+                genre = input.genre,
+                recordLabel = input.recordLabel,
+            )
+        )
+        dto.toAlbum()
     }
 
     private fun AlbumDto.toAlbum(): Album = Album(

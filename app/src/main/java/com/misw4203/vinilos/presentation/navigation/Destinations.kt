@@ -4,6 +4,7 @@ object Destinations {
     const val AlbumList = "album_list"
     const val AlbumDetail = "album_detail/{albumId}"
     const val AlbumDetailArg = "albumId"
+    const val CreateAlbum = "create_album"
 
     const val ArtistList = "artists"
 
