@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onNodeWithText
 import com.misw4203.vinilos.R
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
+import com.misw4203.vinilos.domain.model.Comment
 import com.misw4203.vinilos.domain.repository.AlbumRepository
 import com.misw4203.vinilos.domain.usecase.GetAlbumsUseCase
 import com.misw4203.vinilos.presentation.viewmodel.AlbumListViewModel
@@ -25,6 +26,12 @@ class AlbumListScreenTest {
     ) : AlbumRepository {
         override suspend fun getAlbums(): List<Album> = result.getOrThrow()
         override suspend fun getAlbumById(id: Long): AlbumDetail = error("unused")
+        override suspend fun addComment(
+            albumId: Long,
+            description: String,
+            rating: Int,
+            collectorId: Int,
+        ): Comment = error("unused")
     }
 
     private fun vm(result: Result<List<Album>>) =

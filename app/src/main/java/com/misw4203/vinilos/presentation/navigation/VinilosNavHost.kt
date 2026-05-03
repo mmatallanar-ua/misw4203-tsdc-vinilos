@@ -7,6 +7,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.misw4203.vinilos.presentation.ui.components.VinilosBottomNav
 import com.misw4203.vinilos.presentation.ui.components.VinilosDestination
+import com.misw4203.vinilos.presentation.ui.screens.album.AddCommentScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumListScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianDetailScreen
@@ -70,9 +72,36 @@ fun VinilosNavHost() {
                     arguments = listOf(navArgument(Destinations.AlbumDetailArg) { type = NavType.LongType }),
                 ) { entry ->
                     val albumId = entry.arguments?.getLong(Destinations.AlbumDetailArg) ?: 0L
+                    val refreshFlag by entry.savedStateHandle
+                        .getStateFlow(Destinations.RefreshAlbumDetailKey, false)
+                        .collectAsStateWithLifecycle()
                     AlbumDetailScreen(
                         albumId = albumId,
                         onBack = { navController.popBackStack() },
+                        onAddComment = {
+                            navController.navigate(Destinations.addComment(albumId))
+                        },
+                        refreshKey = refreshFlag,
+                        onRefreshHandled = {
+                            entry.savedStateHandle[Destinations.RefreshAlbumDetailKey] = false
+                        },
+                    )
+                }
+                composable(
+                    route = Destinations.AddComment,
+                    arguments = listOf(
+                        navArgument(Destinations.AddCommentAlbumArg) { type = NavType.LongType },
+                        navArgument(Destinations.AddCommentCollectorArg) { type = NavType.IntType },
+                    ),
+                ) {
+                    AddCommentScreen(
+                        onBack = { navController.popBackStack() },
+                        onSuccess = {
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(Destinations.RefreshAlbumDetailKey, true)
+                            navController.popBackStack()
+                        },
                     )
                 }
                 composable(Destinations.ArtistList) {

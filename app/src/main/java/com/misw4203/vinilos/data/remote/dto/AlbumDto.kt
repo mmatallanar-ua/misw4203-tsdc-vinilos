@@ -34,4 +34,5 @@ data class CommentDto(
     @SerializedName("id") val id: Long,
     @SerializedName("description") val description: String?,
     @SerializedName("rating") val rating: Int?,
+    @SerializedName("collector") val collector: CollectorDto? = null,
 )

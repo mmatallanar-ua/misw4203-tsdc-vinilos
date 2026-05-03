@@ -34,6 +34,12 @@ class AlbumDetailViewModelTest {
         var detailResult: Result<AlbumDetail> = Result.success(sampleDetail())
         override suspend fun getAlbums(): List<Album> = emptyList()
         override suspend fun getAlbumById(id: Long): AlbumDetail = detailResult.getOrThrow()
+        override suspend fun addComment(
+            albumId: Long,
+            description: String,
+            rating: Int,
+            collectorId: Int,
+        ): Comment = Comment(0L, description, rating)
     }
 
     private fun buildViewModel(

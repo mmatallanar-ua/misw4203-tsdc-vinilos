@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.misw4203.vinilos.MainDispatcherRule
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
+import com.misw4203.vinilos.domain.model.Comment
 import com.misw4203.vinilos.domain.repository.AlbumRepository
 import com.misw4203.vinilos.domain.usecase.GetAlbumsUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,6 +34,12 @@ class AlbumListViewModelTest {
             return nextResult.getOrThrow()
         }
         override suspend fun getAlbumById(id: Long): AlbumDetail = error("not used")
+        override suspend fun addComment(
+            albumId: Long,
+            description: String,
+            rating: Int,
+            collectorId: Int,
+        ): Comment = error("not used")
     }
 
     private fun sampleAlbums() = listOf(
