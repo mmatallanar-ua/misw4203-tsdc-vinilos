@@ -17,6 +17,7 @@ import com.misw4203.vinilos.presentation.ui.components.VinilosBottomNav
 import com.misw4203.vinilos.presentation.ui.components.VinilosDestination
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumListScreen
+import com.misw4203.vinilos.presentation.ui.screens.album.CreateAlbumScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianListScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorDetailScreen
@@ -63,6 +64,15 @@ fun VinilosNavHost() {
                         onAlbumClick = { albumId ->
                             navController.navigate(Destinations.albumDetail(albumId))
                         },
+                        onCreateAlbum = {
+                            navController.navigate(Destinations.CreateAlbum)
+                        },
+                    )
+                }
+                composable(Destinations.CreateAlbum) {
+                    CreateAlbumScreen(
+                        onBack = { navController.popBackStack() },
+                        onAlbumCreated = { navController.popBackStack() },
                     )
                 }
                 composable(

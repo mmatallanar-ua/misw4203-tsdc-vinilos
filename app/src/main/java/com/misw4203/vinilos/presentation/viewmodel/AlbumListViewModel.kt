@@ -21,11 +21,11 @@ class AlbumListViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<AlbumListUiState>(AlbumListUiState.Loading)
     val uiState: StateFlow<AlbumListUiState> = _uiState.asStateFlow()
 
-    init {
+    fun retry() {
         load()
     }
 
-    fun retry() {
+    fun refresh() {
         load()
     }
 
