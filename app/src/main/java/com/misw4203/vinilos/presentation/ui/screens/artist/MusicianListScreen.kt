@@ -18,8 +18,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.misw4203.vinilos.R
+import androidx.compose.ui.res.pluralStringResource
 import com.misw4203.vinilos.presentation.ui.components.EmptyState
 import com.misw4203.vinilos.presentation.ui.components.ErrorState
+import com.misw4203.vinilos.presentation.ui.components.ListCounter
 import com.misw4203.vinilos.presentation.ui.components.LoadingState
 import com.misw4203.vinilos.presentation.ui.components.MusicianCard
 import com.misw4203.vinilos.presentation.ui.components.SearchBarStatic
@@ -55,6 +57,16 @@ fun MusicianListScreen(
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 item { HeaderSection() }
+                item {
+                    ListCounter(
+                        text = pluralStringResource(
+                            R.plurals.artists_record_count,
+                            state.musicians.size,
+                            state.musicians.size,
+                        ),
+                        testTag = "artists_record_count",
+                    )
+                }
                 items(state.musicians, key = { it.id }) { musician ->
                     MusicianCard(
                         musician = musician,

@@ -17,9 +17,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.misw4203.vinilos.R
+import androidx.compose.ui.res.pluralStringResource
 import com.misw4203.vinilos.presentation.ui.components.AlbumCard
 import com.misw4203.vinilos.presentation.ui.components.EmptyState
 import com.misw4203.vinilos.presentation.ui.components.ErrorState
+import com.misw4203.vinilos.presentation.ui.components.ListCounter
 import com.misw4203.vinilos.presentation.ui.components.LoadingState
 import com.misw4203.vinilos.presentation.ui.components.SearchBarStatic
 import com.misw4203.vinilos.presentation.ui.components.VinilosTopBar
@@ -52,6 +54,16 @@ fun AlbumListScreen(
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 item { HeaderSection() }
+                item {
+                    ListCounter(
+                        text = pluralStringResource(
+                            R.plurals.albums_record_count,
+                            state.albums.size,
+                            state.albums.size,
+                        ),
+                        testTag = "albums_record_count",
+                    )
+                }
                 items(state.albums, key = { it.id }) { album ->
                     AlbumCard(
                         album = album,

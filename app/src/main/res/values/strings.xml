@@ -70,6 +70,20 @@
     <string name="cd_collector_avatar">Avatar del coleccionista</string>
     <string name="cd_open_collector">Abrir coleccionista</string>
 
+    <!-- List counters -->
+    <plurals name="albums_record_count">
+        <item quantity="one">%d álbum · orden alfa</item>
+        <item quantity="other">%d álbumes · orden alfa</item>
+    </plurals>
+    <plurals name="artists_record_count">
+        <item quantity="one">%d artista · orden alfa</item>
+        <item quantity="other">%d artistas · orden alfa</item>
+    </plurals>
+    <plurals name="collectors_record_count">
+        <item quantity="one">%d coleccionista · orden alfa</item>
+        <item quantity="other">%d coleccionistas · orden alfa</item>
+    </plurals>
+
     <!-- HU09 - Comentar álbum -->
     <string name="add_comment_title">Comentar álbum</string>
     <string name="add_comment_section">Nuevo comentario</string>
