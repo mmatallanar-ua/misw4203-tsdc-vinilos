@@ -14,6 +14,7 @@ import androidx.compose.ui.test.performTextInput
 import com.misw4203.vinilos.R
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
+import com.misw4203.vinilos.domain.model.Comment
 import com.misw4203.vinilos.domain.model.CreateAlbumInput
 import com.misw4203.vinilos.domain.repository.AlbumRepository
 import com.misw4203.vinilos.domain.usecase.CreateAlbumUseCase
@@ -33,6 +34,7 @@ class CreateAlbumScreenTest {
     ) : AlbumRepository {
         override suspend fun getAlbums(): List<Album> = emptyList()
         override suspend fun getAlbumById(id: Long): AlbumDetail = error("unused")
+        override suspend fun addComment(albumId: Long, description: String, rating: Int, collectorId: Int): Comment = error("unused")
         override suspend fun createAlbum(input: CreateAlbumInput): Album = createResult.getOrThrow()
     }
 
