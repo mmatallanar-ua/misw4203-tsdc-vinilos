@@ -1,0 +1,35 @@
+app/src/main/java/com/misw4203/vinilos/presentation/viewmodel/AddTrackViewModel.kt
+  36bb545a515d066a 1-63
+app/src/main/java/com/misw4203/vinilos/presentation/navigation/Destinations.kt
+  36bb545a515d066a 14-16,19
+app/src/main/java/com/misw4203/vinilos/presentation/ui/screens/album/AlbumDetailScreen.kt
+  36bb545a515d066a 26,32,67,76-80,91,155-156,235,242-256
+app/src/main/java/com/misw4203/vinilos/presentation/ui/screens/album/AddTrackScreen.kt
+  36bb545a515d066a 1-220
+app/src/main/java/com/misw4203/vinilos/presentation/viewmodel/AddTrackUiState.kt
+  36bb545a515d066a 1-10
+app/src/main/java/com/misw4203/vinilos/presentation/navigation/VinilosNavHost.kt
+  36bb545a515d066a 8,11-12,21,24,78-87,91-106
+app/src/main/res/values/strings.xml
+  36bb545a515d066a 60-72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "94ae34b2a656a3729e36bf227f10ac664a49802c",
+  "prompts": {
+    "36bb545a515d066a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7aa5bff9-4115-4f6f-ad4f-090ffc4dee11",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "jarodriguezf-uni",
+      "messages": [],
+      "total_additions": 400,
+      "total_deletions": 44,
+      "accepted_lines": 369,
+      "overriden_lines": 0
+    }
+  }
+}
