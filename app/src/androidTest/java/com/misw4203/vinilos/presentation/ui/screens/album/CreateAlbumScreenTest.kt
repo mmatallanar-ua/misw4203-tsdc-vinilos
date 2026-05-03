@@ -34,6 +34,7 @@ class CreateAlbumScreenTest {
     ) : AlbumRepository {
         override suspend fun getAlbums(): List<Album> = emptyList()
         override suspend fun getAlbumById(id: Long): AlbumDetail = error("unused")
+        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.data.remote.dto.CreateTrackRequest): com.misw4203.vinilos.domain.model.Track = error("unused")
         override suspend fun addComment(albumId: Long, description: String, rating: Int, collectorId: Int): Comment = error("unused")
         override suspend fun createAlbum(input: CreateAlbumInput): Album = createResult.getOrThrow()
     }
