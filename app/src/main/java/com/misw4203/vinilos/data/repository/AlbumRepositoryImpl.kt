@@ -5,6 +5,7 @@ import com.misw4203.vinilos.data.local.entity.AlbumDetailEntity
 import com.misw4203.vinilos.data.local.entity.AlbumEntity
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
+import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
 import com.misw4203.vinilos.domain.model.Comment
@@ -41,6 +42,16 @@ class AlbumRepositoryImpl @Inject constructor(
             dao.getDetailById(id)?.toDomain() ?: throw e
         }
     }
+
+    override suspend fun addTrack(albumId: Long, request: CreateTrackRequest): Track =
+        withContext(Dispatchers.IO) {
+            val dto = api.addTrack(albumId, request)
+            Track(
+                id = dto.id,
+                name = dto.name.orEmpty(),
+                duration = dto.duration.orEmpty(),
+            )
+        }
 
     private fun AlbumDto.toAlbum(): Album = Album(
         id = id,
