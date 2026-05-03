@@ -1,0 +1,71 @@
+app/src/androidTest/java/com/misw4203/vinilos/di/FakeAlbumRepository.kt
+  36bb545a515d066a 6,43-51
+app/src/androidTest/java/com/misw4203/vinilos/presentation/ui/screens/album/AlbumListScreenTest.kt
+  36bb545a515d066a 12,30,54,67,79,92
+app/src/main/java/com/misw4203/vinilos/presentation/navigation/Destinations.kt
+  36bb545a515d066a 7
+app/src/main/java/com/misw4203/vinilos/domain/usecase/CreateAlbumUseCase.kt
+  36bb545a515d066a 1-12
+app/src/androidTest/java/com/misw4203/vinilos/presentation/ui/screens/album/CreateAlbumScreenTest.kt
+  36bb545a515d066a 1-296
+app/src/main/java/com/misw4203/vinilos/data/remote/dto/CreateAlbumRequestDto.kt
+  36bb545a515d066a 1-12
+app/src/main/java/com/misw4203/vinilos/presentation/ui/screens/album/AddCommentScreen.kt
+  36bb545a515d066a 75
+app/src/main/java/com/misw4203/vinilos/presentation/viewmodel/AlbumListViewModel.kt
+  36bb545a515d066a 32-35
+app/src/test/java/com/misw4203/vinilos/data/repository/AlbumRepositoryImplTest.kt
+  36bb545a515d066a 10,12,123-165
+app/src/main/java/com/misw4203/vinilos/domain/model/CreateAlbumInput.kt
+  36bb545a515d066a 1-10
+app/src/test/java/com/misw4203/vinilos/presentation/viewmodel/AddTrackViewModelTest.kt
+  36bb545a515d066a 49
+app/src/androidTest/java/com/misw4203/vinilos/e2e/VinilosE2ETest.kt
+  36bb545a515d066a 14,76-139
+app/src/main/java/com/misw4203/vinilos/presentation/navigation/VinilosNavHost.kt
+  36bb545a515d066a 31,80-88
+app/src/main/java/com/misw4203/vinilos/data/repository/AlbumRepositoryImpl.kt
+  36bb545a515d066a 9,15,81-92
+app/src/main/java/com/misw4203/vinilos/presentation/viewmodel/CreateAlbumUiState.kt
+  36bb545a515d066a 1-8
+app/src/test/java/com/misw4203/vinilos/presentation/viewmodel/CreateAlbumViewModelTest.kt
+  36bb545a515d066a 1-177
+app/src/test/java/com/misw4203/vinilos/presentation/viewmodel/AddCommentViewModelTest.kt
+  36bb545a515d066a 43
+app/src/test/java/com/misw4203/vinilos/presentation/viewmodel/AlbumListViewModelTest.kt
+  36bb545a515d066a 45
+app/src/test/java/com/misw4203/vinilos/domain/usecase/CreateAlbumUseCaseTest.kt
+  36bb545a515d066a 1-79
+app/src/main/java/com/misw4203/vinilos/presentation/ui/screens/album/CreateAlbumScreen.kt
+  36bb545a515d066a 1-626
+app/src/main/java/com/misw4203/vinilos/domain/repository/AlbumRepository.kt
+  36bb545a515d066a 7,15
+app/src/test/java/com/misw4203/vinilos/presentation/viewmodel/AlbumDetailViewModelTest.kt
+  36bb545a515d066a 39
+app/src/main/java/com/misw4203/vinilos/presentation/ui/screens/album/AlbumListScreen.kt
+  36bb545a515d066a 4,9,13-17,19,21,23,25,29,31,46,51,53-70,72-95,99-112
+app/src/main/java/com/misw4203/vinilos/data/remote/api/VinilosApiService.kt
+  36bb545a515d066a 8,26-27
+app/src/main/java/com/misw4203/vinilos/presentation/viewmodel/CreateAlbumViewModel.kt
+  36bb545a515d066a 1-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "d76bd4a958d44a09eda6dfc0939b1f0eb36784a8",
+  "prompts": {
+    "36bb545a515d066a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7aa5bff9-4115-4f6f-ad4f-090ffc4dee11",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "jarodriguezf-uni",
+      "messages": [],
+      "total_additions": 1514,
+      "total_deletions": 44,
+      "accepted_lines": 1515,
+      "overriden_lines": 0
+    }
+  }
+}
