@@ -46,6 +46,7 @@ class AddTrackViewModelTest {
             rating: Int,
             collectorId: Int,
         ): com.misw4203.vinilos.domain.model.Comment = error("not used")
+        override suspend fun createAlbum(input: com.misw4203.vinilos.domain.model.CreateAlbumInput): Album = error("not used")
     }
 
     private fun buildViewModel(repo: FakeRepo, albumId: Long = 100L) = AddTrackViewModel(

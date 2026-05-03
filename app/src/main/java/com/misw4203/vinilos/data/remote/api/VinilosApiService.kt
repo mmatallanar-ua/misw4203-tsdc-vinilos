@@ -5,6 +5,7 @@ import com.misw4203.vinilos.data.remote.dto.CollectorDetailDto
 import com.misw4203.vinilos.data.remote.dto.CollectorDto
 import com.misw4203.vinilos.data.remote.dto.CommentDto
 import com.misw4203.vinilos.data.remote.dto.CreateCommentRequest
+import com.misw4203.vinilos.data.remote.dto.CreateAlbumRequestDto
 import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.data.remote.dto.MusicianDetailDto
 import com.misw4203.vinilos.data.remote.dto.PrizeDetailDto
@@ -21,6 +22,9 @@ interface VinilosApiService {
 
     @GET("albums/{id}")
     suspend fun getAlbum(@Path("id") id: Long): AlbumDto
+
+    @POST("albums")
+    suspend fun createAlbum(@Body body: CreateAlbumRequestDto): AlbumDto
 
     @GET("musicians")
     suspend fun getMusicians(): List<MusicianDetailDto>

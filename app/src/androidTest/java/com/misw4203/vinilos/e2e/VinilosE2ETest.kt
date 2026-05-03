@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.espresso.Espresso
 import com.misw4203.vinilos.MainActivity
@@ -70,6 +71,72 @@ class VinilosE2ETest {
 
         waitForTag("albums_list")
         composeRule.onNodeWithTag("albums_list").assertIsDisplayed()
+    }
+
+    // -- Create album --------------------------------------------------------
+
+    /** CA-01: el botón FAB en la lista de álbumes abre el formulario de creación. */
+    @Test
+    fun albumList_tapFab_opensCreateAlbumForm() {
+        waitForTag("albums_list")
+
+        composeRule.onNodeWithTag("create_album_fab").performClick()
+
+        // Esperamos que aparezca el botón de back (siempre visible en el TopAppBar)
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("create_album_back_button").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("create_album_back_button").assertIsDisplayed()
+        composeRule.onNodeWithText(composeRule.activity.getString(R.string.create_album_title))
+            .assertIsDisplayed()
+    }
+
+    /** CA-02: el botón de retroceso en el formulario regresa a la lista de álbumes. */
+    @Test
+    fun createAlbum_backButton_returnsToAlbumList() {
+        waitForTag("albums_list")
+        composeRule.onNodeWithTag("create_album_fab").performClick()
+        waitForTag("create_album_back_button")
+
+        composeRule.onNodeWithTag("create_album_back_button").performClick()
+
+        waitForTag("albums_list")
+        composeRule.onNodeWithTag("albums_list").assertIsDisplayed()
+    }
+
+    /** CA-03: back del sistema desde el formulario de creación regresa a la lista. */
+    @Test
+    fun systemBack_fromCreateAlbum_returnsToAlbumList() {
+        waitForTag("albums_list")
+        composeRule.onNodeWithTag("create_album_fab").performClick()
+        waitForTag("create_album_back_button")
+
+        Espresso.pressBack()
+
+        waitForTag("albums_list")
+        composeRule.onNodeWithTag("albums_list").assertIsDisplayed()
+    }
+
+    /**
+     * CA-04: enviar formulario vacío muestra errores de validación.
+     * Se hace scroll hasta el botón de submit porque el formulario tiene scroll vertical.
+     * Se usa useUnmergedTree = true porque Material3 TextField combina los semantics del
+     * campo con el supportingText en un único nodo merged.
+     */
+    @Test
+    fun createAlbum_submitEmptyForm_showsValidationErrors() {
+        waitForTag("albums_list")
+        composeRule.onNodeWithTag("create_album_fab").performClick()
+        waitForTag("create_album_back_button")
+
+        composeRule.onNodeWithTag("create_album_submit").performScrollTo().performClick()
+
+        val errorText = composeRule.activity.getString(R.string.create_album_error_required)
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithText(errorText, useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodesWithText(errorText, useUnmergedTree = true)[0].assertExists()
     }
 
     // -- Artists -------------------------------------------------------------

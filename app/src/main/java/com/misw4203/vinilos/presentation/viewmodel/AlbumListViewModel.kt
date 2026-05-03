@@ -29,6 +29,10 @@ class AlbumListViewModel @Inject constructor(
         load()
     }
 
+    fun refresh() {
+        load()
+    }
+
     private fun load() {
         _uiState.value = AlbumListUiState.Loading
         viewModelScope.launch {
