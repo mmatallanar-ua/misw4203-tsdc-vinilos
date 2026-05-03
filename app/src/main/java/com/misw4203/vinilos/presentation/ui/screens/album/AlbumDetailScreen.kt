@@ -23,11 +23,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -62,6 +64,7 @@ private val CardRadius = 24.dp
 fun AlbumDetailScreen(
     albumId: Long,
     onBack: () -> Unit,
+    onAddTrack: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: AlbumDetailViewModel = hiltViewModel(),
 ) {
@@ -70,7 +73,11 @@ fun AlbumDetailScreen(
     Box(modifier = modifier.fillMaxSize()) {
         when (val state = uiState) {
             is AlbumDetailUiState.Loading -> LoadingState()
-            is AlbumDetailUiState.Success -> AlbumDetailContent(album = state.album, onBack = onBack)
+            is AlbumDetailUiState.Success -> AlbumDetailContent(
+                album = state.album,
+                onBack = onBack,
+                onAddTrack = onAddTrack,
+            )
             is AlbumDetailUiState.NotFound -> NotFoundState(onBack = onBack)
             is AlbumDetailUiState.Error -> ErrorState(
                 onRetry = viewModel::retry,
@@ -81,7 +88,7 @@ fun AlbumDetailScreen(
 }
 
 @Composable
-private fun AlbumDetailContent(album: AlbumDetail, onBack: () -> Unit) {
+private fun AlbumDetailContent(album: AlbumDetail, onBack: () -> Unit, onAddTrack: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize().testTag("album_detail_root")) {
         Column(
             modifier = Modifier
@@ -145,10 +152,8 @@ private fun AlbumDetailContent(album: AlbumDetail, onBack: () -> Unit) {
                     }
 
                     // Tracks
-                    if (album.tracks.isNotEmpty()) {
-                        Spacer(Modifier.height(28.dp))
-                        TracksSection(tracks = album.tracks)
-                    }
+                    Spacer(Modifier.height(28.dp))
+                    TracksSection(tracks = album.tracks, onAddTrack = onAddTrack)
 
                     // Comments
                     if (album.comments.isNotEmpty()) {
@@ -227,18 +232,28 @@ private fun MetadataChip(label: String) {
 }
 
 @Composable
-private fun TracksSection(tracks: List<Track>) {
+private fun TracksSection(tracks: List<Track>, onAddTrack: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         SectionHeader(stringResource(R.string.detail_section_tracks))
-        Text(
-            text = stringResource(R.string.detail_tracks_total, tracks.size).uppercase(),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.outlineVariant,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(R.string.detail_tracks_total, tracks.size).uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outlineVariant,
+            )
+            Spacer(Modifier.width(8.dp))
+            IconButton(onClick = onAddTrack, modifier = Modifier.size(28.dp)) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.add_track_button_album_detail),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
     }
     Spacer(Modifier.height(12.dp))
     tracks.forEachIndexed { index, track ->

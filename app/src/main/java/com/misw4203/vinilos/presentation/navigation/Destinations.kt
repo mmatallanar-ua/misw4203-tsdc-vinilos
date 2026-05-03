@@ -11,6 +11,10 @@ object Destinations {
     const val CollectorDetail = "collector/{collectorId}"
     const val CollectorDetailArg = "collectorId"
 
+    const val AddTrack = "album/{albumId}/track/add"
+    const val AddTrackAlbumArg = "albumId"
+
     fun albumDetail(albumId: Long) = "album_detail/$albumId"
     fun collectorDetail(collectorId: Int) = "collector/$collectorId"
+    fun addTrack(albumId: Long) = "album/$albumId/track/add"
 }

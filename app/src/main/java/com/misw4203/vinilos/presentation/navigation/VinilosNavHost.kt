@@ -5,8 +5,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,8 +18,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.misw4203.vinilos.presentation.ui.components.VinilosBottomNav
 import com.misw4203.vinilos.presentation.ui.components.VinilosDestination
+import com.misw4203.vinilos.presentation.ui.screens.album.AddTrackScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumListScreen
+import com.misw4203.vinilos.presentation.viewmodel.AlbumDetailViewModel
 import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianListScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorDetailScreen
@@ -70,9 +75,35 @@ fun VinilosNavHost() {
                     arguments = listOf(navArgument(Destinations.AlbumDetailArg) { type = NavType.LongType }),
                 ) { entry ->
                     val albumId = entry.arguments?.getLong(Destinations.AlbumDetailArg) ?: 0L
+                    val viewModel = hiltViewModel<AlbumDetailViewModel>()
+                    val trackAdded by entry.savedStateHandle
+                        .getStateFlow("track_added", false)
+                        .collectAsStateWithLifecycle()
+                    LaunchedEffect(trackAdded) {
+                        if (trackAdded) {
+                            entry.savedStateHandle["track_added"] = false
+                            viewModel.retry()
+                        }
+                    }
                     AlbumDetailScreen(
                         albumId = albumId,
                         onBack = { navController.popBackStack() },
+                        onAddTrack = { navController.navigate(Destinations.addTrack(albumId)) },
+                        viewModel = viewModel,
+                    )
+                }
+                composable(
+                    route = Destinations.AddTrack,
+                    arguments = listOf(navArgument(Destinations.AddTrackAlbumArg) { type = NavType.LongType }),
+                ) {
+                    AddTrackScreen(
+                        onBack = { navController.popBackStack() },
+                        onSuccess = {
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set("track_added", true)
+                            navController.popBackStack()
+                        },
                     )
                 }
                 composable(Destinations.ArtistList) {
