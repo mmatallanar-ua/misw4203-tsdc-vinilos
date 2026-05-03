@@ -1,0 +1,33 @@
+app/src/main/java/com/misw4203/vinilos/domain/usecase/AddTrackUseCase.kt
+  36bb545a515d066a 1-13
+app/src/main/java/com/misw4203/vinilos/domain/repository/AlbumRepository.kt
+  36bb545a515d066a 3,6,11
+app/src/main/java/com/misw4203/vinilos/data/remote/dto/CreateTrackRequest.kt
+  36bb545a515d066a 1-8
+app/src/main/java/com/misw4203/vinilos/data/repository/AlbumRepositoryImpl.kt
+  36bb545a515d066a 8,46-55
+app/src/main/java/com/misw4203/vinilos/data/remote/api/VinilosApiService.kt
+  36bb545a515d066a 6,9-10,12,37-42
+app/src/androidTest/java/com/misw4203/vinilos/di/FakeAlbumRepository.kt
+  36bb545a515d066a 8,19-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "ffd0d0c76125d3bea5e01daa18a60454da5b2ca8",
+  "prompts": {
+    "36bb545a515d066a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7aa5bff9-4115-4f6f-ad4f-090ffc4dee11",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "jarodriguezf-uni",
+      "messages": [],
+      "total_additions": 49,
+      "total_deletions": 0,
+      "accepted_lines": 49,
+      "overriden_lines": 0
+    }
+  }
+}
