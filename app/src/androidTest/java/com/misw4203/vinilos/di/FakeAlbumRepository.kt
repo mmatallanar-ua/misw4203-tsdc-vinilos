@@ -28,4 +28,11 @@ class FakeAlbumRepository @Inject constructor() : AlbumRepository {
         performers = listOf(Performer(1L, "Rubén Blades", "")),
         comments = listOf(Comment(1L, "Gran álbum", 5)),
     )
+
+    override suspend fun addComment(
+        albumId: Long,
+        description: String,
+        rating: Int,
+        collectorId: Int,
+    ): Comment = Comment(id = 99L, description = description, rating = rating)
 }
