@@ -28,6 +28,7 @@ data class TrackDto(
     @SerializedName("id") val id: Long,
     @SerializedName("name") val name: String?,
     @SerializedName("duration") val duration: String?,
+    @SerializedName("album") val album: AlbumDto? = null,
 )
 
 data class CommentDto(

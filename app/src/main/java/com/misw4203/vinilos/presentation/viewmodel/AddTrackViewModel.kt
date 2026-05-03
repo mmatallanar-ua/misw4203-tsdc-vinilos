@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
 
@@ -48,6 +49,10 @@ class AddTrackViewModel @Inject constructor(
                 AddTrackUiState.Success(track)
             } catch (e: CancellationException) {
                 throw e
+            } catch (e: HttpException) {
+                val message = if (e.code() == 404) "Álbum no encontrado"
+                              else "Error al agregar track"
+                AddTrackUiState.Error(message, isNetworkError = false)
             } catch (e: IOException) {
                 AddTrackUiState.Error("Sin conexión. Intenta de nuevo", isNetworkError = true)
             } catch (e: Exception) {

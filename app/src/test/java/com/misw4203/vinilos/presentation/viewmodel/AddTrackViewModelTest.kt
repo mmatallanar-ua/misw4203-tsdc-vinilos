@@ -15,12 +15,16 @@ import com.misw4203.vinilos.presentation.navigation.Destinations
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import retrofit2.HttpException
+import retrofit2.Response
 import java.io.IOException
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -98,6 +102,27 @@ class AddTrackViewModelTest {
             advanceUntilIdle()
             val state = awaitItem() as AddTrackUiState.Error
             assertTrue(state.isNetworkError)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `submit with 404 HttpException emits Error with album not found message`() = runTest {
+        val http404 = HttpException(
+            Response.error<Any>(404, "".toResponseBody("text/plain".toMediaType()))
+        )
+        val vm = buildViewModel(FakeRepo(Result.failure(http404)))
+        vm.name = "Get Lucky"
+        vm.duration = "04:08"
+
+        vm.uiState.test {
+            awaitItem()
+            vm.submit()
+            awaitItem()
+            advanceUntilIdle()
+            val state = awaitItem() as AddTrackUiState.Error
+            assertTrue(state.message.contains("no encontrado", ignoreCase = true))
+            assertTrue(!state.isNetworkError)
             cancelAndIgnoreRemainingEvents()
         }
     }
