@@ -30,6 +30,13 @@ class FakeAlbumRepository @Inject constructor() : AlbumRepository {
         comments = listOf(Comment(1L, "Gran álbum", 5)),
     )
 
+    override suspend fun addComment(
+        albumId: Long,
+        description: String,
+        rating: Int,
+        collectorId: Int,
+    ): Comment = Comment(id = 99L, description = description, rating = rating)
+
     override suspend fun createAlbum(input: CreateAlbumInput): Album = Album(
         id = 99L,
         name = input.name,
