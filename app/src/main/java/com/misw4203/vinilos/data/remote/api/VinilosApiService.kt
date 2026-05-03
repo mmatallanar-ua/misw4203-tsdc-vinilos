@@ -1,6 +1,7 @@
 package com.misw4203.vinilos.data.remote.api
 
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
+import com.misw4203.vinilos.data.remote.dto.CollectorDetailDto
 import com.misw4203.vinilos.data.remote.dto.CollectorDto
 import com.misw4203.vinilos.data.remote.dto.MusicianDetailDto
 import com.misw4203.vinilos.data.remote.dto.PrizeDetailDto
@@ -26,4 +27,7 @@ interface VinilosApiService {
 
     @GET("collectors")
     suspend fun getCollectors(): List<CollectorDto>
+
+    @GET("collectors/{id}")
+    suspend fun getCollectorDetail(@Path("id") id: Int): CollectorDetailDto
 }

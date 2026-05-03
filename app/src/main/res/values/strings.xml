@@ -54,6 +54,8 @@
     <string name="collector_section_performers">Artistas favoritos</string>
     <string name="collector_albums_empty">Sin álbumes coleccionados</string>
     <string name="collector_performers_empty">Sin artistas favoritos</string>
+    <string name="collector_section_comments">Comentarios recientes</string>
+    <string name="collector_comment_album_ref">Sobre: %s</string>
 
     <!-- Navigation -->
     <string name="action_back">Volver</string>

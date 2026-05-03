@@ -9,6 +9,7 @@ import com.misw4203.vinilos.data.local.dao.CollectorDao
 import com.misw4203.vinilos.data.local.dao.MusicianDao
 import com.misw4203.vinilos.data.local.entity.AlbumDetailEntity
 import com.misw4203.vinilos.data.local.entity.AlbumEntity
+import com.misw4203.vinilos.data.local.entity.CollectorDetailEntity
 import com.misw4203.vinilos.data.local.entity.CollectorEntity
 import com.misw4203.vinilos.data.local.entity.MusicianDetailEntity
 import com.misw4203.vinilos.data.local.entity.MusicianListEntity
@@ -20,8 +21,9 @@ import com.misw4203.vinilos.data.local.entity.MusicianListEntity
         MusicianListEntity::class,
         MusicianDetailEntity::class,
         CollectorEntity::class,
+        CollectorDetailEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = false,
 )
 @TypeConverters(Converters::class)

@@ -7,6 +7,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import com.misw4203.vinilos.R
+import com.misw4203.vinilos.domain.model.CollectorDetail
 import com.misw4203.vinilos.domain.model.CollectorSummary
 import com.misw4203.vinilos.domain.repository.CollectorRepository
 import com.misw4203.vinilos.domain.usecase.GetCollectorsUseCase
@@ -24,6 +25,7 @@ class CollectorListScreenTest {
         private val result: Result<List<CollectorSummary>>,
     ) : CollectorRepository {
         override suspend fun getCollectors(): List<CollectorSummary> = result.getOrThrow()
+        override suspend fun getCollectorDetail(id: Int): CollectorDetail = error("unused")
     }
 
     private fun vm(result: Result<List<CollectorSummary>>) =

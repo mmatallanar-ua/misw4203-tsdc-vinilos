@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
+import com.misw4203.vinilos.data.local.entity.CollectorDetailEntity
 import com.misw4203.vinilos.data.local.entity.CollectorEntity
 
 @Dao
@@ -23,4 +24,10 @@ interface CollectorDao {
         clear()
         upsertAll(collectors)
     }
+
+    @Query("SELECT * FROM collector_details WHERE id = :id")
+    suspend fun getDetailById(id: Int): CollectorDetailEntity?
+
+    @Upsert
+    suspend fun upsertDetail(detail: CollectorDetailEntity)
 }
