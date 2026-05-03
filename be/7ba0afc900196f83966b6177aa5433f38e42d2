@@ -1,0 +1,23 @@
+app/src/main/java/com/misw4203/vinilos/presentation/navigation/VinilosNavHost.kt
+  36bb545a515d066a 7-8,10,12,14-15,17-18,39,50,86-98,111,123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "be7ba0afc900196f83966b6177aa5433f38e42d2",
+  "prompts": {
+    "36bb545a515d066a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7aa5bff9-4115-4f6f-ad4f-090ffc4dee11",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "jarodriguezf-uni",
+      "messages": [],
+      "total_additions": 25,
+      "total_deletions": 1,
+      "accepted_lines": 26,
+      "overriden_lines": 0
+    }
+  }
+}
