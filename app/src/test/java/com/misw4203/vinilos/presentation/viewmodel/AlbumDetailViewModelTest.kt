@@ -34,6 +34,7 @@ class AlbumDetailViewModelTest {
         var detailResult: Result<AlbumDetail> = Result.success(sampleDetail())
         override suspend fun getAlbums(): List<Album> = emptyList()
         override suspend fun getAlbumById(id: Long): AlbumDetail = detailResult.getOrThrow()
+        override suspend fun createAlbum(input: com.misw4203.vinilos.domain.model.CreateAlbumInput): Album = error("not used")
     }
 
     private fun buildViewModel(

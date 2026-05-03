@@ -3,6 +3,7 @@ package com.misw4203.vinilos.di
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
 import com.misw4203.vinilos.domain.model.Comment
+import com.misw4203.vinilos.domain.model.CreateAlbumInput
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.Track
 import com.misw4203.vinilos.domain.repository.AlbumRepository
@@ -27,5 +28,14 @@ class FakeAlbumRepository @Inject constructor() : AlbumRepository {
         tracks = listOf(Track(1L, "Decisiones", "5:12")),
         performers = listOf(Performer(1L, "Rubén Blades", "")),
         comments = listOf(Comment(1L, "Gran álbum", 5)),
+    )
+
+    override suspend fun createAlbum(input: CreateAlbumInput): Album = Album(
+        id = 99L,
+        name = input.name,
+        coverUrl = input.cover,
+        artistName = "",
+        releaseYear = input.releaseDate.take(4),
+        genre = input.genre,
     )
 }
