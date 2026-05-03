@@ -1,0 +1,31 @@
+app/src/test/java/com/misw4203/vinilos/presentation/viewmodel/AlbumDetailViewModelTest.kt
+  36bb545a515d066a 37-38
+app/src/test/java/com/misw4203/vinilos/domain/usecase/AddTrackUseCaseTest.kt
+  36bb545a515d066a 1-55
+app/src/test/java/com/misw4203/vinilos/data/repository/AlbumRepositoryImplTest.kt
+  36bb545a515d066a 7,88-113
+app/src/test/java/com/misw4203/vinilos/presentation/viewmodel/AddTrackViewModelTest.kt
+  36bb545a515d066a 1-152
+app/src/test/java/com/misw4203/vinilos/presentation/viewmodel/AlbumListViewModelTest.kt
+  36bb545a515d066a 36-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "349d35943dfbb7b5ca62bc94656bf89a0c1cdced",
+  "prompts": {
+    "36bb545a515d066a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7aa5bff9-4115-4f6f-ad4f-090ffc4dee11",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "jarodriguezf-uni",
+      "messages": [],
+      "total_additions": 239,
+      "total_deletions": 1,
+      "accepted_lines": 239,
+      "overriden_lines": 0
+    }
+  }
+}
