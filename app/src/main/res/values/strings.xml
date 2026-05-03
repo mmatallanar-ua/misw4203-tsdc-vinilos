@@ -57,6 +57,19 @@
     <string name="collector_section_comments">Comentarios recientes</string>
     <string name="collector_comment_album_ref">Sobre: %s</string>
 
+    <!-- Add track -->
+    <string name="add_track_title">Agregar Track</string>
+    <string name="add_track_section_new">Nuevo Track</string>
+    <string name="add_track_label_name">Nombre del track</string>
+    <string name="add_track_label_duration">Duración (MM:SS)</string>
+    <string name="add_track_error_name">El nombre del track es obligatorio</string>
+    <string name="add_track_error_duration">Formato: MM:SS (ej: 03:45)</string>
+    <string name="add_track_error_network">Sin conexión. Intenta de nuevo</string>
+    <string name="add_track_error_server">Error al agregar track</string>
+    <string name="add_track_success">Track agregado correctamente</string>
+    <string name="add_track_button">Agregar Track</string>
+    <string name="add_track_button_album_detail">Agregar canción</string>
+
     <!-- Create album -->
     <string name="create_album_title">Nuevo Álbum</string>
     <string name="create_album_section_title">Detalles del Disco</string>

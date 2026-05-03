@@ -4,6 +4,7 @@ import com.misw4203.vinilos.data.local.dao.AlbumDao
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.CommentDto
+import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.data.remote.dto.PerformerDto
 import com.misw4203.vinilos.data.remote.dto.TrackDto
 import com.misw4203.vinilos.domain.model.CreateAlbumInput
@@ -84,6 +85,32 @@ class AlbumRepositoryImplTest {
         assertEquals("Airbag", result.tracks[0].name)
         assertEquals(1, result.comments.size)
         assertEquals(5, result.comments[0].rating)
+    }
+
+    @Test
+    fun `addTrack returns mapped Track from API`() = runTest {
+        val request = CreateTrackRequest("Get Lucky", "04:08")
+        coEvery { api.addTrack(100L, request) } returns TrackDto(1L, "Get Lucky", "04:08")
+
+        val result = repository.addTrack(100L, request)
+
+        assertEquals(1L, result.id)
+        assertEquals("Get Lucky", result.name)
+        assertEquals("04:08", result.duration)
+    }
+
+    @Test(expected = IOException::class)
+    fun `addTrack propagates IOException`() = runTest {
+        coEvery { api.addTrack(any(), any()) } throws IOException("offline")
+        repository.addTrack(100L, CreateTrackRequest("X", "01:00"))
+    }
+
+    @Test(expected = HttpException::class)
+    fun `addTrack propagates HttpException`() = runTest {
+        coEvery { api.addTrack(any(), any()) } throws HttpException(
+            Response.error<Any>(404, "".toResponseBody("text/plain".toMediaType()))
+        )
+        repository.addTrack(999L, CreateTrackRequest("X", "01:00"))
     }
 
     @Test(expected = IOException::class)

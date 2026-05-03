@@ -6,6 +6,7 @@ import com.misw4203.vinilos.domain.model.Comment
 import com.misw4203.vinilos.domain.model.CreateAlbumInput
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.Track
+import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.domain.repository.AlbumRepository
 import javax.inject.Inject
 
@@ -15,6 +16,9 @@ class FakeAlbumRepository @Inject constructor() : AlbumRepository {
         Album(1L, "Buscando América", "", "Rubén Blades", "1984", "Salsa"),
         Album(2L, "A Night at the Opera", "", "Queen", "1975", "Rock"),
     )
+
+    override suspend fun addTrack(albumId: Long, request: CreateTrackRequest): Track =
+        Track(id = 999L, name = request.name, duration = request.duration)
 
     override suspend fun getAlbumById(id: Long): AlbumDetail = AlbumDetail(
         id = id,

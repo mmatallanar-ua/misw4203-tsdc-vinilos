@@ -38,6 +38,9 @@ class AddCommentViewModelTest {
 
         override suspend fun getAlbums(): List<Album> = emptyList()
         override suspend fun getAlbumById(id: Long): AlbumDetail = error("not used")
+        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.data.remote.dto.CreateTrackRequest) =
+            error("not used")
+        override suspend fun createAlbum(input: com.misw4203.vinilos.domain.model.CreateAlbumInput): Album = error("not used")
         override suspend fun addComment(
             albumId: Long,
             description: String,

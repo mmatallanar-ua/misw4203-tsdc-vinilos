@@ -6,8 +6,10 @@ import com.misw4203.vinilos.data.remote.dto.CollectorDto
 import com.misw4203.vinilos.data.remote.dto.CommentDto
 import com.misw4203.vinilos.data.remote.dto.CreateCommentRequest
 import com.misw4203.vinilos.data.remote.dto.CreateAlbumRequestDto
+import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.data.remote.dto.MusicianDetailDto
 import com.misw4203.vinilos.data.remote.dto.PrizeDetailDto
+import com.misw4203.vinilos.data.remote.dto.TrackDto
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -38,6 +40,12 @@ interface VinilosApiService {
 
     @GET("collectors/{id}")
     suspend fun getCollectorDetail(@Path("id") id: Int): CollectorDetailDto
+
+    @POST("albums/{id}/tracks")
+    suspend fun addTrack(
+        @Path("id") albumId: Long,
+        @Body request: CreateTrackRequest,
+    ): TrackDto
 
     @POST("albums/{id}/comments")
     suspend fun addComment(
