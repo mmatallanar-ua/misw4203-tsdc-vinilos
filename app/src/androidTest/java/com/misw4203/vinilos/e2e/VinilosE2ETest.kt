@@ -173,6 +173,92 @@ class VinilosE2ETest {
         composeRule.onNodeWithText(ctx.getString(R.string.collectors_title)).assertIsDisplayed()
     }
 
+    /** CD-01: tap en tarjeta de coleccionista abre el detalle con nombre y secciones. */
+    @Test
+    fun collectorList_tapFirstCard_opensDetail_withContent() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        waitForTag("collectors_list")
+
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
+
+        waitForTag("collector_detail_root")
+        composeRule.onNodeWithTag("collector_detail_root").assertIsDisplayed()
+        composeRule.onNodeWithText("Jaime Andrés Monsalve").assertIsDisplayed()
+    }
+
+    /** CD-02: el botón de retroceso en el detalle regresa a la lista. */
+    @Test
+    fun collectorDetail_backButton_returnsToList() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        waitForTag("collectors_list")
+
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
+        waitForTag("collector_detail_root")
+
+        composeRule.onNodeWithTag("collector_detail_back").performClick()
+
+        waitForTag("collectors_list")
+        composeRule.onNodeWithTag("collectors_list").assertIsDisplayed()
+    }
+
+    /** CD-03: back del sistema desde el detalle de coleccionista regresa a la lista. */
+    @Test
+    fun systemBack_fromCollectorDetail_returnsToList() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        waitForTag("collectors_list")
+
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
+        waitForTag("collector_detail_root")
+
+        Espresso.pressBack()
+
+        waitForTag("collectors_list")
+        composeRule.onNodeWithTag("collectors_list").assertIsDisplayed()
+    }
+
+    /** CD-04: el detalle de coleccionista muestra el álbum coleccionado. */
+    @Test
+    fun collectorDetail_showsCollectedAlbum() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        waitForTag("collectors_list")
+
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
+        waitForTag("collector_detail_root")
+
+        composeRule.onNodeWithText("Buscando América").assertIsDisplayed()
+    }
+
+    /** CD-05: el detalle de coleccionista muestra el artista favorito. */
+    @Test
+    fun collectorDetail_showsFavoritePerformer() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        waitForTag("collectors_list")
+
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
+        waitForTag("collector_detail_root")
+
+        composeRule.onNodeWithText("Rubén Blades Bellido de Luna").assertIsDisplayed()
+    }
+
+    /** CD-06: el rating del comentario expone contentDescription accesible. */
+    @Test
+    fun collectorDetail_ratingHasAccessibleContentDescription() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        waitForTag("collectors_list")
+
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
+        waitForTag("collector_detail_root")
+
+        composeRule.onAllNodesWithContentDescription(label = "de 5", substring = true)[0]
+            .assertExists()
+    }
+
     /** NAV-03: back del sistema desde detalle de álbum regresa a lista. */
     @Test
     fun systemBack_fromAlbumDetail_returnsToList() {
