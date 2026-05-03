@@ -1,0 +1,55 @@
+app/src/main/java/com/misw4203/vinilos/presentation/viewmodel/AddCommentViewModel.kt
+  36bb545a515d066a 1-78
+app/src/main/java/com/misw4203/vinilos/presentation/ui/screens/artist/MusicianListScreen.kt
+  36bb545a515d066a 21,24,60-69
+app/src/test/java/com/misw4203/vinilos/domain/usecase/AddCommentUseCaseTest.kt
+  36bb545a515d066a 1-59
+app/src/test/java/com/misw4203/vinilos/presentation/viewmodel/AddTrackViewModelTest.kt
+  36bb545a515d066a 43-48
+app/src/main/java/com/misw4203/vinilos/presentation/ui/screens/album/AlbumListScreen.kt
+  36bb545a515d066a 20,24,57-66
+app/src/main/java/com/misw4203/vinilos/presentation/ui/screens/collector/CollectorListScreen.kt
+  36bb545a515d066a 21,25,60-69
+app/src/main/java/com/misw4203/vinilos/domain/usecase/AddCommentUseCase.kt
+  36bb545a515d066a 1-16
+app/src/main/java/com/misw4203/vinilos/presentation/ui/components/RatingBar.kt
+  36bb545a515d066a 1-50
+app/src/androidTest/java/com/misw4203/vinilos/di/FakeAlbumRepository.kt
+  36bb545a515d066a 35-41
+app/src/main/java/com/misw4203/vinilos/presentation/ui/screens/album/AddCommentScreen.kt
+  36bb545a515d066a 1-285
+app/src/androidTest/java/com/misw4203/vinilos/presentation/ui/screens/album/AlbumListScreenTest.kt
+  36bb545a515d066a 11,29-34
+app/src/main/java/com/misw4203/vinilos/data/remote/dto/CreateCommentRequest.kt
+  36bb545a515d066a 1-13
+app/src/test/java/com/misw4203/vinilos/presentation/viewmodel/AddCommentViewModelTest.kt
+  36bb545a515d066a 1-225
+app/src/main/java/com/misw4203/vinilos/presentation/ui/components/ListCounter.kt
+  36bb545a515d066a 1-29
+app/src/test/java/com/misw4203/vinilos/data/repository/AlbumRepositoryAddCommentTest.kt
+  36bb545a515d066a 1-90
+app/src/main/java/com/misw4203/vinilos/presentation/viewmodel/AddCommentUiState.kt
+  36bb545a515d066a 1-22
+app/src/main/java/com/misw4203/vinilos/data/remote/dto/AlbumDto.kt
+  36bb545a515d066a 38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "f0b9243b3dcf97a68c8edfb4a0313b15a9a37388",
+  "prompts": {
+    "36bb545a515d066a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7aa5bff9-4115-4f6f-ad4f-090ffc4dee11",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "jarodriguezf-uni",
+      "messages": [],
+      "total_additions": 924,
+      "total_deletions": 0,
+      "accepted_lines": 925,
+      "overriden_lines": 0
+    }
+  }
+}
