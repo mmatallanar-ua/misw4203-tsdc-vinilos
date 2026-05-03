@@ -19,6 +19,8 @@ import com.misw4203.vinilos.presentation.ui.screens.album.AlbumDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumListScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianListScreen
+import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorDetailScreen
+import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorListScreen
 
 @Composable
 fun VinilosNavHost() {
@@ -28,7 +30,7 @@ fun VinilosNavHost() {
 
     val selectedDestination = when {
         currentRoute == Destinations.ArtistList || currentRoute?.startsWith("artist/") == true -> VinilosDestination.Artists
-        currentRoute == Destinations.Collectors -> VinilosDestination.Collectors
+        currentRoute == Destinations.Collectors || currentRoute?.startsWith("collector/") == true -> VinilosDestination.Collectors
         else -> VinilosDestination.Albums
     }
 
@@ -89,7 +91,19 @@ fun VinilosNavHost() {
                     )
                 }
                 composable(Destinations.Collectors) {
-                    Box(modifier = Modifier.fillMaxSize())
+                    CollectorListScreen(
+                        onCollectorClick = { id -> navController.navigate(Destinations.collectorDetail(id)) },
+                    )
+                }
+                composable(
+                    route = Destinations.CollectorDetail,
+                    arguments = listOf(navArgument(Destinations.CollectorDetailArg) { type = NavType.IntType }),
+                ) { entry ->
+                    val collectorId = entry.arguments?.getInt(Destinations.CollectorDetailArg) ?: return@composable
+                    CollectorDetailScreen(
+                        collectorId = collectorId,
+                        onBack = { navController.popBackStack() },
+                    )
                 }
             }
         }

@@ -42,6 +42,21 @@
     <string name="action_close">Cerrar</string>
     <string name="cd_rating">%1$d de 5 estrellas</string>
 
+    <!-- Collectors -->
+    <string name="collectors_title">Coleccionistas</string>
+    <string name="search_placeholder_collectors">¿Qué coleccionista buscas?</string>
+    <string name="collectors_empty_title">No hay coleccionistas</string>
+    <string name="collectors_empty_body">Aún no hay coleccionistas registrados. Vuelve más tarde.</string>
+    <string name="collector_detail_title">Detalle del coleccionista</string>
+    <string name="collector_not_found_title">Coleccionista no encontrado</string>
+    <string name="collector_not_found_body">El coleccionista solicitado no existe.</string>
+    <string name="collector_section_albums">Álbumes coleccionados</string>
+    <string name="collector_section_performers">Artistas favoritos</string>
+    <string name="collector_albums_empty">Sin álbumes coleccionados</string>
+    <string name="collector_performers_empty">Sin artistas favoritos</string>
+    <string name="collector_section_comments">Comentarios recientes</string>
+    <string name="collector_comment_album_ref">Sobre: %s</string>
+
     <!-- Navigation -->
     <string name="action_back">Volver</string>
 
@@ -52,4 +67,6 @@
     <string name="cd_open_album">Abrir álbum</string>
     <string name="cd_artist_image">Foto del artista</string>
     <string name="cd_open_artist">Abrir artista</string>
+    <string name="cd_collector_avatar">Avatar del coleccionista</string>
+    <string name="cd_open_collector">Abrir coleccionista</string>
 </resources>
