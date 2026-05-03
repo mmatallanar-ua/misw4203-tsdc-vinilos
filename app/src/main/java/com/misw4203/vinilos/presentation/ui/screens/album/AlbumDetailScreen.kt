@@ -24,6 +24,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,9 +69,19 @@ fun AlbumDetailScreen(
     onBack: () -> Unit,
     onAddTrack: () -> Unit = {},
     modifier: Modifier = Modifier,
+    onAddComment: () -> Unit = {},
+    refreshKey: Boolean = false,
+    onRefreshHandled: () -> Unit = {},
     viewModel: AlbumDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(refreshKey) {
+        if (refreshKey) {
+            viewModel.retry()
+            onRefreshHandled()
+        }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val state = uiState) {
@@ -77,6 +90,7 @@ fun AlbumDetailScreen(
                 album = state.album,
                 onBack = onBack,
                 onAddTrack = onAddTrack,
+                onAddComment = onAddComment,
             )
             is AlbumDetailUiState.NotFound -> NotFoundState(onBack = onBack)
             is AlbumDetailUiState.Error -> ErrorState(
@@ -88,7 +102,12 @@ fun AlbumDetailScreen(
 }
 
 @Composable
-private fun AlbumDetailContent(album: AlbumDetail, onBack: () -> Unit, onAddTrack: () -> Unit) {
+private fun AlbumDetailContent(
+    album: AlbumDetail,
+    onBack: () -> Unit,
+    onAddTrack: () -> Unit,
+    onAddComment: () -> Unit,
+) {
     Box(modifier = Modifier.fillMaxSize().testTag("album_detail_root")) {
         Column(
             modifier = Modifier
@@ -142,6 +161,27 @@ private fun AlbumDetailContent(album: AlbumDetail, onBack: () -> Unit, onAddTrac
                             text = album.description,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    // Action: comment
+                    Spacer(Modifier.height(20.dp))
+                    Button(
+                        onClick = onAddComment,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .testTag("album_detail_add_comment"),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.add_comment_action_cta).uppercase(),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold,
                         )
                     }
 

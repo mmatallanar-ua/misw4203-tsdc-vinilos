@@ -5,6 +5,8 @@ import com.misw4203.vinilos.data.local.entity.AlbumDetailEntity
 import com.misw4203.vinilos.data.local.entity.AlbumEntity
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
+import com.misw4203.vinilos.data.remote.dto.CollectorRef
+import com.misw4203.vinilos.data.remote.dto.CreateCommentRequest
 import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
@@ -52,6 +54,27 @@ class AlbumRepositoryImpl @Inject constructor(
                 duration = dto.duration.orEmpty(),
             )
         }
+
+    override suspend fun addComment(
+        albumId: Long,
+        description: String,
+        rating: Int,
+        collectorId: Int,
+    ): Comment = withContext(Dispatchers.IO) {
+        val response = api.addComment(
+            albumId = albumId,
+            request = CreateCommentRequest(
+                description = description,
+                rating = rating,
+                collector = CollectorRef(id = collectorId),
+            ),
+        )
+        Comment(
+            id = response.id,
+            description = response.description.orEmpty(),
+            rating = response.rating ?: rating,
+        )
+    }
 
     private fun AlbumDto.toAlbum(): Album = Album(
         id = id,

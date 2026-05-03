@@ -36,6 +36,12 @@ class AlbumDetailViewModelTest {
         override suspend fun getAlbumById(id: Long): AlbumDetail = detailResult.getOrThrow()
         override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.data.remote.dto.CreateTrackRequest) =
             com.misw4203.vinilos.domain.model.Track(1L, request.name, request.duration)
+        override suspend fun addComment(
+            albumId: Long,
+            description: String,
+            rating: Int,
+            collectorId: Int,
+        ): Comment = Comment(0L, description, rating)
     }
 
     private fun buildViewModel(

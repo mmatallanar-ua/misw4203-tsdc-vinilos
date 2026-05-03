@@ -3,6 +3,8 @@ package com.misw4203.vinilos.data.remote.api
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.CollectorDetailDto
 import com.misw4203.vinilos.data.remote.dto.CollectorDto
+import com.misw4203.vinilos.data.remote.dto.CommentDto
+import com.misw4203.vinilos.data.remote.dto.CreateCommentRequest
 import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.data.remote.dto.MusicianDetailDto
 import com.misw4203.vinilos.data.remote.dto.PrizeDetailDto
@@ -40,4 +42,10 @@ interface VinilosApiService {
         @Path("id") albumId: Long,
         @Body request: CreateTrackRequest,
     ): TrackDto
+
+    @POST("albums/{id}/comments")
+    suspend fun addComment(
+        @Path("id") albumId: Long,
+        @Body request: CreateCommentRequest,
+    ): CommentDto
 }

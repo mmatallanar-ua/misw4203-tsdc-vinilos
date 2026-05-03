@@ -40,6 +40,12 @@ class AddTrackViewModelTest {
         )
         override suspend fun addTrack(albumId: Long, request: CreateTrackRequest): Track =
             result.getOrThrow()
+        override suspend fun addComment(
+            albumId: Long,
+            description: String,
+            rating: Int,
+            collectorId: Int,
+        ): com.misw4203.vinilos.domain.model.Comment = error("not used")
     }
 
     private fun buildViewModel(repo: FakeRepo, albumId: Long = 100L) = AddTrackViewModel(

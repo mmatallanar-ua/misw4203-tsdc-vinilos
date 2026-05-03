@@ -18,9 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.misw4203.vinilos.R
+import androidx.compose.ui.res.pluralStringResource
 import com.misw4203.vinilos.presentation.ui.components.CollectorCard
 import com.misw4203.vinilos.presentation.ui.components.EmptyState
 import com.misw4203.vinilos.presentation.ui.components.ErrorState
+import com.misw4203.vinilos.presentation.ui.components.ListCounter
 import com.misw4203.vinilos.presentation.ui.components.LoadingState
 import com.misw4203.vinilos.presentation.ui.components.SearchBarStatic
 import com.misw4203.vinilos.presentation.ui.components.VinilosTopBar
@@ -55,6 +57,16 @@ fun CollectorListScreen(
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 item { HeaderSection() }
+                item {
+                    ListCounter(
+                        text = pluralStringResource(
+                            R.plurals.collectors_record_count,
+                            state.collectors.size,
+                            state.collectors.size,
+                        ),
+                        testTag = "collectors_record_count",
+                    )
+                }
                 items(state.collectors, key = { it.id }) { collector ->
                     CollectorCard(
                         collector = collector,
