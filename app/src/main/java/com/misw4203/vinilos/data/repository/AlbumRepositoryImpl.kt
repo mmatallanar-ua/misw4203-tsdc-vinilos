@@ -5,9 +5,14 @@ import com.misw4203.vinilos.data.local.entity.AlbumDetailEntity
 import com.misw4203.vinilos.data.local.entity.AlbumEntity
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
+import com.misw4203.vinilos.data.remote.dto.CollectorRef
+import com.misw4203.vinilos.data.remote.dto.CreateAlbumRequestDto
+import com.misw4203.vinilos.data.remote.dto.CreateCommentRequest
+import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
 import com.misw4203.vinilos.domain.model.Comment
+import com.misw4203.vinilos.domain.model.CreateAlbumInput
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.Track
 import com.misw4203.vinilos.domain.repository.AlbumRepository
@@ -40,6 +45,51 @@ class AlbumRepositoryImpl @Inject constructor(
         } catch (e: IOException) {
             dao.getDetailById(id)?.toDomain() ?: throw e
         }
+    }
+
+    override suspend fun addTrack(albumId: Long, request: CreateTrackRequest): Track =
+        withContext(Dispatchers.IO) {
+            val dto = api.addTrack(albumId, request)
+            Track(
+                id = dto.id,
+                name = dto.name.orEmpty(),
+                duration = dto.duration.orEmpty(),
+            )
+        }
+
+    override suspend fun addComment(
+        albumId: Long,
+        description: String,
+        rating: Int,
+        collectorId: Int,
+    ): Comment = withContext(Dispatchers.IO) {
+        val response = api.addComment(
+            albumId = albumId,
+            request = CreateCommentRequest(
+                description = description,
+                rating = rating,
+                collector = CollectorRef(id = collectorId),
+            ),
+        )
+        Comment(
+            id = response.id,
+            description = response.description.orEmpty(),
+            rating = response.rating ?: rating,
+        )
+    }
+
+    override suspend fun createAlbum(input: CreateAlbumInput): Album = withContext(Dispatchers.IO) {
+        val dto = api.createAlbum(
+            CreateAlbumRequestDto(
+                name = input.name,
+                cover = input.cover,
+                releaseDate = input.releaseDate,
+                description = input.description,
+                genre = input.genre,
+                recordLabel = input.recordLabel,
+            )
+        )
+        dto.toAlbum()
     }
 
     private fun AlbumDto.toAlbum(): Album = Album(

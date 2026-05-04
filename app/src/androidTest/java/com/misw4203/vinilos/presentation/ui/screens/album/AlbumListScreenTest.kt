@@ -8,6 +8,8 @@ import androidx.compose.ui.test.onNodeWithText
 import com.misw4203.vinilos.R
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
+import com.misw4203.vinilos.domain.model.Comment
+import com.misw4203.vinilos.domain.model.CreateAlbumInput
 import com.misw4203.vinilos.domain.repository.AlbumRepository
 import com.misw4203.vinilos.domain.usecase.GetAlbumsUseCase
 import com.misw4203.vinilos.presentation.viewmodel.AlbumListViewModel
@@ -25,6 +27,14 @@ class AlbumListScreenTest {
     ) : AlbumRepository {
         override suspend fun getAlbums(): List<Album> = result.getOrThrow()
         override suspend fun getAlbumById(id: Long): AlbumDetail = error("unused")
+        override suspend fun createAlbum(input: CreateAlbumInput): Album = error("unused")
+        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.data.remote.dto.CreateTrackRequest): com.misw4203.vinilos.domain.model.Track = error("unused")
+        override suspend fun addComment(
+            albumId: Long,
+            description: String,
+            rating: Int,
+            collectorId: Int,
+        ): Comment = error("unused")
     }
 
     private fun vm(result: Result<List<Album>>) =
@@ -42,7 +52,7 @@ class AlbumListScreenTest {
         )
         composeTestRule.setContent {
             MaterialTheme {
-                AlbumListScreen(onAlbumClick = {}, viewModel = viewModel)
+                AlbumListScreen(onAlbumClick = {}, onCreateAlbum = {}, viewModel = viewModel)
             }
         }
 
@@ -55,7 +65,7 @@ class AlbumListScreenTest {
         val viewModel = vm(Result.success(emptyList()))
         composeTestRule.setContent {
             MaterialTheme {
-                AlbumListScreen(onAlbumClick = {}, viewModel = viewModel)
+                AlbumListScreen(onAlbumClick = {}, onCreateAlbum = {}, viewModel = viewModel)
             }
         }
         val ctx = composeTestRule.activity
@@ -67,7 +77,7 @@ class AlbumListScreenTest {
         val viewModel = vm(Result.failure(IOException("sin red")))
         composeTestRule.setContent {
             MaterialTheme {
-                AlbumListScreen(onAlbumClick = {}, viewModel = viewModel)
+                AlbumListScreen(onAlbumClick = {}, onCreateAlbum = {}, viewModel = viewModel)
             }
         }
         val ctx = composeTestRule.activity
@@ -80,7 +90,7 @@ class AlbumListScreenTest {
         val viewModel = vm(Result.failure(RuntimeException("error servidor")))
         composeTestRule.setContent {
             MaterialTheme {
-                AlbumListScreen(onAlbumClick = {}, viewModel = viewModel)
+                AlbumListScreen(onAlbumClick = {}, onCreateAlbum = {}, viewModel = viewModel)
             }
         }
         val ctx = composeTestRule.activity

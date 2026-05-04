@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.test.espresso.Espresso
 import com.misw4203.vinilos.MainActivity
@@ -70,6 +71,72 @@ class VinilosE2ETest {
 
         waitForTag("albums_list")
         composeRule.onNodeWithTag("albums_list").assertIsDisplayed()
+    }
+
+    // -- Create album --------------------------------------------------------
+
+    /** CA-01: el botón FAB en la lista de álbumes abre el formulario de creación. */
+    @Test
+    fun albumList_tapFab_opensCreateAlbumForm() {
+        waitForTag("albums_list")
+
+        composeRule.onNodeWithTag("create_album_fab").performClick()
+
+        // Esperamos que aparezca el botón de back (siempre visible en el TopAppBar)
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("create_album_back_button").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("create_album_back_button").assertIsDisplayed()
+        composeRule.onNodeWithText(composeRule.activity.getString(R.string.create_album_title))
+            .assertIsDisplayed()
+    }
+
+    /** CA-02: el botón de retroceso en el formulario regresa a la lista de álbumes. */
+    @Test
+    fun createAlbum_backButton_returnsToAlbumList() {
+        waitForTag("albums_list")
+        composeRule.onNodeWithTag("create_album_fab").performClick()
+        waitForTag("create_album_back_button")
+
+        composeRule.onNodeWithTag("create_album_back_button").performClick()
+
+        waitForTag("albums_list")
+        composeRule.onNodeWithTag("albums_list").assertIsDisplayed()
+    }
+
+    /** CA-03: back del sistema desde el formulario de creación regresa a la lista. */
+    @Test
+    fun systemBack_fromCreateAlbum_returnsToAlbumList() {
+        waitForTag("albums_list")
+        composeRule.onNodeWithTag("create_album_fab").performClick()
+        waitForTag("create_album_back_button")
+
+        Espresso.pressBack()
+
+        waitForTag("albums_list")
+        composeRule.onNodeWithTag("albums_list").assertIsDisplayed()
+    }
+
+    /**
+     * CA-04: enviar formulario vacío muestra errores de validación.
+     * Se hace scroll hasta el botón de submit porque el formulario tiene scroll vertical.
+     * Se usa useUnmergedTree = true porque Material3 TextField combina los semantics del
+     * campo con el supportingText en un único nodo merged.
+     */
+    @Test
+    fun createAlbum_submitEmptyForm_showsValidationErrors() {
+        waitForTag("albums_list")
+        composeRule.onNodeWithTag("create_album_fab").performClick()
+        waitForTag("create_album_back_button")
+
+        composeRule.onNodeWithTag("create_album_submit").performScrollTo().performClick()
+
+        val errorText = composeRule.activity.getString(R.string.create_album_error_required)
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithText(errorText, useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodesWithText(errorText, useUnmergedTree = true)[0].assertExists()
     }
 
     // -- Artists -------------------------------------------------------------
@@ -136,6 +203,127 @@ class VinilosE2ETest {
             composeRule.onAllNodesWithTag("albums_list").fetchSemanticsNodes().isEmpty()
         }
         composeRule.onNodeWithTag("bottom_nav_collectors").assertIsDisplayed()
+    }
+
+    // -- Collectors ----------------------------------------------------------
+
+    /** CL-01: la pantalla de coleccionistas carga y muestra los coleccionistas del catálogo. */
+    @Test
+    fun collectorList_rendersList() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+
+        waitForTag("collectors_list")
+        composeRule.onNodeWithTag("collectors_list").assertIsDisplayed()
+        composeRule.onNodeWithText("Jaime Andrés Monsalve").assertIsDisplayed()
+        composeRule.onNodeWithText("María Alejandra Palacios").assertIsDisplayed()
+    }
+
+    /** CL-02: cada tarjeta de coleccionista expone su testTag individual. */
+    @Test
+    fun collectorList_cardTagsArePresent() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+
+        waitForTag("collectors_list")
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard).fetchSemanticsNodes().let { nodes ->
+            assert(nodes.isNotEmpty()) { "No se encontraron tarjetas de coleccionista" }
+        }
+    }
+
+    /** CL-03: la lista de coleccionistas muestra el título de la pantalla. */
+    @Test
+    fun collectorList_showsTitle() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+
+        waitForTag("collectors_list")
+        val ctx = composeRule.activity
+        composeRule.onNodeWithText(ctx.getString(R.string.collectors_title)).assertIsDisplayed()
+    }
+
+    /** CD-01: tap en tarjeta de coleccionista abre el detalle con nombre y secciones. */
+    @Test
+    fun collectorList_tapFirstCard_opensDetail_withContent() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        waitForTag("collectors_list")
+
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
+
+        waitForTag("collector_detail_root")
+        composeRule.onNodeWithTag("collector_detail_root").assertIsDisplayed()
+        composeRule.onNodeWithText("Jaime Andrés Monsalve").assertIsDisplayed()
+    }
+
+    /** CD-02: el botón de retroceso en el detalle regresa a la lista. */
+    @Test
+    fun collectorDetail_backButton_returnsToList() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        waitForTag("collectors_list")
+
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
+        waitForTag("collector_detail_root")
+
+        composeRule.onNodeWithTag("collector_detail_back").performClick()
+
+        waitForTag("collectors_list")
+        composeRule.onNodeWithTag("collectors_list").assertIsDisplayed()
+    }
+
+    /** CD-03: back del sistema desde el detalle de coleccionista regresa a la lista. */
+    @Test
+    fun systemBack_fromCollectorDetail_returnsToList() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        waitForTag("collectors_list")
+
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
+        waitForTag("collector_detail_root")
+
+        Espresso.pressBack()
+
+        waitForTag("collectors_list")
+        composeRule.onNodeWithTag("collectors_list").assertIsDisplayed()
+    }
+
+    /** CD-04: el detalle de coleccionista muestra el álbum coleccionado. */
+    @Test
+    fun collectorDetail_showsCollectedAlbum() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        waitForTag("collectors_list")
+
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
+        waitForTag("collector_detail_root")
+
+        composeRule.onNodeWithText("Buscando América").assertIsDisplayed()
+    }
+
+    /** CD-05: el detalle de coleccionista muestra el artista favorito. */
+    @Test
+    fun collectorDetail_showsFavoritePerformer() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        waitForTag("collectors_list")
+
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
+        waitForTag("collector_detail_root")
+
+        composeRule.onNodeWithText("Rubén Blades Bellido de Luna").assertIsDisplayed()
+    }
+
+    /** CD-06: el rating del comentario expone contentDescription accesible. */
+    @Test
+    fun collectorDetail_ratingHasAccessibleContentDescription() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        waitForTag("collectors_list")
+
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
+        waitForTag("collector_detail_root")
+
+        composeRule.onAllNodesWithContentDescription(label = "de 5", substring = true)[0]
+            .assertExists()
     }
 
     /** NAV-03: back del sistema desde detalle de álbum regresa a lista. */

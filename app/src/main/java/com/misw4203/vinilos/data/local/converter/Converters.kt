@@ -4,6 +4,8 @@ import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.misw4203.vinilos.domain.model.Album
+import com.misw4203.vinilos.domain.model.CollectorAlbum
+import com.misw4203.vinilos.domain.model.CollectorComment
 import com.misw4203.vinilos.domain.model.Comment
 import com.misw4203.vinilos.domain.model.MusicianPrize
 import com.misw4203.vinilos.domain.model.Performer
@@ -46,4 +48,18 @@ class Converters {
     @TypeConverter
     fun jsonToPrizes(value: String): List<MusicianPrize> =
         gson.fromJson(value, object : TypeToken<List<MusicianPrize>>() {}.type)
+
+    @TypeConverter
+    fun collectorAlbumsToJson(value: List<CollectorAlbum>): String = gson.toJson(value)
+
+    @TypeConverter
+    fun jsonToCollectorAlbums(value: String): List<CollectorAlbum> =
+        gson.fromJson(value, object : TypeToken<List<CollectorAlbum>>() {}.type)
+
+    @TypeConverter
+    fun collectorCommentsToJson(value: List<CollectorComment>): String = gson.toJson(value)
+
+    @TypeConverter
+    fun jsonToCollectorComments(value: String): List<CollectorComment> =
+        gson.fromJson(value, object : TypeToken<List<CollectorComment>>() {}.type)
 }

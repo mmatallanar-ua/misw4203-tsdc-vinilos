@@ -42,8 +42,57 @@
     <string name="action_close">Cerrar</string>
     <string name="cd_rating">%1$d de 5 estrellas</string>
 
+    <!-- Collectors -->
+    <string name="collectors_title">Coleccionistas</string>
+    <string name="search_placeholder_collectors">¿Qué coleccionista buscas?</string>
+    <string name="collectors_empty_title">No hay coleccionistas</string>
+    <string name="collectors_empty_body">Aún no hay coleccionistas registrados. Vuelve más tarde.</string>
+    <string name="collector_detail_title">Detalle del coleccionista</string>
+    <string name="collector_not_found_title">Coleccionista no encontrado</string>
+    <string name="collector_not_found_body">El coleccionista solicitado no existe.</string>
+    <string name="collector_section_albums">Álbumes coleccionados</string>
+    <string name="collector_section_performers">Artistas favoritos</string>
+    <string name="collector_albums_empty">Sin álbumes coleccionados</string>
+    <string name="collector_performers_empty">Sin artistas favoritos</string>
+    <string name="collector_section_comments">Comentarios recientes</string>
+    <string name="collector_comment_album_ref">Sobre: %s</string>
+
+    <!-- Add track -->
+    <string name="add_track_title">Agregar Track</string>
+    <string name="add_track_section_new">Nuevo Track</string>
+    <string name="add_track_label_name">Nombre del track</string>
+    <string name="add_track_label_duration">Duración (MM:SS)</string>
+    <string name="add_track_error_name">El nombre del track es obligatorio</string>
+    <string name="add_track_error_duration">Formato: MM:SS (ej: 03:45)</string>
+    <string name="add_track_error_network">Sin conexión. Intenta de nuevo</string>
+    <string name="add_track_error_server">Error al agregar track</string>
+    <string name="add_track_success">Track agregado correctamente</string>
+    <string name="add_track_button">Agregar Track</string>
+    <string name="add_track_button_album_detail">Agregar canción</string>
+
+    <!-- Create album -->
+    <string name="create_album_title">Nuevo Álbum</string>
+    <string name="create_album_section_title">Detalles del Disco</string>
+    <string name="create_album_section_subtitle">Completa la información para añadir un nuevo ejemplar a tu colección.</string>
+    <string name="create_album_section_basic">Información básica</string>
+    <string name="create_album_section_media">Multimedia</string>
+    <string name="create_album_section_description">Descripción</string>
+    <string name="create_album_field_name">Nombre del Álbum</string>
+    <string name="create_album_field_record_label">Sello Discográfico</string>
+    <string name="create_album_field_release_date">Fecha de Lanzamiento</string>
+    <string name="create_album_field_genre">Género</string>
+    <string name="create_album_field_cover">URL de la Carátula</string>
+    <string name="create_album_field_description">Descripción / Notas</string>
+    <string name="create_album_cover_preview">Vista previa de la carátula</string>
+    <string name="create_album_save">Guardar Álbum</string>
+    <string name="create_album_saving">Guardando…</string>
+    <string name="create_album_error_required">Campo obligatorio</string>
+    <string name="cd_create_album">Crear álbum</string>
+
     <!-- Navigation -->
     <string name="action_back">Volver</string>
+    <string name="action_confirm">Confirmar</string>
+    <string name="action_cancel">Cancelar</string>
 
     <!-- Content descriptions -->
     <string name="cd_album_cover">Portada del álbum</string>
@@ -52,4 +101,35 @@
     <string name="cd_open_album">Abrir álbum</string>
     <string name="cd_artist_image">Foto del artista</string>
     <string name="cd_open_artist">Abrir artista</string>
+    <string name="cd_collector_avatar">Avatar del coleccionista</string>
+    <string name="cd_open_collector">Abrir coleccionista</string>
+
+    <!-- List counters -->
+    <plurals name="albums_record_count">
+        <item quantity="one">%d álbum · orden alfa</item>
+        <item quantity="other">%d álbumes · orden alfa</item>
+    </plurals>
+    <plurals name="artists_record_count">
+        <item quantity="one">%d artista · orden alfa</item>
+        <item quantity="other">%d artistas · orden alfa</item>
+    </plurals>
+    <plurals name="collectors_record_count">
+        <item quantity="one">%d coleccionista · orden alfa</item>
+        <item quantity="other">%d coleccionistas · orden alfa</item>
+    </plurals>
+
+    <!-- HU09 - Comentar álbum -->
+    <string name="add_comment_title">Comentar álbum</string>
+    <string name="add_comment_section">Nuevo comentario</string>
+    <string name="add_comment_label_rating">Calificación</string>
+    <string name="add_comment_label_description">Comentario</string>
+    <string name="add_comment_placeholder">Escribe tu comentario aquí…</string>
+    <string name="add_comment_max_chars">Máximo %1$d caracteres</string>
+    <string name="add_comment_submit">Publicar comentario</string>
+    <string name="add_comment_action_cta">+ Comentar</string>
+    <string name="add_comment_error_description">El comentario no puede estar vacío</string>
+    <string name="add_comment_error_rating">Selecciona una calificación de 1 a 5</string>
+    <string name="add_comment_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="add_comment_error_server">No pudimos publicar tu comentario. Inténtalo de nuevo.</string>
+    <string name="add_comment_success">Comentario publicado</string>
 </resources>

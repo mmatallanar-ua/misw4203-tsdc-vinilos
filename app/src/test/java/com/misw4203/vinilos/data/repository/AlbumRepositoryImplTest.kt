@@ -4,9 +4,12 @@ import com.misw4203.vinilos.data.local.dao.AlbumDao
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.CommentDto
+import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.data.remote.dto.PerformerDto
 import com.misw4203.vinilos.data.remote.dto.TrackDto
+import com.misw4203.vinilos.domain.model.CreateAlbumInput
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
@@ -84,11 +87,82 @@ class AlbumRepositoryImplTest {
         assertEquals(5, result.comments[0].rating)
     }
 
+    @Test
+    fun `addTrack returns mapped Track from API`() = runTest {
+        val request = CreateTrackRequest("Get Lucky", "04:08")
+        coEvery { api.addTrack(100L, request) } returns TrackDto(1L, "Get Lucky", "04:08")
+
+        val result = repository.addTrack(100L, request)
+
+        assertEquals(1L, result.id)
+        assertEquals("Get Lucky", result.name)
+        assertEquals("04:08", result.duration)
+    }
+
+    @Test(expected = IOException::class)
+    fun `addTrack propagates IOException`() = runTest {
+        coEvery { api.addTrack(any(), any()) } throws IOException("offline")
+        repository.addTrack(100L, CreateTrackRequest("X", "01:00"))
+    }
+
+    @Test(expected = HttpException::class)
+    fun `addTrack propagates HttpException`() = runTest {
+        coEvery { api.addTrack(any(), any()) } throws HttpException(
+            Response.error<Any>(404, "".toResponseBody("text/plain".toMediaType()))
+        )
+        repository.addTrack(999L, CreateTrackRequest("X", "01:00"))
+    }
+
     @Test(expected = IOException::class)
     fun `getAlbumById propagates IOException when cache is empty`() = runTest {
         coEvery { api.getAlbum(7L) } throws IOException("offline")
         coEvery { dao.getDetailById(7L) } returns null
         repository.getAlbumById(7L)
+    }
+
+    // -- createAlbum ---------------------------------------------------------
+
+    @Test
+    fun `createAlbum sends request to API and returns mapped album`() = runTest {
+        val input = CreateAlbumInput(
+            name = "Nuevo Álbum",
+            cover = "https://example.com/cover.jpg",
+            releaseDate = "2024-01-15",
+            description = "Una descripción",
+            genre = "Rock",
+            recordLabel = "Sony Music",
+        )
+        coEvery { api.createAlbum(any()) } returns albumDto(
+            id = 10L,
+            name = "Nuevo Álbum",
+            genre = "Rock",
+            recordLabel = "Sony Music",
+        )
+
+        val result = repository.createAlbum(input)
+
+        assertEquals(10L, result.id)
+        assertEquals("Nuevo Álbum", result.name)
+        assertEquals("Rock", result.genre)
+        coVerify(exactly = 1) { api.createAlbum(any()) }
+    }
+
+    @Test(expected = IOException::class)
+    fun `createAlbum propagates IOException`() = runTest {
+        coEvery { api.createAlbum(any()) } throws IOException("offline")
+        repository.createAlbum(
+            CreateAlbumInput("n", "c", "2024-01-01", "d", "Rock", "Sony Music")
+        )
+    }
+
+    @Test(expected = HttpException::class)
+    fun `createAlbum propagates HttpException`() = runTest {
+        coEvery { api.createAlbum(any()) } throws HttpException(
+            Response.error<Any>(422, "".toResponseBody("text/plain".toMediaType()))
+        )
+        repository.createAlbum(
+            CreateAlbumInput("n", "c", "2024-01-01", "d", "Rock", "Sony Music")
+        )
     }
 
     private fun albumDto(
