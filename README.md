@@ -61,7 +61,12 @@ Todos los repositorios siguen el mismo patrón para **lecturas**:
 2. Si la red falla con `IOException` (offline) → retorna la caché si existe; si no, re-lanza el error.
 3. Si falla con `HttpException` u otro → propaga (la UI clasifica 404, red, servidor, etc.).
 
-Para **escrituras** (`POST /albums`, `POST /albums/{id}/tracks`, `POST /albums/{id}/comments`) el repositorio envía el request directamente al API sin tocar la caché. Tras un POST exitoso, la pantalla origen invalida su `UiState` (vía `retry()` o flag en `SavedStateHandle`) para que el siguiente `GET` refresque la caché con el dato nuevo. Las excepciones se propagan al ViewModel sin envolverlas, igual que en las lecturas.
+Para **escrituras** (`POST /albums`, `POST /albums/{id}/tracks`, `POST /albums/{id}/comments`) el repositorio aplica **write-through cache**:
+
+- `createAlbum`: tras la respuesta exitosa hace `dao.upsert(AlbumEntity)` para insertar el nuevo álbum en la lista local.
+- `addTrack` / `addComment`: si existe un `AlbumDetailEntity` cacheado para ese `albumId`, se hace read-modify-write apilando el nuevo track/comentario y `upsertDetail` lo persiste; si el detalle aún no está en caché, se omite la escritura local (el próximo `getAlbumById` la repoblará).
+
+Adicionalmente, la pantalla origen invalida su `UiState` vía `retry()` o un flag en `SavedStateHandle`. Esto asegura coherencia inmediata aunque se produzca una desconexión justo después del POST. Las excepciones se propagan al ViewModel sin envolverlas, igual que en las lecturas.
 
 ---
 

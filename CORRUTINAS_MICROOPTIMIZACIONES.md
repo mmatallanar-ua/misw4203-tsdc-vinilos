@@ -355,10 +355,11 @@ Aplicado en `AlbumCard`, `MusicianCard`, `PerformerChip` (`AlbumDetailScreen.kt:
 | 1 | `@Index(value = ["name"])` en `AlbumEntity`, `MusicianListEntity`, `CollectorEntity` | `data/local/entity/*Entity.kt` | `ORDER BY name ASC` evita full-table sort. DB v3 → v4 con destructive migration. |
 | 2 | `key(track.id)` y `key(comment.id)` sobre items dentro de `Column.forEach` | `presentation/ui/screens/album/AlbumDetailScreen.kt` | Identidad estable: insertar un track/comment via HU08/HU09 no recompone los anteriores. |
 | 3 | `ImageLoader` global con `crossfade(true)` + memory/disk cache | `VinilosApplication.kt` | Carga de imágenes uniforme con caché de 2 niveles + transición visual. Aplica a todos los `AsyncImage`. |
+| 4 | **Write-through cache** en `createAlbum`, `addTrack`, `addComment` | `AlbumRepositoryImpl.kt`, `AlbumDao.kt` | El POST actualiza la caché local en el mismo paso (insert para listas, read-modify-write para detalles). Evita lecturas stale entre el POST y el siguiente refetch, y mantiene consistencia offline tras escribir online. |
 
 Verificación:
 - `./gradlew :app:assembleDebug` → BUILD SUCCESSFUL
-- `./gradlew :app:testDebugUnitTest` → BUILD SUCCESSFUL (60+ tests, 0 failures)
+- `./gradlew :app:testDebugUnitTest` → BUILD SUCCESSFUL (5 tests nuevos para write-through cache, 0 failures)
 
 ---
 

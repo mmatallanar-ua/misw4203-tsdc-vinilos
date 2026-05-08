@@ -50,11 +50,19 @@ class AlbumRepositoryImpl @Inject constructor(
     override suspend fun addTrack(albumId: Long, request: CreateTrackRequest): Track =
         withContext(Dispatchers.IO) {
             val dto = api.addTrack(albumId, request)
-            Track(
+            val track = Track(
                 id = dto.id,
                 name = dto.name.orEmpty(),
                 duration = dto.duration.orEmpty(),
             )
+            // Write-through cache: si hay detalle cacheado para este álbum,
+            // lo actualizamos con el nuevo track para evitar lectura stale
+            // antes del próximo getAlbumById().
+            dao.getDetailById(albumId)?.let { cached ->
+                val updated = cached.toDomain().copy(tracks = cached.tracks + track)
+                dao.upsertDetail(AlbumDetailEntity.fromDomain(updated))
+            }
+            track
         }
 
     override suspend fun addComment(
@@ -71,11 +79,17 @@ class AlbumRepositoryImpl @Inject constructor(
                 collector = CollectorRef(id = collectorId),
             ),
         )
-        Comment(
+        val comment = Comment(
             id = response.id,
             description = response.description.orEmpty(),
             rating = response.rating ?: rating,
         )
+        // Write-through cache: ver nota en addTrack.
+        dao.getDetailById(albumId)?.let { cached ->
+            val updated = cached.toDomain().copy(comments = cached.comments + comment)
+            dao.upsertDetail(AlbumDetailEntity.fromDomain(updated))
+        }
+        comment
     }
 
     override suspend fun createAlbum(input: CreateAlbumInput): Album = withContext(Dispatchers.IO) {
@@ -89,7 +103,11 @@ class AlbumRepositoryImpl @Inject constructor(
                 recordLabel = input.recordLabel,
             )
         )
-        dto.toAlbum()
+        val album = dto.toAlbum()
+        // Write-through cache: el nuevo álbum queda disponible offline
+        // y la lista no necesita refetch obligatorio.
+        dao.upsert(AlbumEntity.fromDomain(album))
+        album
     }
 
     private fun AlbumDto.toAlbum(): Album = Album(

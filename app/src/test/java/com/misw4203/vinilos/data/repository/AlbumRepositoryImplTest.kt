@@ -1,16 +1,21 @@
 package com.misw4203.vinilos.data.repository
 
 import com.misw4203.vinilos.data.local.dao.AlbumDao
+import com.misw4203.vinilos.data.local.entity.AlbumDetailEntity
+import com.misw4203.vinilos.data.local.entity.AlbumEntity
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.CommentDto
 import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.data.remote.dto.PerformerDto
 import com.misw4203.vinilos.data.remote.dto.TrackDto
+import com.misw4203.vinilos.domain.model.Comment
 import com.misw4203.vinilos.domain.model.CreateAlbumInput
+import com.misw4203.vinilos.domain.model.Track
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -163,6 +168,108 @@ class AlbumRepositoryImplTest {
         repository.createAlbum(
             CreateAlbumInput("n", "c", "2024-01-01", "d", "Rock", "Sony Music")
         )
+    }
+
+    // -- Write-through cache (HU07/HU08/HU09) --------------------------------
+
+    @Test
+    fun `createAlbum upserts the new album into the local cache`() = runTest {
+        val captured = slot<AlbumEntity>()
+        coEvery { api.createAlbum(any()) } returns albumDto(
+            id = 99L,
+            name = "Nuevo",
+            genre = "Rock",
+        )
+        coEvery { dao.upsert(capture(captured)) } returns Unit
+
+        val result = repository.createAlbum(
+            CreateAlbumInput("Nuevo", "c", "2024-01-01", "d", "Rock", "Sony Music")
+        )
+
+        assertEquals(99L, result.id)
+        coVerify(exactly = 1) { dao.upsert(any()) }
+        assertEquals(99L, captured.captured.id)
+        assertEquals("Nuevo", captured.captured.name)
+    }
+
+    @Test
+    fun `addTrack appends the new track to the cached album detail`() = runTest {
+        val albumId = 42L
+        val cached = AlbumDetailEntity(
+            id = albumId,
+            name = "OK Computer",
+            coverUrl = "",
+            artistName = "Radiohead",
+            releaseDate = "1997-05-21",
+            genre = "Rock",
+            recordLabel = "Parlophone",
+            description = "",
+            tracks = listOf(Track(1L, "Airbag", "4:44")),
+            performers = emptyList(),
+            comments = emptyList(),
+        )
+        coEvery { dao.getDetailById(albumId) } returns cached
+        coEvery { api.addTrack(albumId, any()) } returns TrackDto(2L, "Karma Police", "4:21")
+        val captured = slot<AlbumDetailEntity>()
+        coEvery { dao.upsertDetail(capture(captured)) } returns Unit
+
+        val result = repository.addTrack(albumId, CreateTrackRequest("Karma Police", "04:21"))
+
+        assertEquals(2L, result.id)
+        coVerify(exactly = 1) { dao.upsertDetail(any()) }
+        assertEquals(2, captured.captured.tracks.size)
+        assertEquals("Karma Police", captured.captured.tracks[1].name)
+    }
+
+    @Test
+    fun `addTrack does not touch cache when album detail is not cached`() = runTest {
+        val albumId = 50L
+        coEvery { dao.getDetailById(albumId) } returns null
+        coEvery { api.addTrack(albumId, any()) } returns TrackDto(3L, "X", "01:00")
+
+        repository.addTrack(albumId, CreateTrackRequest("X", "01:00"))
+
+        coVerify(exactly = 0) { dao.upsertDetail(any()) }
+    }
+
+    @Test
+    fun `addComment appends the new comment to the cached album detail`() = runTest {
+        val albumId = 7L
+        val cached = AlbumDetailEntity(
+            id = albumId,
+            name = "Album",
+            coverUrl = "",
+            artistName = "",
+            releaseDate = "",
+            genre = "",
+            recordLabel = "",
+            description = "",
+            tracks = emptyList(),
+            performers = emptyList(),
+            comments = listOf(Comment(10L, "Bueno", 4)),
+        )
+        coEvery { dao.getDetailById(albumId) } returns cached
+        coEvery { api.addComment(albumId, any()) } returns CommentDto(11L, "Excelente", 5)
+        val captured = slot<AlbumDetailEntity>()
+        coEvery { dao.upsertDetail(capture(captured)) } returns Unit
+
+        repository.addComment(albumId, "Excelente", 5, 100)
+
+        coVerify(exactly = 1) { dao.upsertDetail(any()) }
+        assertEquals(2, captured.captured.comments.size)
+        assertEquals("Excelente", captured.captured.comments[1].description)
+        assertEquals(5, captured.captured.comments[1].rating)
+    }
+
+    @Test
+    fun `addComment does not touch cache when album detail is not cached`() = runTest {
+        val albumId = 8L
+        coEvery { dao.getDetailById(albumId) } returns null
+        coEvery { api.addComment(albumId, any()) } returns CommentDto(12L, "x", 3)
+
+        repository.addComment(albumId, "x", 3, 100)
+
+        coVerify(exactly = 0) { dao.upsertDetail(any()) }
     }
 
     private fun albumDto(
