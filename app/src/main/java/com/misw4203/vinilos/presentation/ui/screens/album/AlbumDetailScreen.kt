@@ -35,6 +35,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -297,8 +298,10 @@ private fun TracksSection(tracks: List<Track>, onAddTrack: () -> Unit) {
     }
     Spacer(Modifier.height(12.dp))
     tracks.forEachIndexed { index, track ->
-        TrackRow(index = index + 1, track = track)
-        Spacer(Modifier.height(8.dp))
+        key(track.id) {
+            TrackRow(index = index + 1, track = track)
+            Spacer(Modifier.height(8.dp))
+        }
     }
 }
 
@@ -379,7 +382,9 @@ private fun CommentsSection(comments: List<Comment>) {
     Spacer(Modifier.height(12.dp))
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         comments.forEach { comment ->
-            CommentCard(comment)
+            key(comment.id) {
+                CommentCard(comment)
+            }
         }
     }
 }
