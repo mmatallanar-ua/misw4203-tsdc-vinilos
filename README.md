@@ -28,7 +28,8 @@ app/src/main/java/com/misw4203/vinilos/
 │   └── ui/
 │       ├── screens/
 │       │   ├── album/
-│       │   └── artist/
+│       │   ├── artist/
+│       │   └── collector/
 │       ├── components/  # Composables reutilizables
 │       └── theme/       # Material 3 theme
 └── di/                  # Módulos de Hilt
@@ -48,17 +49,19 @@ Responsable de obtener y persistir datos, ya sea desde la red o desde la base de
 | `data/local/dao/` | Interfaces DAO de Room con operaciones `@Upsert`, `@Query`, y transacciones (`replaceX` = clear + upsert). |
 | `data/local/database/` | `VinilosDatabase` — clase abstracta `RoomDatabase` que declara entidades y expone los DAOs. |
 | `data/local/entity/` | Entidades `@Entity` con mappers `toDomain()` / `fromDomain()`. |
-| `data/remote/api/` | `VinilosApiService` — interfaz Retrofit con los endpoints (`GET /albums`, `GET /albums/{id}`, `GET /musicians`, `GET /musicians/{id}`, `GET /prizes/{id}`). |
-| `data/remote/dto/` | DTOs que modelan la respuesta JSON. Campos nullables para tolerar datos incompletos del servidor. |
-| `data/repository/` | Implementaciones de repositorio con estrategia **network-first + fallback a caché**. |
+| `data/remote/api/` | `VinilosApiService` — interfaz Retrofit con los endpoints de lectura (`GET /albums`, `GET /albums/{id}`, `GET /musicians`, `GET /musicians/{id}`, `GET /prizes/{id}`, `GET /collectors`, `GET /collectors/{id}`) y de escritura (`POST /albums`, `POST /albums/{id}/tracks`, `POST /albums/{id}/comments`). |
+| `data/remote/dto/` | DTOs que modelan la respuesta JSON (`AlbumDto`, `TrackDto`, `CommentDto`, `MusicianDetailDto`, `PrizeDetailDto`, `PerformerPrizeDto`, `CollectorDto`, `CollectorDetailDto`) y los bodies de escritura (`CreateAlbumRequestDto`, `CreateTrackRequest`, `CreateCommentRequest`). Campos nullables para tolerar datos incompletos del servidor. |
+| `data/repository/` | Implementaciones de repositorio con estrategia **network-first + fallback a caché** para lecturas y POST directo a red (sin caché) para escrituras. |
 
 ### Estrategia de caché
 
-Todos los repositorios siguen el mismo patrón:
+Todos los repositorios siguen el mismo patrón para **lecturas**:
 
 1. Intenta red → si hay éxito, actualiza la caché (`replaceX` transaccional para listas, `upsert` para detalles) y retorna.
 2. Si la red falla con `IOException` (offline) → retorna la caché si existe; si no, re-lanza el error.
 3. Si falla con `HttpException` u otro → propaga (la UI clasifica 404, red, servidor, etc.).
+
+Para **escrituras** (`POST /albums`, `POST /albums/{id}/tracks`, `POST /albums/{id}/comments`) el repositorio envía el request directamente al API sin tocar la caché. Tras un POST exitoso, la pantalla origen invalida su `UiState` (vía `retry()` o flag en `SavedStateHandle`) para que el siguiente `GET` refresque la caché con el dato nuevo. Las excepciones se propagan al ViewModel sin envolverlas, igual que en las lecturas.
 
 ---
 
@@ -68,9 +71,9 @@ Es el núcleo de la aplicación. No depende de ninguna otra capa y contiene la l
 
 | Carpeta | Contenido |
 |---|---|
-| `domain/model/` | Modelos de dominio (`Album`, `AlbumDetail`, `Musician`, `MusicianSummary`, `MusicianPrize`, `Track`, `Performer`, `Comment`). Sin dependencias de Android. |
-| `domain/repository/` | Interfaces de repositorio (`AlbumRepository`, `MusicianRepository`). |
-| `domain/usecase/` | Casos de uso (`GetAlbumsUseCase`, `GetAlbumDetailUseCase`, `GetMusiciansUseCase`, `GetMusicianDetailUseCase`). |
+| `domain/model/` | Modelos de dominio (`Album`, `AlbumDetail`, `Musician`, `MusicianSummary`, `MusicianPrize`, `Track`, `Performer`, `Comment`, `CollectorSummary`, `CollectorDetail`, `CollectorAlbum`, `CollectorComment`, `CreateAlbumInput`). Sin dependencias de Android. |
+| `domain/repository/` | Interfaces de repositorio (`AlbumRepository` con `getAlbums`, `getAlbumById`, `createAlbum`, `addTrack`, `addComment`; `MusicianRepository`; `CollectorRepository`). |
+| `domain/usecase/` | Casos de uso de lectura (`GetAlbumsUseCase`, `GetAlbumDetailUseCase`, `GetMusiciansUseCase`, `GetMusicianDetailUseCase`, `GetCollectorsUseCase`, `GetCollectorDetailUseCase`) y de escritura (`CreateAlbumUseCase`, `AddTrackUseCase`, `AddCommentUseCase`). |
 
 ---
 
@@ -80,10 +83,10 @@ Contiene todo lo relacionado con la interfaz de usuario y el estado de la pantal
 
 | Carpeta | Contenido |
 |---|---|
-| `presentation/navigation/` | `VinilosNavHost` + `Destinations` (rutas y argumentos de navegación). |
-| `presentation/viewmodel/` | ViewModels con `@HiltViewModel`. Exponen `StateFlow<UiState>` y clasifican excepciones (`IOException` → red, `HttpException` 404 → NotFound, otros → servidor). Re-lanzan `CancellationException` para preservar structured concurrency. |
-| `presentation/ui/screens/` | Composables por entidad (`album/`, `artist/`). |
-| `presentation/ui/components/` | `AlbumCard`, `MusicianCard`, `LoadingState`, `EmptyState`, `ErrorState`, `VinilosTopBar`, `VinilosBottomNav`, `SearchBarStatic`. |
+| `presentation/navigation/` | `VinilosNavHost` + `Destinations` (rutas: `album_list`, `album_detail/{albumId}`, `create_album`, `album/{albumId}/track/add`, `album/{albumId}/comment/add/{collectorId}`, `artists`, `artist/{id}`, `collectors`, `collector/{collectorId}`). |
+| `presentation/viewmodel/` | ViewModels con `@HiltViewModel`. Para listas/detalle exponen `StateFlow<UiState>` (`Loading / Success / Empty\|NotFound / Error(isNetworkError)`) y clasifican excepciones (`IOException` → red, `HttpException` 404 → NotFound, otros → servidor). Para formularios POST (`CreateAlbumViewModel`, `AddTrackViewModel`, `AddCommentViewModel`) separan el form state del submit state (`Idle / Loading / Success / Error`). Todos re-lanzan `CancellationException` para preservar structured concurrency. |
+| `presentation/ui/screens/` | Composables por entidad: `album/` (`AlbumListScreen`, `AlbumDetailScreen`, `CreateAlbumScreen`, `AddTrackScreen`, `AddCommentScreen`), `artist/` (`MusicianListScreen`, `MusicianDetailScreen`), `collector/` (`CollectorListScreen`, `CollectorDetailScreen`). |
+| `presentation/ui/components/` | `AlbumCard`, `MusicianCard`, `CollectorCard`, `LoadingState`, `EmptyState`, `ErrorState`, `VinilosTopBar`, `VinilosBottomNav`, `SearchBarStatic`, `ListCounter`, `RatingBar`. |
 | `presentation/ui/theme/` | Material 3: `Color.kt`, `Theme.kt`, `Type.kt`. |
 
 ---
@@ -95,8 +98,8 @@ Módulos de Hilt instalados en `SingletonComponent`.
 | Archivo | Contenido |
 |---|---|
 | `NetworkModule` | Provee `OkHttpClient` (con `HttpLoggingInterceptor` solo en debug), `Retrofit` y `VinilosApiService`. |
-| `DatabaseModule` | Provee `VinilosDatabase` (con `fallbackToDestructiveMigration` — la caché es descartable) y los DAOs (`AlbumDao`, `MusicianDao`). |
-| `RepositoryModule` | `@Binds` de las interfaces de dominio a sus implementaciones. |
+| `DatabaseModule` | Provee `VinilosDatabase` (con `fallbackToDestructiveMigration` — la caché es descartable) y los DAOs (`AlbumDao`, `MusicianDao`, `CollectorDao`). |
+| `RepositoryModule` | `@Binds` de las interfaces de dominio a sus implementaciones: `AlbumRepository → AlbumRepositoryImpl`, `MusicianRepository → MusicianRepositoryImpl`, `CollectorRepository → CollectorRepositoryImpl`. |
 
 ---
 
