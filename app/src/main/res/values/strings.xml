@@ -19,9 +19,6 @@
     <string name="action_retry">Reintentar</string>
 
     <!-- Album detail -->
-    <string name="detail_title_default">Detalle del álbum</string>
-    <string name="detail_label_genre">Género</string>
-    <string name="detail_label_release">Fecha de lanzamiento</string>
     <string name="detail_label_record_label">Sello discográfico</string>
     <string name="detail_section_description">Descripción</string>
     <string name="detail_section_performers">Artistas</string>
@@ -45,15 +42,10 @@
     <!-- Collectors -->
     <string name="collectors_title">Coleccionistas</string>
     <string name="search_placeholder_collectors">¿Qué coleccionista buscas?</string>
-    <string name="collectors_empty_title">No hay coleccionistas</string>
-    <string name="collectors_empty_body">Aún no hay coleccionistas registrados. Vuelve más tarde.</string>
-    <string name="collector_detail_title">Detalle del coleccionista</string>
     <string name="collector_not_found_title">Coleccionista no encontrado</string>
     <string name="collector_not_found_body">El coleccionista solicitado no existe.</string>
     <string name="collector_section_albums">Álbumes coleccionados</string>
     <string name="collector_section_performers">Artistas favoritos</string>
-    <string name="collector_albums_empty">Sin álbumes coleccionados</string>
-    <string name="collector_performers_empty">Sin artistas favoritos</string>
     <string name="collector_section_comments">Comentarios recientes</string>
     <string name="collector_comment_album_ref">Sobre: %s</string>
 
@@ -62,10 +54,6 @@
     <string name="add_track_section_new">Nuevo Track</string>
     <string name="add_track_label_name">Nombre del track</string>
     <string name="add_track_label_duration">Duración (MM:SS)</string>
-    <string name="add_track_error_name">El nombre del track es obligatorio</string>
-    <string name="add_track_error_duration">Formato: MM:SS (ej: 03:45)</string>
-    <string name="add_track_error_network">Sin conexión. Intenta de nuevo</string>
-    <string name="add_track_error_server">Error al agregar track</string>
     <string name="add_track_success">Track agregado correctamente</string>
     <string name="add_track_button">Agregar Track</string>
     <string name="add_track_button_album_detail">Agregar canción</string>
@@ -124,12 +112,14 @@
     <string name="add_comment_label_rating">Calificación</string>
     <string name="add_comment_label_description">Comentario</string>
     <string name="add_comment_placeholder">Escribe tu comentario aquí…</string>
-    <string name="add_comment_max_chars">Máximo %1$d caracteres</string>
+    <plurals name="add_comment_max_chars">
+        <item quantity="one">Máximo %d carácter</item>
+        <item quantity="other">Máximo %d caracteres</item>
+    </plurals>
     <string name="add_comment_submit">Publicar comentario</string>
     <string name="add_comment_action_cta">+ Comentar</string>
     <string name="add_comment_error_description">El comentario no puede estar vacío</string>
     <string name="add_comment_error_rating">Selecciona una calificación de 1 a 5</string>
     <string name="add_comment_error_network">Sin conexión. Intenta de nuevo.</string>
     <string name="add_comment_error_server">No pudimos publicar tu comentario. Inténtalo de nuevo.</string>
-    <string name="add_comment_success">Comentario publicado</string>
 </resources>

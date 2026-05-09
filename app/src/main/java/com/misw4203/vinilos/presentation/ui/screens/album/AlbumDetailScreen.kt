@@ -68,8 +68,8 @@ private val CardRadius = 24.dp
 fun AlbumDetailScreen(
     albumId: Long,
     onBack: () -> Unit,
-    onAddTrack: () -> Unit = {},
     modifier: Modifier = Modifier,
+    onAddTrack: () -> Unit = {},
     onAddComment: () -> Unit = {},
     refreshKey: Boolean = false,
     onRefreshHandled: () -> Unit = {},
