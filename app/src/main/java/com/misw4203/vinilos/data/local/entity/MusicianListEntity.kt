@@ -1,10 +1,14 @@
 package com.misw4203.vinilos.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.misw4203.vinilos.domain.model.MusicianSummary
 
-@Entity(tableName = "musicians")
+@Entity(
+    tableName = "musicians",
+    indices = [Index(value = ["name"])],
+)
 data class MusicianListEntity(
     @PrimaryKey val id: Int,
     val name: String,

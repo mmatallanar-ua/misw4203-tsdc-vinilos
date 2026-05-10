@@ -16,6 +16,9 @@ interface AlbumDao {
     @Upsert
     suspend fun upsertAll(albums: List<AlbumEntity>)
 
+    @Upsert
+    suspend fun upsert(album: AlbumEntity)
+
     @Query("DELETE FROM albums")
     suspend fun clear()
 
