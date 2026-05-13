@@ -359,6 +359,69 @@ class VinilosE2ETest {
             .assertExists()
     }
 
+    // -- HU012: Agregar músicos a banda --------------------------------------
+
+    /**
+     * HU012: flujo completo de agregar un músico a una banda.
+     * Bottom-nav → sub-tab Bandas → detalle de banda → CTA agregar
+     * (empty-state o regular) → "+" en disponibles → verificación de que
+     * el músico aparece en "Integrantes actuales".
+     */
+    @Test
+    fun hu012_addMusicianToBand_flow() {
+        // 1. Bottom-nav → tab Artistas
+        composeRule.onNodeWithTag("bottom_nav_artists").performClick()
+
+        // 2. Sub-tab "Bandas"
+        waitForTag("artists_tab_bands")
+        composeRule.onNodeWithTag("artists_tab_bands").performClick()
+
+        // 3. Tap primera banda disponible (band_card_<id>)
+        val bandCard = tagStartsWith("band_card_")
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(bandCard).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodes(bandCard)[0].performClick()
+
+        // 4. En el detalle de la banda, click en CTA empty-state o regular
+        waitForTag("band_detail_root")
+        val emptyCta = composeRule.activity.getString(R.string.add_first_member_cta)
+        val regularCta = composeRule.activity.getString(R.string.add_musicians_cta)
+        // Empty-state primero; fallback al botón regular si la banda ya tiene miembros.
+        val emptyNodes = composeRule.onAllNodesWithText(emptyCta).fetchSemanticsNodes()
+        if (emptyNodes.isNotEmpty()) {
+            composeRule.onNodeWithText(emptyCta).performClick()
+        } else {
+            composeRule.onNodeWithText(regularCta).performClick()
+        }
+
+        // 5. En la pantalla de agregar músicos, esperamos a que carguen los disponibles
+        // y hacemos click en el "+" del primer músico disponible.
+        waitForTag("add_musicians_screen_root")
+        val availableMusician = tagStartsWith("available_musician_")
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(availableMusician).fetchSemanticsNodes().isNotEmpty()
+        }
+        // El "+" tiene contentDescription = "Agregar {nombre} a la banda" (R.string.cd_add_musician_to_band).
+        val addButton = SemanticsMatcher("ContentDescription starts with 'Agregar ' and ends with ' a la banda'") { node ->
+            val cd = node.config.getOrNull(SemanticsProperties.ContentDescription) ?: return@SemanticsMatcher false
+            cd.any { it.startsWith("Agregar ") && it.endsWith(" a la banda") }
+        }
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(addButton).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodes(addButton)[0].performClick()
+
+        // 6. Verificar que el músico ahora aparece en "Integrantes actuales".
+        // El ViewModel hace optimistic update local, por lo que aparece en current_member_<id>
+        // aunque el repository fake no persista el cambio.
+        val currentMember = tagStartsWith("current_member_")
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(currentMember).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodes(currentMember)[0].assertExists()
+    }
+
     // -- Helpers -------------------------------------------------------------
 
     private fun waitForTag(tag: String) {
