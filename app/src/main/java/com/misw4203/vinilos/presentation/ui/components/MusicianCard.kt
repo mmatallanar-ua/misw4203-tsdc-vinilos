@@ -24,11 +24,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.misw4203.vinilos.R
 import com.misw4203.vinilos.domain.model.MusicianSummary
 
 @Composable
@@ -42,6 +43,7 @@ fun MusicianCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
+            .semantics(mergeDescendants = true) { role = Role.Button }
             .padding(horizontal = 4.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -53,7 +55,7 @@ fun MusicianCard(
         ) {
             AsyncImage(
                 model = musician.image,
-                contentDescription = stringResource(R.string.cd_artist_image),
+                contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.size(72.dp),
             )
@@ -87,7 +89,7 @@ fun MusicianCard(
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = stringResource(R.string.cd_open_artist),
+                contentDescription = null,
                 tint = MaterialTheme.colorScheme.outlineVariant,
             )
         }

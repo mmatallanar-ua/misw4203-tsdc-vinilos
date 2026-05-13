@@ -84,13 +84,25 @@
 
     <!-- Content descriptions -->
     <string name="cd_album_cover">Portada del álbum</string>
+    <string name="cd_album_cover_of">Carátula del álbum %s</string>
     <string name="cd_menu">Menú</string>
     <string name="cd_profile">Perfil</string>
     <string name="cd_open_album">Abrir álbum</string>
     <string name="cd_artist_image">Foto del artista</string>
+    <string name="cd_artist_photo_of">Foto del artista %s</string>
     <string name="cd_open_artist">Abrir artista</string>
     <string name="cd_collector_avatar">Avatar del coleccionista</string>
     <string name="cd_open_collector">Abrir coleccionista</string>
+    <string name="cd_collector_email">Correo: %s</string>
+    <string name="cd_collector_phone">Teléfono: %s</string>
+    <string name="cd_track_with_duration">Pista %1$d, %2$s, duración %3$s</string>
+    <string name="cd_track_no_duration">Pista %1$d, %2$s</string>
+    <string name="cd_rating_summary">Calificación %1$d de 5</string>
+    <string name="cd_rate_with_stars">Calificar con %1$d de 5 estrellas</string>
+    <string name="cd_state_selected">Seleccionada</string>
+    <string name="cd_state_not_selected">No seleccionada</string>
+    <string name="cd_state_loading">Cargando, por favor espera</string>
+    <string name="cd_search_field">Campo de búsqueda: %s</string>
 
     <!-- List counters -->
     <plurals name="albums_record_count">

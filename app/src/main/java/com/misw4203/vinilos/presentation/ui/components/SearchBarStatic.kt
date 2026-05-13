@@ -18,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.misw4203.vinilos.R
 
@@ -26,6 +28,7 @@ fun SearchBarStatic(
     modifier: Modifier = Modifier,
     placeholder: String = stringResource(R.string.search_placeholder),
 ) {
+    val description = stringResource(R.string.cd_search_field, placeholder)
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -36,7 +39,8 @@ fun SearchBarStatic(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f),
                 shape = RoundedCornerShape(12.dp),
             )
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp)
+            .semantics(mergeDescendants = true) { contentDescription = description },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(

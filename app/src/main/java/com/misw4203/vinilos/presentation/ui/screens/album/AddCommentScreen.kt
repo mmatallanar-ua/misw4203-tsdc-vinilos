@@ -43,6 +43,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -94,6 +96,7 @@ fun AddCommentScreen(
                         text = stringResource(R.string.add_comment_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.semantics { heading() },
                     )
                 },
                 navigationIcon = {
@@ -259,6 +262,7 @@ private fun SectionHeading(text: String) {
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.semantics { heading() },
         )
     }
 }

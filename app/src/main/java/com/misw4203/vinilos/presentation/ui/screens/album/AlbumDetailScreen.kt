@@ -43,6 +43,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -119,7 +120,7 @@ private fun AlbumDetailContent(
             Box(modifier = Modifier.fillMaxWidth().height(CoverHeight)) {
                 AsyncImage(
                     model = album.coverUrl,
-                    contentDescription = stringResource(R.string.cd_album_cover),
+                    contentDescription = stringResource(R.string.cd_album_cover_of, album.name),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
                 )
@@ -141,6 +142,7 @@ private fun AlbumDetailContent(
                         style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.semantics { heading() },
                     )
                     if (album.artistName.isNotBlank()) {
                         Spacer(Modifier.height(4.dp))
@@ -307,12 +309,18 @@ private fun TracksSection(tracks: List<Track>, onAddTrack: () -> Unit) {
 
 @Composable
 private fun TrackRow(index: Int, track: Track) {
+    val rowDesc = if (track.duration.isNotBlank()) {
+        stringResource(R.string.cd_track_with_duration, index, track.name, track.duration)
+    } else {
+        stringResource(R.string.cd_track_no_duration, index, track.name)
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp)
+            .semantics(mergeDescendants = true) { contentDescription = rowDesc },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -354,7 +362,8 @@ private fun PerformerChip(performer: Performer) {
         modifier = Modifier
             .clip(RoundedCornerShape(999.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -431,6 +440,7 @@ private fun SectionHeader(title: String) {
         style = MaterialTheme.typography.labelSmall,
         fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.semantics { heading() },
     )
 }
 

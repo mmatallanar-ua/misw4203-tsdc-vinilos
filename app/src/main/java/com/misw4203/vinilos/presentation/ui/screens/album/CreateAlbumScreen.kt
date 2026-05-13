@@ -70,6 +70,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -162,6 +164,7 @@ fun CreateAlbumScreen(
                     Text(
                         text = stringResource(R.string.create_album_title),
                         style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.semantics { heading() },
                     )
                 },
                 navigationIcon = {
@@ -231,6 +234,7 @@ fun CreateAlbumScreen(
                             text = stringResource(R.string.create_album_section_title),
                             style = MaterialTheme.typography.headlineSmall,
                             color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.semantics { heading() },
                         )
                         Text(
                             text = stringResource(R.string.create_album_section_subtitle),
@@ -433,6 +437,7 @@ private fun SectionLabel(text: String) {
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         letterSpacing = androidx.compose.ui.unit.TextUnit(0.12f, androidx.compose.ui.unit.TextUnitType.Em),
+        modifier = Modifier.semantics { heading() },
     )
 }
 

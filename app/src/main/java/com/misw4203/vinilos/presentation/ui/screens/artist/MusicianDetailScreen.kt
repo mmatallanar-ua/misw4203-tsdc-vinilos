@@ -48,6 +48,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -82,6 +86,7 @@ fun MusicianDetailScreen(
                     Text(
                         text = stringResource(R.string.artist_detail_title),
                         fontWeight = FontWeight.Bold,
+                        modifier = Modifier.semantics { heading() },
                     )
                 },
                 navigationIcon = {
@@ -162,7 +167,7 @@ private fun ArtistHeader(musician: Musician) {
     ) {
         AsyncImage(
             model = musician.image,
-            contentDescription = musician.name,
+            contentDescription = stringResource(R.string.cd_artist_photo_of, musician.name),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(120.dp)
@@ -175,6 +180,7 @@ private fun ArtistHeader(musician: Musician) {
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { heading() },
         )
         Spacer(Modifier.height(8.dp))
         Surface(
@@ -210,6 +216,7 @@ private fun SectionHeader(title: String) {
             text = title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
+            modifier = Modifier.semantics { heading() },
         )
         Spacer(Modifier.width(12.dp))
         HorizontalDivider(
@@ -248,10 +255,14 @@ private fun AlbumsSection(albums: List<Album>) {
 
 @Composable
 private fun AlbumCard(album: Album) {
-    Column(modifier = Modifier.width(120.dp)) {
+    Column(
+        modifier = Modifier
+            .width(120.dp)
+            .semantics(mergeDescendants = true) {},
+    ) {
         AsyncImage(
             model = album.coverUrl,
-            contentDescription = album.name,
+            contentDescription = stringResource(R.string.cd_album_cover_of, album.name),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(120.dp)
@@ -319,6 +330,7 @@ private fun PrizeItem(prize: MusicianPrize, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
+            .semantics(mergeDescendants = true) { role = Role.Button }
             .testTag("prize_${prize.id}"),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
