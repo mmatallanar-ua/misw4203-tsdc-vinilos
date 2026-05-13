@@ -12,7 +12,6 @@ import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.data.remote.dto.MusicianDetailDto
 import com.misw4203.vinilos.data.remote.dto.PrizeDetailDto
 import com.misw4203.vinilos.data.remote.dto.TrackDto
-import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -62,12 +61,9 @@ interface VinilosApiService {
     @GET("bands/{id}")
     suspend fun getBandDetail(@Path("id") id: Int): BandDetailDto
 
-    @GET("bands/{id}/musicians")
-    suspend fun getBandMembers(@Path("id") id: Int): List<MusicianDetailDto>
-
     @POST("bands/{bandId}/musicians/{musicianId}")
     suspend fun addMusicianToBand(
         @Path("bandId") bandId: Int,
         @Path("musicianId") musicianId: Int,
-    ): Response<Unit>
+    )
 }

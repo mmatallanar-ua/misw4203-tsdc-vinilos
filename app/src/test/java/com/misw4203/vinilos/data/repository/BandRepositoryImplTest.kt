@@ -137,7 +137,7 @@ class BandRepositoryImplTest {
             members = emptyList(), albums = emptyList(),
         )
         coEvery { dao.getDetailById(1) } returns cachedBand
-        coEvery { api.addMusicianToBand(1, 10) } returns Response.success(Unit)
+        coEvery { api.addMusicianToBand(1, 10) } returns Unit
         coEvery { api.getMusicianDetail(10) } returns MusicianDetailDto(
             10, "Freddie", "img", "", "1946-09-05", emptyList(), emptyList()
         )
@@ -152,7 +152,7 @@ class BandRepositoryImplTest {
     @Test
     fun `addMusicianToBand without cache only posts and skips local update`() = runTest {
         coEvery { dao.getDetailById(1) } returns null
-        coEvery { api.addMusicianToBand(1, 10) } returns Response.success(Unit)
+        coEvery { api.addMusicianToBand(1, 10) } returns Unit
 
         repo.addMusicianToBand(1, 10)
 
@@ -163,11 +163,31 @@ class BandRepositoryImplTest {
     fun `addMusicianToBand IOException rethrows leaving cache intact`() = runTest {
         coEvery { api.addMusicianToBand(1, 10) } throws IOException("offline")
 
+        var threw = false
         try {
             repo.addMusicianToBand(1, 10)
-            fail("Expected IOException")
         } catch (e: IOException) {
-            coVerify(exactly = 0) { dao.upsertDetail(any()) }
+            threw = true
         }
+        assertTrue("Expected IOException", threw)
+        coVerify(exactly = 0) { dao.upsertDetail(any()) }
+    }
+
+    @Test
+    fun `addMusicianToBand HttpException propagates and skips cache update`() = runTest {
+        val httpError = HttpException(
+            Response.error<Any>(409, "".toResponseBody("text/plain".toMediaType()))
+        )
+        coEvery { api.addMusicianToBand(1, 10) } throws httpError
+
+        var threw = false
+        try {
+            repo.addMusicianToBand(1, 10)
+        } catch (e: HttpException) {
+            threw = true
+            assertEquals(409, e.code())
+        }
+        assertTrue("Expected HttpException", threw)
+        coVerify(exactly = 0) { dao.upsertDetail(any()) }
     }
 }

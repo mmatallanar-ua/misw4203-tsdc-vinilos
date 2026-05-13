@@ -12,6 +12,7 @@ import com.misw4203.vinilos.domain.model.Band
 import com.misw4203.vinilos.domain.model.BandSummary
 import com.misw4203.vinilos.domain.model.MusicianSummary
 import com.misw4203.vinilos.domain.repository.BandRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -46,18 +47,26 @@ class BandRepositoryImpl @Inject constructor(
 
     override suspend fun addMusicianToBand(bandId: Int, musicianId: Int) = withContext(Dispatchers.IO) {
         api.addMusicianToBand(bandId, musicianId)
-        // Write-through: si el detalle esta cacheado, agregamos el nuevo miembro.
-        val cached = dao.getDetailById(bandId)
-        if (cached != null) {
-            val musicianDto = api.getMusicianDetail(musicianId)
-            val newMember = MusicianSummary(
-                id = musicianDto.id,
-                name = musicianDto.name,
-                image = musicianDto.image,
-                birthDate = musicianDto.birthDate,
-            )
-            val updated = cached.copy(members = cached.members + newMember)
-            dao.upsertDetail(updated)
+        // Write-through best-effort: si el detalle esta cacheado, intentamos
+        // refrescar members. Un fallo aqui no debe propagarse: la cache se
+        // reconciliara con el servidor en el proximo getBandDetail.
+        try {
+            val cached = dao.getDetailById(bandId)
+            if (cached != null) {
+                val musicianDto = api.getMusicianDetail(musicianId)
+                val newMember = MusicianSummary(
+                    id = musicianDto.id,
+                    name = musicianDto.name,
+                    image = musicianDto.image,
+                    birthDate = musicianDto.birthDate,
+                )
+                val updated = cached.copy(members = cached.members + newMember)
+                dao.upsertDetail(updated)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // best-effort
         }
         Unit
     }
@@ -75,7 +84,12 @@ class BandRepositoryImpl @Inject constructor(
         description = description.orEmpty(),
         creationDate = creationDate.orEmpty(),
         members = musicians.orEmpty().map {
-            MusicianSummary(it.id, it.name, it.image, it.birthDate)
+            MusicianSummary(
+                id = it.id,
+                name = it.name,
+                image = it.image,
+                birthDate = it.birthDate,
+            )
         },
         albums = albums.orEmpty().map { it.toDomain() },
     )
