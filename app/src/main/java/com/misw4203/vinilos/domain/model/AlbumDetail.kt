@@ -30,4 +30,5 @@ data class Comment(
     val id: Long,
     val description: String,
     val rating: Int,
+    val commenter: CollectorSummary? = null,
 )

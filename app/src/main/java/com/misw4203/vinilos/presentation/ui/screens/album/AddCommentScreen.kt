@@ -160,10 +160,6 @@ private fun AddCommentContent(
             rating = form.rating,
             onRatingChange = onRatingChange,
         )
-        if (form.ratingError == FormError.InvalidRating) {
-            Spacer(Modifier.height(6.dp))
-            ErrorText(stringResource(R.string.add_comment_error_rating))
-        }
 
         Spacer(Modifier.height(24.dp))
 
@@ -277,11 +273,3 @@ private fun FieldLabel(text: String) {
     )
 }
 
-@Composable
-private fun ErrorText(message: String) {
-    Text(
-        text = message,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.error,
-    )
-}

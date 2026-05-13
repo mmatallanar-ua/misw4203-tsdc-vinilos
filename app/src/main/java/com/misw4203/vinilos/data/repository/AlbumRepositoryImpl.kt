@@ -11,6 +11,7 @@ import com.misw4203.vinilos.data.remote.dto.CreateCommentRequest
 import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
+import com.misw4203.vinilos.domain.model.CollectorSummary
 import com.misw4203.vinilos.domain.model.Comment
 import com.misw4203.vinilos.domain.model.CreateAlbumInput
 import com.misw4203.vinilos.domain.model.Performer
@@ -83,6 +84,7 @@ class AlbumRepositoryImpl @Inject constructor(
             id = response.id,
             description = response.description.orEmpty(),
             rating = response.rating ?: rating,
+            commenter = response.collector?.toSummary(),
         )
         // Write-through cache: ver nota en addTrack.
         dao.getDetailById(albumId)?.let { cached ->
@@ -147,7 +149,11 @@ class AlbumRepositoryImpl @Inject constructor(
                 id = c.id,
                 description = c.description.orEmpty(),
                 rating = c.rating ?: 0,
+                commenter = c.collector?.toSummary(),
             )
         }.orEmpty(),
     )
+
+    private fun com.misw4203.vinilos.data.remote.dto.CollectorDto.toSummary(): CollectorSummary =
+        CollectorSummary(id = id, name = name, telephone = telephone, email = email)
 }

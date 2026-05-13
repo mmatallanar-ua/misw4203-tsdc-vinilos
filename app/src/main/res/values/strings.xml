@@ -131,7 +131,6 @@
     <string name="add_comment_submit">Publicar comentario</string>
     <string name="add_comment_action_cta">+ Comentar</string>
     <string name="add_comment_error_description">El comentario no puede estar vacío</string>
-    <string name="add_comment_error_rating">Selecciona una calificación de 1 a 5</string>
     <string name="add_comment_error_network">Sin conexión. Intenta de nuevo.</string>
     <string name="add_comment_error_server">No pudimos publicar tu comentario. Inténtalo de nuevo.</string>
 
