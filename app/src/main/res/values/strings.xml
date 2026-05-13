@@ -134,4 +134,45 @@
     <string name="add_comment_error_rating">Selecciona una calificación de 1 a 5</string>
     <string name="add_comment_error_network">Sin conexión. Intenta de nuevo.</string>
     <string name="add_comment_error_server">No pudimos publicar tu comentario. Inténtalo de nuevo.</string>
+
+    <!-- HU012 - Bandas -->
+    <string name="artists_tab_musicians">Músicos</string>
+    <string name="artists_tab_bands">Bandas</string>
+    <string name="bands_title">Bandas</string>
+    <string name="band_badge">BANDA</string>
+    <string name="band_detail_title">Detalle de la banda</string>
+    <string name="band_not_found_title">Banda no encontrada</string>
+    <string name="band_not_found_body">La banda solicitada no existe en el catálogo.</string>
+    <string name="band_members_section_title">Integrantes</string>
+    <string name="band_members_empty_title">Aún no hay integrantes</string>
+    <string name="band_members_empty_body">Esta banda todavía no tiene integrantes registrados.</string>
+    <string name="add_first_member_cta">Agregar primer integrante</string>
+    <string name="add_musicians_cta">Agregar músicos</string>
+    <string name="band_albums_section_title">Álbumes</string>
+    <plurals name="members_record_count">
+        <item quantity="one">%d integrante</item>
+        <item quantity="other">%d integrantes</item>
+    </plurals>
+    <plurals name="bands_record_count">
+        <item quantity="one">%d banda · orden alfa</item>
+        <item quantity="other">%d bandas · orden alfa</item>
+    </plurals>
+    <string name="search_placeholder_bands">¿Qué banda buscas?</string>
+
+    <!-- HU012 - Agregar músicos -->
+    <string name="add_musicians_title">Agregar músicos</string>
+    <string name="add_musicians_available_section">Músicos disponibles</string>
+    <string name="add_musicians_current_section">Integrantes actuales</string>
+    <string name="add_musicians_empty_filter">No se encontraron músicos con ese nombre</string>
+    <string name="add_musicians_empty_catalog">No hay músicos disponibles para agregar</string>
+    <string name="search_musicians_placeholder">Buscar por nombre</string>
+    <string name="add_musician_success">«%s» fue agregado a la banda</string>
+    <string name="add_musician_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="add_musician_error_server">No pudimos agregar el músico. Inténtalo de nuevo.</string>
+
+    <!-- HU012 - Content descriptions -->
+    <string name="cd_band_image">Imagen de la banda</string>
+    <string name="cd_band_image_of">Imagen de la banda %s</string>
+    <string name="cd_add_musician_to_band">Agregar %s a la banda</string>
+    <string name="cd_adding_musician">Agregando músico</string>
 </resources>
