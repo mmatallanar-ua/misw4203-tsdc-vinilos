@@ -29,8 +29,10 @@ import com.misw4203.vinilos.presentation.ui.screens.album.AddTrackScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumListScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.CreateAlbumScreen
+import com.misw4203.vinilos.presentation.ui.screens.artist.ArtistsHubScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianDetailScreen
-import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianListScreen
+import com.misw4203.vinilos.presentation.ui.screens.band.AddMusiciansToBandScreen
+import com.misw4203.vinilos.presentation.ui.screens.band.BandDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorListScreen
 
@@ -153,8 +155,9 @@ fun VinilosNavHost() {
                     )
                 }
                 composable(Destinations.ArtistList) {
-                    MusicianListScreen(
+                    ArtistsHubScreen(
                         onMusicianClick = { id -> navController.navigate("artist/$id") },
+                        onBandClick = { id -> navController.navigate(Destinations.bandDetail(id)) },
                     )
                 }
                 composable(
@@ -180,6 +183,40 @@ fun VinilosNavHost() {
                     CollectorDetailScreen(
                         collectorId = collectorId,
                         onBack = { navController.popBackStack() },
+                    )
+                }
+                composable(
+                    route = Destinations.BandDetail,
+                    arguments = listOf(navArgument(Destinations.BandDetailArg) { type = NavType.IntType }),
+                ) { entry ->
+                    val bandId = entry.arguments?.getInt(Destinations.BandDetailArg) ?: return@composable
+                    val refreshFlag by entry.savedStateHandle
+                        .getStateFlow(Destinations.RefreshBandDetailKey, false)
+                        .collectAsStateWithLifecycle()
+                    BandDetailScreen(
+                        bandId = bandId,
+                        onBack = { navController.popBackStack() },
+                        onMusicianClick = { id -> navController.navigate("artist/$id") },
+                        onAddMusicians = {
+                            navController.navigate(Destinations.addMusiciansToBand(bandId))
+                        },
+                        refreshKey = refreshFlag,
+                        onRefreshHandled = {
+                            entry.savedStateHandle[Destinations.RefreshBandDetailKey] = false
+                        },
+                    )
+                }
+                composable(
+                    route = Destinations.AddMusiciansToBand,
+                    arguments = listOf(navArgument(Destinations.AddMusiciansBandArg) { type = NavType.IntType }),
+                ) {
+                    AddMusiciansToBandScreen(
+                        onBack = {
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(Destinations.RefreshBandDetailKey, true)
+                            navController.popBackStack()
+                        },
                     )
                 }
             }

@@ -82,6 +82,8 @@ fun MusicianRow(
                         text = musician.birthDate.take(10),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.outline,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }

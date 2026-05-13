@@ -7,6 +7,7 @@ import com.misw4203.vinilos.domain.model.MusicianSummary
 import com.misw4203.vinilos.domain.usecase.AddMusicianToBandUseCase
 import com.misw4203.vinilos.domain.usecase.GetBandDetailUseCase
 import com.misw4203.vinilos.domain.usecase.GetMusiciansUseCase
+import com.misw4203.vinilos.presentation.navigation.Destinations
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.FlowPreview
@@ -37,8 +38,9 @@ class AddMusiciansToBandViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    private val bandId: Int = savedStateHandle.get<Int>("bandId")
-        ?: error("AddMusiciansToBandViewModel requires bandId in SavedStateHandle")
+    private val bandId: Int = checkNotNull(savedStateHandle.get<Int>(Destinations.AddMusiciansBandArg)) {
+        "AddMusiciansToBandViewModel requires bandId in SavedStateHandle"
+    }
 
     private val _form = MutableStateFlow(AddMusiciansFormState())
     val form: StateFlow<AddMusiciansFormState> = _form.asStateFlow()
