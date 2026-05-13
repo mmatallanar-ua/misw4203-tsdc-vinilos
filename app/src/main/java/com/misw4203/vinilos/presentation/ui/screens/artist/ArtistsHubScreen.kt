@@ -3,8 +3,8 @@ package com.misw4203.vinilos.presentation.ui.screens.artist
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,7 +28,7 @@ fun ArtistsHubScreen(
 
     Column(modifier = modifier.fillMaxSize()) {
         VinilosTopBar(title = stringResource(R.string.artists_title))
-        TabRow(
+        PrimaryTabRow(
             selectedTabIndex = selectedTab,
             containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface,
