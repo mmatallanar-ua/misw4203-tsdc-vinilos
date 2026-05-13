@@ -9,4 +9,5 @@ sealed interface AddMusiciansUiState {
 
 sealed interface AddMusiciansEvent {
     data class AddedSuccessfully(val musicianName: String) : AddMusiciansEvent
+    data class AddFailed(val isNetworkError: Boolean) : AddMusiciansEvent
 }

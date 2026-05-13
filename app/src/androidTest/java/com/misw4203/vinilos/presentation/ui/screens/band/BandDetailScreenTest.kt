@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -101,6 +102,28 @@ class BandDetailScreenTest {
         }
         composeTestRule.onNodeWithText(cta).performClick()
         assertEquals(true, clicked)
+    }
+
+    @Test
+    fun errorStateShowsRetry() {
+        val vm = buildVm(FakeRepo(Result.failure(java.io.IOException("offline"))))
+
+        composeTestRule.setContent {
+            MaterialTheme {
+                BandDetailScreen(
+                    bandId = 1, onBack = {}, onMusicianClick = {}, onAddMusicians = {},
+                    viewModel = vm,
+                )
+            }
+        }
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule.onAllNodesWithText(
+                composeTestRule.activity.getString(com.misw4203.vinilos.R.string.action_retry)
+            ).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeTestRule.onNodeWithText(
+            composeTestRule.activity.getString(com.misw4203.vinilos.R.string.action_retry)
+        ).assertIsDisplayed()
     }
 
     @Test

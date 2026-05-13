@@ -5,8 +5,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.SavedStateHandle
@@ -19,6 +21,7 @@ import com.misw4203.vinilos.domain.repository.MusicianRepository
 import com.misw4203.vinilos.domain.usecase.AddMusicianToBandUseCase
 import com.misw4203.vinilos.domain.usecase.GetBandDetailUseCase
 import com.misw4203.vinilos.domain.usecase.GetMusiciansUseCase
+import com.misw4203.vinilos.presentation.navigation.Destinations
 import com.misw4203.vinilos.presentation.viewmodel.AddMusiciansToBandViewModel
 import org.junit.Rule
 import org.junit.Test
@@ -53,7 +56,7 @@ class AddMusiciansToBandScreenTest {
             getMusicians = GetMusiciansUseCase(FakeMusicianRepo(catalog)),
             getBandDetail = GetBandDetailUseCase(bandRepo),
             addMusicianToBand = AddMusicianToBandUseCase(bandRepo),
-            savedStateHandle = SavedStateHandle(mapOf("bandId" to bandId)),
+            savedStateHandle = SavedStateHandle(mapOf(Destinations.AddMusiciansBandArg to bandId)),
         )
     }
 
@@ -138,5 +141,35 @@ class AddMusiciansToBandScreenTest {
                 .fetchSemanticsNodes().isEmpty()
         }
         composeTestRule.onNodeWithTag("current_member_10").assertIsDisplayed()
+    }
+
+    @Test
+    fun loadErrorShowsErrorStateWithRetry() {
+        val musicianRepo = FakeMusicianRepo(emptyList())
+        val bandRepo = object : BandRepository {
+            override suspend fun getBands(): List<BandSummary> = error("not used")
+            override suspend fun getBandDetail(id: Int): Band = throw java.io.IOException("offline")
+            override suspend fun addMusicianToBand(bandId: Int, musicianId: Int) = Unit
+        }
+        val vm = AddMusiciansToBandViewModel(
+            getMusicians = GetMusiciansUseCase(musicianRepo),
+            getBandDetail = GetBandDetailUseCase(bandRepo),
+            addMusicianToBand = AddMusicianToBandUseCase(bandRepo),
+            savedStateHandle = SavedStateHandle(mapOf(Destinations.AddMusiciansBandArg to 1)),
+        )
+
+        composeTestRule.setContent {
+            MaterialTheme {
+                AddMusiciansToBandScreen(onBack = {}, viewModel = vm)
+            }
+        }
+        composeTestRule.waitUntil(timeoutMillis = 5000) {
+            composeTestRule.onAllNodesWithText(
+                composeTestRule.activity.getString(R.string.action_retry)
+            ).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeTestRule.onNodeWithText(
+            composeTestRule.activity.getString(R.string.action_retry)
+        ).assertIsDisplayed()
     }
 }

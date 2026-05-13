@@ -44,7 +44,9 @@ fun VinilosNavHost() {
     val currentRoute = backStackEntry?.destination?.route
 
     val selectedDestination = when {
-        currentRoute == Destinations.ArtistList || currentRoute?.startsWith("artist/") == true -> VinilosDestination.Artists
+        currentRoute == Destinations.ArtistList ||
+            currentRoute?.startsWith("artist/") == true ||
+            currentRoute?.startsWith("band/") == true -> VinilosDestination.Artists
         currentRoute == Destinations.Collectors || currentRoute?.startsWith("collector/") == true -> VinilosDestination.Collectors
         else -> VinilosDestination.Albums
     }

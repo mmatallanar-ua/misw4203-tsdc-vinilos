@@ -94,10 +94,13 @@ class AddMusiciansToBandViewModel @Inject constructor(
                 throw e
             } catch (e: IOException) {
                 _uiState.value = AddMusiciansUiState.Error(isNetworkError = true, musicianId = musicianId)
+                _events.tryEmit(AddMusiciansEvent.AddFailed(isNetworkError = true))
             } catch (e: HttpException) {
                 _uiState.value = AddMusiciansUiState.Error(isNetworkError = false, musicianId = musicianId)
+                _events.tryEmit(AddMusiciansEvent.AddFailed(isNetworkError = false))
             } catch (e: Exception) {
                 _uiState.value = AddMusiciansUiState.Error(isNetworkError = false, musicianId = musicianId)
+                _events.tryEmit(AddMusiciansEvent.AddFailed(isNetworkError = false))
             }
         }
     }
