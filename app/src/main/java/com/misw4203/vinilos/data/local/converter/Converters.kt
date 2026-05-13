@@ -8,6 +8,7 @@ import com.misw4203.vinilos.domain.model.CollectorAlbum
 import com.misw4203.vinilos.domain.model.CollectorComment
 import com.misw4203.vinilos.domain.model.Comment
 import com.misw4203.vinilos.domain.model.MusicianPrize
+import com.misw4203.vinilos.domain.model.MusicianSummary
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.Track
 
@@ -62,4 +63,11 @@ class Converters {
     @TypeConverter
     fun jsonToCollectorComments(value: String): List<CollectorComment> =
         gson.fromJson(value, object : TypeToken<List<CollectorComment>>() {}.type)
+
+    @TypeConverter
+    fun musicianSummariesToJson(value: List<MusicianSummary>): String = gson.toJson(value)
+
+    @TypeConverter
+    fun jsonToMusicianSummaries(value: String): List<MusicianSummary> =
+        gson.fromJson(value, object : TypeToken<List<MusicianSummary>>() {}.type)
 }

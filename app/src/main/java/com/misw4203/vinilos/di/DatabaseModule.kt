@@ -3,6 +3,7 @@ package com.misw4203.vinilos.di
 import android.content.Context
 import androidx.room.Room
 import com.misw4203.vinilos.data.local.dao.AlbumDao
+import com.misw4203.vinilos.data.local.dao.BandDao
 import com.misw4203.vinilos.data.local.dao.CollectorDao
 import com.misw4203.vinilos.data.local.dao.MusicianDao
 import com.misw4203.vinilos.data.local.database.VinilosDatabase
@@ -32,4 +33,7 @@ object DatabaseModule {
 
     @Provides
     fun provideCollectorDao(db: VinilosDatabase): CollectorDao = db.collectorDao()
+
+    @Provides
+    fun provideBandDao(db: VinilosDatabase): BandDao = db.bandDao()
 }
