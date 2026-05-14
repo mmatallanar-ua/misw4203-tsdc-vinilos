@@ -10,7 +10,6 @@ import com.misw4203.vinilos.domain.usecase.GetMusiciansUseCase
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,17 +18,12 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 import java.text.Normalizer
 import javax.inject.Inject
 
-@OptIn(FlowPreview::class)
 @HiltViewModel
 class AddMusiciansToBandViewModel @Inject constructor(
     private val getMusicians: GetMusiciansUseCase,
@@ -51,24 +45,15 @@ class AddMusiciansToBandViewModel @Inject constructor(
     private val _events = MutableSharedFlow<AddMusiciansEvent>(extraBufferCapacity = 1)
     val events: SharedFlow<AddMusiciansEvent> = _events.asSharedFlow()
 
-    private val queryChannel = MutableStateFlow("")
-
     init {
         loadInitial()
-        queryChannel
-            .debounce(300L)
-            .distinctUntilChanged()
-            .onEach { q ->
-                _form.value = _form.value.copy(
-                    query = q,
-                    filteredAvailable = computeFiltered(_form.value.allMusicians, _form.value.currentMemberIds, q),
-                )
-            }
-            .launchIn(viewModelScope)
     }
 
     fun onQueryChange(query: String) {
-        queryChannel.value = query
+        _form.value = _form.value.copy(
+            query = query,
+            filteredAvailable = computeFiltered(_form.value.allMusicians, _form.value.currentMemberIds, query),
+        )
     }
 
     fun onAddMusician(musicianId: Int) {
