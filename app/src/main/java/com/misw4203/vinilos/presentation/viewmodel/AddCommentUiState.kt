@@ -13,10 +13,8 @@ data class AddCommentFormState(
     val description: String = "",
     val rating: Int = 0,
     val descriptionError: FormError? = null,
-    val ratingError: FormError? = null,
 )
 
 enum class FormError {
     EmptyDescription,
-    InvalidRating,
 }

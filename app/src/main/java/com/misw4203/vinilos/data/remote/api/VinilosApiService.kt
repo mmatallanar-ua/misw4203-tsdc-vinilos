@@ -1,6 +1,8 @@
 package com.misw4203.vinilos.data.remote.api
 
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
+import com.misw4203.vinilos.data.remote.dto.BandDetailDto
+import com.misw4203.vinilos.data.remote.dto.BandDto
 import com.misw4203.vinilos.data.remote.dto.CollectorDetailDto
 import com.misw4203.vinilos.data.remote.dto.CollectorDto
 import com.misw4203.vinilos.data.remote.dto.CommentDto
@@ -52,4 +54,16 @@ interface VinilosApiService {
         @Path("id") albumId: Long,
         @Body request: CreateCommentRequest,
     ): CommentDto
+
+    @GET("bands")
+    suspend fun getBands(): List<BandDto>
+
+    @GET("bands/{id}")
+    suspend fun getBandDetail(@Path("id") id: Int): BandDetailDto
+
+    @POST("bands/{bandId}/musicians/{musicianId}")
+    suspend fun addMusicianToBand(
+        @Path("bandId") bandId: Int,
+        @Path("musicianId") musicianId: Int,
+    )
 }

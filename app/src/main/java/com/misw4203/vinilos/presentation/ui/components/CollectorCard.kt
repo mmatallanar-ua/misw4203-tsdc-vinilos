@@ -23,10 +23,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.misw4203.vinilos.R
 import com.misw4203.vinilos.domain.model.CollectorSummary
 
 @Composable
@@ -40,6 +41,7 @@ fun CollectorCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
+            .semantics(mergeDescendants = true) { role = Role.Button }
             .padding(horizontal = 4.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -52,7 +54,7 @@ fun CollectorCard(
         ) {
             Icon(
                 imageVector = Icons.Filled.Person,
-                contentDescription = stringResource(R.string.cd_collector_avatar),
+                contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.size(40.dp),
             )
@@ -76,7 +78,7 @@ fun CollectorCard(
             }
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = stringResource(R.string.cd_open_collector),
+                contentDescription = null,
                 tint = MaterialTheme.colorScheme.outlineVariant,
             )
         }

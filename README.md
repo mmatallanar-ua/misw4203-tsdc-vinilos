@@ -29,6 +29,7 @@ app/src/main/java/com/misw4203/vinilos/
 │       ├── screens/
 │       │   ├── album/
 │       │   ├── artist/
+│       │   ├── band/
 │       │   └── collector/
 │       ├── components/  # Composables reutilizables
 │       └── theme/       # Material 3 theme
@@ -49,8 +50,8 @@ Responsable de obtener y persistir datos, ya sea desde la red o desde la base de
 | `data/local/dao/` | Interfaces DAO de Room con operaciones `@Upsert`, `@Query`, y transacciones (`replaceX` = clear + upsert). |
 | `data/local/database/` | `VinilosDatabase` — clase abstracta `RoomDatabase` que declara entidades y expone los DAOs. |
 | `data/local/entity/` | Entidades `@Entity` con mappers `toDomain()` / `fromDomain()`. |
-| `data/remote/api/` | `VinilosApiService` — interfaz Retrofit con los endpoints de lectura (`GET /albums`, `GET /albums/{id}`, `GET /musicians`, `GET /musicians/{id}`, `GET /prizes/{id}`, `GET /collectors`, `GET /collectors/{id}`) y de escritura (`POST /albums`, `POST /albums/{id}/tracks`, `POST /albums/{id}/comments`). |
-| `data/remote/dto/` | DTOs que modelan la respuesta JSON (`AlbumDto`, `TrackDto`, `CommentDto`, `MusicianDetailDto`, `PrizeDetailDto`, `PerformerPrizeDto`, `CollectorDto`, `CollectorDetailDto`) y los bodies de escritura (`CreateAlbumRequestDto`, `CreateTrackRequest`, `CreateCommentRequest`). Campos nullables para tolerar datos incompletos del servidor. |
+| `data/remote/api/` | `VinilosApiService` — interfaz Retrofit con los endpoints de lectura (`GET /albums`, `GET /albums/{id}`, `GET /musicians`, `GET /musicians/{id}`, `GET /prizes/{id}`, `GET /collectors`, `GET /collectors/{id}`, `GET /bands`, `GET /bands/{id}`) y de escritura (`POST /albums`, `POST /albums/{id}/tracks`, `POST /albums/{id}/comments`, `POST /bands/{bandId}/musicians/{musicianId}`). |
+| `data/remote/dto/` | DTOs que modelan la respuesta JSON (`AlbumDto`, `TrackDto`, `CommentDto`, `MusicianDetailDto`, `PrizeDetailDto`, `PerformerPrizeDto`, `CollectorDto`, `CollectorDetailDto`, `BandDto`, `BandDetailDto`) y los bodies de escritura (`CreateAlbumRequestDto`, `CreateTrackRequest`, `CreateCommentRequest` con `CollectorRef`). Campos nullables para tolerar datos incompletos del servidor. |
 | `data/repository/` | Implementaciones de repositorio con estrategia **network-first + fallback a caché** para lecturas y POST directo a red (sin caché) para escrituras. |
 
 ### Estrategia de caché
@@ -61,10 +62,11 @@ Todos los repositorios siguen el mismo patrón para **lecturas**:
 2. Si la red falla con `IOException` (offline) → retorna la caché si existe; si no, re-lanza el error.
 3. Si falla con `HttpException` u otro → propaga (la UI clasifica 404, red, servidor, etc.).
 
-Para **escrituras** (`POST /albums`, `POST /albums/{id}/tracks`, `POST /albums/{id}/comments`) el repositorio aplica **write-through cache**:
+Para **escrituras** (`POST /albums`, `POST /albums/{id}/tracks`, `POST /albums/{id}/comments`, `POST /bands/{bandId}/musicians/{musicianId}`) el repositorio aplica **write-through cache best-effort**:
 
 - `createAlbum`: tras la respuesta exitosa hace `dao.upsert(AlbumEntity)` para insertar el nuevo álbum en la lista local.
 - `addTrack` / `addComment`: si existe un `AlbumDetailEntity` cacheado para ese `albumId`, se hace read-modify-write apilando el nuevo track/comentario y `upsertDetail` lo persiste; si el detalle aún no está en caché, se omite la escritura local (el próximo `getAlbumById` la repoblará).
+- `addMusicianToBand`: enriquece el detalle de banda en caché con el nuevo integrante. La enriquecimiento va envuelto en `try/catch` (re-lanzando `CancellationException`) para que un fallo del cache no convierta un POST exitoso en error visible.
 
 Adicionalmente, la pantalla origen invalida su `UiState` vía `retry()` o un flag en `SavedStateHandle`. Esto asegura coherencia inmediata aunque se produzca una desconexión justo después del POST. Las excepciones se propagan al ViewModel sin envolverlas, igual que en las lecturas.
 
@@ -76,9 +78,9 @@ Es el núcleo de la aplicación. No depende de ninguna otra capa y contiene la l
 
 | Carpeta | Contenido |
 |---|---|
-| `domain/model/` | Modelos de dominio (`Album`, `AlbumDetail`, `Musician`, `MusicianSummary`, `MusicianPrize`, `Track`, `Performer`, `Comment`, `CollectorSummary`, `CollectorDetail`, `CollectorAlbum`, `CollectorComment`, `CreateAlbumInput`). Sin dependencias de Android. |
-| `domain/repository/` | Interfaces de repositorio (`AlbumRepository` con `getAlbums`, `getAlbumById`, `createAlbum`, `addTrack`, `addComment`; `MusicianRepository`; `CollectorRepository`). |
-| `domain/usecase/` | Casos de uso de lectura (`GetAlbumsUseCase`, `GetAlbumDetailUseCase`, `GetMusiciansUseCase`, `GetMusicianDetailUseCase`, `GetCollectorsUseCase`, `GetCollectorDetailUseCase`) y de escritura (`CreateAlbumUseCase`, `AddTrackUseCase`, `AddCommentUseCase`). |
+| `domain/model/` | Modelos de dominio (`Album`, `AlbumDetail`, `Musician`, `MusicianSummary`, `MusicianPrize`, `Track`, `Performer`, `Comment` (con `commenter: CollectorSummary?`), `CollectorSummary`, `CollectorDetail`, `CollectorAlbum`, `CollectorComment`, `Band`, `BandSummary`, `CreateAlbumInput`). Sin dependencias de Android. |
+| `domain/repository/` | Interfaces de repositorio (`AlbumRepository` con `getAlbums`, `getAlbumById`, `createAlbum`, `addTrack`, `addComment`; `MusicianRepository`; `CollectorRepository`; `BandRepository` con `getBands`, `getBandDetail`, `addMusicianToBand`). |
+| `domain/usecase/` | Casos de uso de lectura (`GetAlbumsUseCase`, `GetAlbumDetailUseCase`, `GetMusiciansUseCase`, `GetMusicianDetailUseCase`, `GetCollectorsUseCase`, `GetCollectorDetailUseCase`, `GetBandsUseCase`, `GetBandDetailUseCase`) y de escritura (`CreateAlbumUseCase`, `AddTrackUseCase`, `AddCommentUseCase`, `AddMusicianToBandUseCase`). |
 
 ---
 
@@ -88,10 +90,10 @@ Contiene todo lo relacionado con la interfaz de usuario y el estado de la pantal
 
 | Carpeta | Contenido |
 |---|---|
-| `presentation/navigation/` | `VinilosNavHost` + `Destinations` (rutas: `album_list`, `album_detail/{albumId}`, `create_album`, `album/{albumId}/track/add`, `album/{albumId}/comment/add/{collectorId}`, `artists`, `artist/{id}`, `collectors`, `collector/{collectorId}`). |
-| `presentation/viewmodel/` | ViewModels con `@HiltViewModel`. Para listas/detalle exponen `StateFlow<UiState>` (`Loading / Success / Empty\|NotFound / Error(isNetworkError)`) y clasifican excepciones (`IOException` → red, `HttpException` 404 → NotFound, otros → servidor). Para formularios POST (`CreateAlbumViewModel`, `AddTrackViewModel`, `AddCommentViewModel`) separan el form state del submit state (`Idle / Loading / Success / Error`). Todos re-lanzan `CancellationException` para preservar structured concurrency. |
-| `presentation/ui/screens/` | Composables por entidad: `album/` (`AlbumListScreen`, `AlbumDetailScreen`, `CreateAlbumScreen`, `AddTrackScreen`, `AddCommentScreen`), `artist/` (`MusicianListScreen`, `MusicianDetailScreen`), `collector/` (`CollectorListScreen`, `CollectorDetailScreen`). |
-| `presentation/ui/components/` | `AlbumCard`, `MusicianCard`, `CollectorCard`, `LoadingState`, `EmptyState`, `ErrorState`, `VinilosTopBar`, `VinilosBottomNav`, `SearchBarStatic`, `ListCounter`, `RatingBar`. |
+| `presentation/navigation/` | `VinilosNavHost` + `Destinations` (rutas: `album_list`, `album_detail/{albumId}`, `create_album`, `album/{albumId}/track/add`, `album/{albumId}/comment/add/{collectorId}`, `artists` (hub con sub-tabs Músicos / Bandas), `artist/{id}`, `band/{bandId}`, `band/{bandId}/musicians/add`, `collectors`, `collector/{collectorId}`). |
+| `presentation/viewmodel/` | ViewModels con `@HiltViewModel`. Para listas/detalle exponen `StateFlow<UiState>` (`Loading / Success / Empty\|NotFound / Error(isNetworkError)`) y clasifican excepciones (`IOException` → red, `HttpException` 404 → NotFound, otros → servidor). Para formularios POST (`CreateAlbumViewModel`, `AddTrackViewModel`, `AddCommentViewModel`, `AddMusiciansToBandViewModel`) separan el form state del submit state (`Idle / Loading / Success / Error`) y emiten eventos one-shot (`MutableSharedFlow<Event>`) para snackbars de éxito/fallo, de modo que la rotación de pantalla no los re-dispare. Todos re-lanzan `CancellationException` para preservar structured concurrency. |
+| `presentation/ui/screens/` | Composables por entidad: `album/` (`AlbumListScreen`, `AlbumDetailScreen`, `CreateAlbumScreen`, `AddTrackScreen`, `AddCommentScreen`), `artist/` (`ArtistsHubScreen` con `MusicianListContent` + `BandListContent`, `MusicianDetailScreen`), `band/` (`BandDetailScreen`, `AddMusiciansToBandScreen`), `collector/` (`CollectorListScreen`, `CollectorDetailScreen`). |
+| `presentation/ui/components/` | `AlbumCard`, `MusicianCard`, `BandCard`, `CollectorCard`, `MusicianRow`, `EmptyMembersState`, `PerformerHeader`, `LoadingState`, `EmptyState`, `ErrorState`, `VinilosTopBar`, `VinilosBottomNav`, `SearchBarStatic`, `ListCounter`, `RatingBar`. |
 | `presentation/ui/theme/` | Material 3: `Color.kt`, `Theme.kt`, `Type.kt`. |
 
 ---
@@ -103,8 +105,8 @@ Módulos de Hilt instalados en `SingletonComponent`.
 | Archivo | Contenido |
 |---|---|
 | `NetworkModule` | Provee `OkHttpClient` (con `HttpLoggingInterceptor` solo en debug), `Retrofit` y `VinilosApiService`. |
-| `DatabaseModule` | Provee `VinilosDatabase` (con `fallbackToDestructiveMigration` — la caché es descartable) y los DAOs (`AlbumDao`, `MusicianDao`, `CollectorDao`). |
-| `RepositoryModule` | `@Binds` de las interfaces de dominio a sus implementaciones: `AlbumRepository → AlbumRepositoryImpl`, `MusicianRepository → MusicianRepositoryImpl`, `CollectorRepository → CollectorRepositoryImpl`. |
+| `DatabaseModule` | Provee `VinilosDatabase` v5 (con `fallbackToDestructiveMigration` — la caché es descartable) y los DAOs (`AlbumDao`, `MusicianDao`, `CollectorDao`, `BandDao`). |
+| `RepositoryModule` | `@Binds` de las interfaces de dominio a sus implementaciones: `AlbumRepository → AlbumRepositoryImpl`, `MusicianRepository → MusicianRepositoryImpl`, `CollectorRepository → CollectorRepositoryImpl`, `BandRepository → BandRepositoryImpl`. |
 
 ---
 

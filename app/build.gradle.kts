@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace = "com.misw4203.vinilos"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.misw4203.vinilos"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "com.misw4203.vinilos.HiltTestRunner"

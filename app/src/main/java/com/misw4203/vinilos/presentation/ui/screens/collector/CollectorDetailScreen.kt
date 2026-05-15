@@ -40,12 +40,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.misw4203.vinilos.R
@@ -140,13 +141,18 @@ private fun CollectorDetailContent(collector: CollectorDetail, onBack: () -> Uni
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
                             textAlign = TextAlign.Center,
+                            modifier = Modifier.semantics { heading() },
                         )
 
                         // Email
+                        val emailDesc = stringResource(R.string.cd_collector_email, collector.email)
                         Spacer(Modifier.height(12.dp))
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.semantics(mergeDescendants = true) {
+                                contentDescription = emailDesc
+                            },
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Mail,
@@ -162,10 +168,14 @@ private fun CollectorDetailContent(collector: CollectorDetail, onBack: () -> Uni
                         }
 
                         // Telephone
+                        val phoneDesc = stringResource(R.string.cd_collector_phone, collector.telephone)
                         Spacer(Modifier.height(4.dp))
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.semantics(mergeDescendants = true) {
+                                contentDescription = phoneDesc
+                            },
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Phone,
@@ -241,6 +251,7 @@ private fun SectionHeader(title: String) {
         style = MaterialTheme.typography.labelSmall,
         fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.semantics { heading() },
     )
 }
 
@@ -259,10 +270,17 @@ private fun AlbumsSection(albums: List<CollectorAlbum>) {
 
 @Composable
 private fun CollectorAlbumCard(collectorAlbum: CollectorAlbum) {
-    Column(modifier = Modifier.width(120.dp)) {
+    val albumName = collectorAlbum.album?.name.orEmpty()
+    Column(
+        modifier = Modifier
+            .width(120.dp)
+            .semantics(mergeDescendants = true) {},
+    ) {
         AsyncImage(
             model = collectorAlbum.album?.coverUrl,
-            contentDescription = collectorAlbum.album?.name,
+            contentDescription = if (albumName.isNotBlank()) {
+                stringResource(R.string.cd_album_cover_of, albumName)
+            } else null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(120.dp)
@@ -336,7 +354,8 @@ private fun PerformerChip(performer: Performer) {
         modifier = Modifier
             .clip(RoundedCornerShape(999.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {

@@ -43,9 +43,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.misw4203.vinilos.R
 import com.misw4203.vinilos.presentation.ui.components.RatingBar
@@ -94,6 +96,7 @@ fun AddCommentScreen(
                         text = stringResource(R.string.add_comment_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.semantics { heading() },
                     )
                 },
                 navigationIcon = {
@@ -111,7 +114,7 @@ fun AddCommentScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                 ),
             )
@@ -157,10 +160,6 @@ private fun AddCommentContent(
             rating = form.rating,
             onRatingChange = onRatingChange,
         )
-        if (form.ratingError == FormError.InvalidRating) {
-            Spacer(Modifier.height(6.dp))
-            ErrorText(stringResource(R.string.add_comment_error_rating))
-        }
 
         Spacer(Modifier.height(24.dp))
 
@@ -259,6 +258,7 @@ private fun SectionHeading(text: String) {
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.semantics { heading() },
         )
     }
 }
@@ -273,11 +273,3 @@ private fun FieldLabel(text: String) {
     )
 }
 
-@Composable
-private fun ErrorText(message: String) {
-    Text(
-        text = message,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.error,
-    )
-}

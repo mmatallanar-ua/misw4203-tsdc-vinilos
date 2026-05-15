@@ -28,9 +28,17 @@ object Destinations {
 
     const val RefreshAlbumDetailKey = "refresh_album_detail"
 
+    const val BandDetail = "band/{bandId}"
+    const val BandDetailArg = "bandId"
+    const val AddMusiciansToBand = "band/{bandId}/musicians/add"
+    const val AddMusiciansBandArg = "bandId"
+    const val RefreshBandDetailKey = "refresh_band_detail"
+
     fun albumDetail(albumId: Long) = "album_detail/$albumId"
     fun collectorDetail(collectorId: Int) = "collector/$collectorId"
     fun addTrack(albumId: Long) = "album/$albumId/track/add"
     fun addComment(albumId: Long, collectorId: Int = DefaultCollectorId) =
         "album/$albumId/comment/add/$collectorId"
+    fun bandDetail(bandId: Int) = "band/$bandId"
+    fun addMusiciansToBand(bandId: Int) = "band/$bandId/musicians/add"
 }
