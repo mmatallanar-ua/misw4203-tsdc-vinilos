@@ -36,6 +36,7 @@ class CollectorDetailScreenTest {
     private class FakeRepo(val result: Result<CollectorDetail>) : CollectorRepository {
         override suspend fun getCollectors(): List<CollectorSummary> = error("unused")
         override suspend fun getCollectorDetail(id: Int): CollectorDetail = result.getOrThrow()
+        override suspend fun addAlbumToCollector(collectorId: Int, albumId: Int, price: Double, status: String) = Unit
     }
 
     private fun vm(result: Result<CollectorDetail>): CollectorDetailViewModel {
@@ -160,16 +161,16 @@ class CollectorDetailScreenTest {
     }
 
     @Test
-    fun albumsSectionHiddenWhenNoAlbums() {
+    fun albumsSectionAlwaysShownEvenWhenEmpty() {
+        // HU11: albums section is always visible so the user can add albums via the CTA.
         val detailWithoutAlbums = sampleDetail().copy(collectorAlbums = emptyList())
         composeTestRule.setContent {
             MaterialTheme { CollectorDetailScreen(100, onBack = {}, viewModel = vm(Result.success(detailWithoutAlbums))) }
         }
         val ctx = composeTestRule.activity
         val header = ctx.getString(R.string.collector_section_albums).uppercase()
-        assert(composeTestRule.onAllNodesWithText(header).fetchSemanticsNodes().isEmpty()) {
-            "Albums section header should not be shown when collectorAlbums is empty"
-        }
+        composeTestRule.onNodeWithText(header).assertIsDisplayed()
+        composeTestRule.onNodeWithTag("collector_add_album_cta").assertIsDisplayed()
     }
 
     // ── Performers section ───────────────────────────────────────────────────

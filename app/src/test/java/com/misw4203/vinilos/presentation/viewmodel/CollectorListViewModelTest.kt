@@ -33,6 +33,7 @@ class CollectorListViewModelTest {
             return nextResult.getOrThrow()
         }
         override suspend fun getCollectorDetail(id: Int): CollectorDetail = error("not used")
+        override suspend fun addAlbumToCollector(collectorId: Int, albumId: Int, price: Double, status: String) = Unit
     }
 
     private fun buildViewModel(repo: FakeCollectorRepository) =

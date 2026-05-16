@@ -26,6 +26,7 @@ class CollectorListScreenTest {
     ) : CollectorRepository {
         override suspend fun getCollectors(): List<CollectorSummary> = result.getOrThrow()
         override suspend fun getCollectorDetail(id: Int): CollectorDetail = error("unused")
+        override suspend fun addAlbumToCollector(collectorId: Int, albumId: Int, price: Double, status: String) = Unit
     }
 
     private fun vm(result: Result<List<CollectorSummary>>) =

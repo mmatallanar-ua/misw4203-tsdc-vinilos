@@ -34,6 +34,7 @@ class CollectorDetailViewModelTest {
     private class FakeRepo(var result: Result<CollectorDetail>) : CollectorRepository {
         override suspend fun getCollectors(): List<CollectorSummary> = emptyList()
         override suspend fun getCollectorDetail(id: Int): CollectorDetail = result.getOrThrow()
+        override suspend fun addAlbumToCollector(collectorId: Int, albumId: Int, price: Double, status: String) = Unit
     }
 
     private fun buildViewModel(
