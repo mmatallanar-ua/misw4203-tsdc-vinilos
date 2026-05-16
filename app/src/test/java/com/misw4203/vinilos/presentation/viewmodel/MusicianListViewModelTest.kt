@@ -33,6 +33,7 @@ class MusicianListViewModelTest {
             return nextResult.getOrThrow()
         }
         override suspend fun getMusicianDetail(id: Int): Musician = error("not used")
+        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
     }
 
     private fun buildViewModel(repo: FakeMusicianRepository) =

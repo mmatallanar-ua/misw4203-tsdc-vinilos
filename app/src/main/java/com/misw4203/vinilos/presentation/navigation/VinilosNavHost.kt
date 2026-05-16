@@ -29,6 +29,7 @@ import com.misw4203.vinilos.presentation.ui.screens.album.AddTrackScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumListScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.CreateAlbumScreen
+import com.misw4203.vinilos.presentation.ui.screens.artist.AddAlbumToMusicianScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.ArtistsHubScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.band.AddMusiciansToBandScreen
@@ -168,9 +169,30 @@ fun VinilosNavHost() {
                     arguments = listOf(navArgument("id") { type = NavType.IntType }),
                 ) { backStackEntry ->
                     val id = backStackEntry.arguments?.getInt("id") ?: return@composable
+                    val refreshFlag by backStackEntry.savedStateHandle
+                        .getStateFlow(Destinations.RefreshMusicianDetailKey, false)
+                        .collectAsStateWithLifecycle()
                     MusicianDetailScreen(
                         musicianId = id,
                         onBack = { navController.navigateUp() },
+                        onAddAlbum = { navController.navigate(Destinations.addAlbumToMusician(id)) },
+                        refreshKey = refreshFlag,
+                        onRefreshHandled = {
+                            backStackEntry.savedStateHandle[Destinations.RefreshMusicianDetailKey] = false
+                        },
+                    )
+                }
+                composable(
+                    route = Destinations.AddAlbumToMusician,
+                    arguments = listOf(navArgument(Destinations.AddAlbumMusicianArg) { type = NavType.IntType }),
+                ) {
+                    AddAlbumToMusicianScreen(
+                        onBack = {
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(Destinations.RefreshMusicianDetailKey, true)
+                            navController.popBackStack()
+                        },
                     )
                 }
                 composable(Destinations.Collectors) {

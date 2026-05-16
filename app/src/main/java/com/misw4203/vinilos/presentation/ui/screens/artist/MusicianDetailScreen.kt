@@ -22,8 +22,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -74,9 +77,18 @@ import com.misw4203.vinilos.presentation.viewmodel.MusicianDetailViewModel
 fun MusicianDetailScreen(
     musicianId: Int,
     onBack: () -> Unit,
+    onAddAlbum: () -> Unit = {},
+    refreshKey: Boolean = false,
+    onRefreshHandled: () -> Unit = {},
     viewModel: MusicianDetailViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(musicianId) { viewModel.loadMusician(musicianId) }
+    LaunchedEffect(refreshKey) {
+        if (refreshKey) {
+            viewModel.loadMusician(musicianId)
+            onRefreshHandled()
+        }
+    }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -108,7 +120,7 @@ fun MusicianDetailScreen(
                     onRetry = viewModel::retry,
                     isNetworkError = state.isNetworkError,
                 )
-                is MusicianDetailUiState.Success -> MusicianBody(state.musician)
+                is MusicianDetailUiState.Success -> MusicianBody(state.musician, onAddAlbum)
             }
         }
     }
@@ -139,7 +151,7 @@ private fun NotFoundContent() {
 }
 
 @Composable
-private fun MusicianBody(musician: Musician) {
+private fun MusicianBody(musician: Musician, onAddAlbum: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -150,7 +162,7 @@ private fun MusicianBody(musician: Musician) {
         Spacer(Modifier.height(24.dp))
         DescriptionSection(musician.description)
         Spacer(Modifier.height(24.dp))
-        AlbumsSection(musician.albums)
+        AlbumsSection(musician.albums, onAddAlbum)
         Spacer(Modifier.height(24.dp))
         PrizesSection(musician.prizes)
         Spacer(Modifier.height(24.dp))
@@ -240,15 +252,68 @@ private fun DescriptionSection(description: String) {
 }
 
 @Composable
-private fun AlbumsSection(albums: List<Album>) {
-    SectionHeader(stringResource(R.string.artist_section_albums))
-    Spacer(Modifier.height(8.dp))
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+private fun AlbumsSection(albums: List<Album>, onAddAlbum: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        items(albums) { album ->
-            AlbumCard(album)
+        Text(
+            text = stringResource(R.string.artist_section_albums),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.semantics { heading() },
+        )
+        Spacer(Modifier.width(12.dp))
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+        )
+        Spacer(Modifier.width(12.dp))
+        Button(
+            onClick = onAddAlbum,
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(50),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.onSurface,
+                contentColor = MaterialTheme.colorScheme.surface,
+            ),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                horizontal = 14.dp,
+                vertical = 6.dp,
+            ),
+            modifier = Modifier.testTag("musician_add_album_cta"),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                text = stringResource(R.string.add_album_musician_cta),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+    }
+    Spacer(Modifier.height(8.dp))
+    if (albums.isEmpty()) {
+        Text(
+            text = stringResource(R.string.add_album_musician_empty_collection),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+        )
+    } else {
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            items(albums) { album ->
+                AlbumCard(album)
+            }
         }
     }
 }
