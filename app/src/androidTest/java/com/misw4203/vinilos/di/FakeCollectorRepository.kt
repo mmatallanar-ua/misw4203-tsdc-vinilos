@@ -16,6 +16,8 @@ class FakeCollectorRepository @Inject constructor() : CollectorRepository {
         CollectorSummary(2, "María Alejandra Palacios", "3502889087", "j.palacios@outlook.es"),
     )
 
+    override suspend fun addAlbumToCollector(collectorId: Int, albumId: Int, price: Double, status: String) = Unit
+
     override suspend fun getCollectorDetail(id: Int): CollectorDetail = CollectorDetail(
         id = id,
         name = "Jaime Andrés Monsalve",

@@ -1,8 +1,10 @@
 package com.misw4203.vinilos.data.remote.api
 
+import com.misw4203.vinilos.data.remote.dto.AddCollectorAlbumRequest
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.BandDetailDto
 import com.misw4203.vinilos.data.remote.dto.BandDto
+import com.misw4203.vinilos.data.remote.dto.CollectorAlbumDto
 import com.misw4203.vinilos.data.remote.dto.CollectorDetailDto
 import com.misw4203.vinilos.data.remote.dto.CollectorDto
 import com.misw4203.vinilos.data.remote.dto.CommentDto
@@ -66,4 +68,16 @@ interface VinilosApiService {
         @Path("bandId") bandId: Int,
         @Path("musicianId") musicianId: Int,
     )
+
+    @GET("collectors/{collectorId}/albums")
+    suspend fun getCollectorAlbums(
+        @Path("collectorId") collectorId: Int,
+    ): List<CollectorAlbumDto>
+
+    @POST("collectors/{collectorId}/albums/{albumId}")
+    suspend fun addAlbumToCollector(
+        @Path("collectorId") collectorId: Int,
+        @Path("albumId") albumId: Int,
+        @Body request: AddCollectorAlbumRequest,
+    ): CollectorAlbumDto
 }
