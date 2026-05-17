@@ -100,5 +100,5 @@ interface VinilosApiService {
         @Path("musicianId") musicianId: Int,
         @Path("prizeId") prizeId: Int,
         @Body request: AddPrizeToMusicianRequest,
-    )
+    ): PerformerPrizeDto
 }
