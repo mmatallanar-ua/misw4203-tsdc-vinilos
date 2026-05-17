@@ -38,7 +38,8 @@ class AddFavoritePerformerScreenTest {
     private class FakeMusicianRepo(val list: List<MusicianSummary>) : MusicianRepository {
         override suspend fun getMusicians() = list
         override suspend fun getMusicianDetail(id: Int) = error("not used")
-        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int)  = error("not used")
+        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = error("not used")
+        override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) = error("not used")
     }
 
     private class FakeBandRepo(val list: List<BandSummary>) : BandRepository {

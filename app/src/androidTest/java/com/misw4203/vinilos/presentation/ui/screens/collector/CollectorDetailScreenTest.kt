@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import androidx.lifecycle.SavedStateHandle
 import com.misw4203.vinilos.R
 import com.misw4203.vinilos.domain.model.Album
@@ -159,7 +160,7 @@ class CollectorDetailScreenTest {
         composeTestRule.setContent {
             MaterialTheme { CollectorDetailScreen(100, onBack = {}, viewModel = vm(Result.success(sampleDetail()))) }
         }
-        composeTestRule.onNodeWithText("Active").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Active").performScrollTo().assertIsDisplayed()
     }
 
     @Test

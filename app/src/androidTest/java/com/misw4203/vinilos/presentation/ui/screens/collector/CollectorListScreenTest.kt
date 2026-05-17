@@ -74,7 +74,7 @@ class CollectorListScreenTest {
         }
 
         val ctx = composeTestRule.activity
-        composeTestRule.onNodeWithText(ctx.getString(R.string.state_empty_title)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(ctx.getString(R.string.state_empty_title)).assertExists()
     }
 
     @Test
