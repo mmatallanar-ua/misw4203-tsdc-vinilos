@@ -6,12 +6,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -109,7 +110,7 @@ fun PrizeListScreen(
             contentColor = MaterialTheme.colorScheme.onPrimary,
         ) {
             Icon(
-                imageVector = Icons.Outlined.EmojiEvents,
+                imageVector = Icons.Outlined.Add,
                 contentDescription = stringResource(R.string.cd_create_prize),
             )
         }
@@ -122,7 +123,7 @@ internal fun PrizeCard(
     modifier: Modifier = Modifier,
 ) {
     androidx.compose.material3.Card(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         colors = androidx.compose.material3.CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         ),

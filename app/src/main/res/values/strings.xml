@@ -211,10 +211,12 @@
     </plurals>
 
     <!-- HU013 - Premios -->
-    <string name="nav_prizes">Premios</string>
+    <string name="nav_prizes">Prizes</string>
     <string name="prizes_title">Premios</string>
     <string name="cd_create_prize">Crear premio</string>
     <string name="create_prize_title">Crear Premio</string>
+    <string name="create_prize_section_title">Nuevo Premio</string>
+    <string name="create_prize_section_subtitle">Completa la información para registrar un nuevo premio en el catálogo.</string>
     <string name="create_prize_field_name">Nombre del premio</string>
     <string name="create_prize_field_organization">Organización que otorga</string>
     <string name="create_prize_field_description">Descripción</string>
