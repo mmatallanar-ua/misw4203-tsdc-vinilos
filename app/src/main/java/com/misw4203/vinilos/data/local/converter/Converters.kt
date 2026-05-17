@@ -27,7 +27,12 @@ class Converters {
         val MUSICIAN_SUMMARY_LIST: Type = object : TypeToken<List<MusicianSummary>>() {}.type
     }
 
-    private inline fun <reified T> decode(value: String, type: Type): List<T> =
+    /**
+     * Deserializa un blob JSON a lista. Devuelve [emptyList] ante cualquier
+     * fallo de parseo (null/blob malformado/cadena en blanco); la recuperación
+     * real depende de la estrategia network-first del repositorio.
+     */
+    private inline fun <T> decode(value: String, type: Type): List<T> =
         runCatching { GSON.fromJson<List<T>>(value, type) }.getOrNull() ?: emptyList()
 
     @TypeConverter
