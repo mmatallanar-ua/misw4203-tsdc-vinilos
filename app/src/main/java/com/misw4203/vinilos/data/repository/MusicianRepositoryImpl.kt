@@ -7,6 +7,7 @@ import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.AddPrizeToMusicianRequest
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.MusicianDetailDto
+import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDetailDto
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.Musician
 import com.misw4203.vinilos.domain.model.MusicianPrize
@@ -15,7 +16,6 @@ import com.misw4203.vinilos.domain.repository.MusicianRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -39,24 +39,27 @@ class MusicianRepositoryImpl @Inject constructor(
 
     override suspend fun getMusicianDetail(id: Int): Musician = withContext(Dispatchers.IO) {
         try {
-            val dto = api.getMusicianDetail(id)
-            val prizes = coroutineScope {
-                dto.performerPrizes.map { pp ->
-                    async {
-                        val prizeDto = api.getPrizeDetail(pp.id)
-                        MusicianPrize(
-                            id = prizeDto.id,
-                            name = prizeDto.name,
-                            organization = prizeDto.organization,
-                            description = prizeDto.description,
-                            premiationDate = pp.premiationDate,
-                        )
-                    }
-                }.awaitAll()
+            coroutineScope {
+                val musicianAsync = async { api.getMusicianDetail(id) }
+                val allAssociationsAsync = async { api.getPerformerPrizes() }
+                val dto = musicianAsync.await()
+                val associationMap: Map<Int, PerformerPrizeDetailDto> =
+                    allAssociationsAsync.await().associateBy { it.id }
+                val prizes = dto.performerPrizes.mapNotNull { pp ->
+                    val assoc = associationMap[pp.id] ?: return@mapNotNull null
+                    val prize = assoc.prize ?: return@mapNotNull null
+                    MusicianPrize(
+                        id = prize.id,
+                        name = prize.name,
+                        organization = prize.organization,
+                        description = prize.description,
+                        premiationDate = pp.premiationDate,
+                    )
+                }
+                val musician = dto.toDomain(prizes)
+                dao.upsertDetail(MusicianDetailEntity.fromDomain(musician))
+                musician
             }
-            val musician = dto.toDomain(prizes)
-            dao.upsertDetail(MusicianDetailEntity.fromDomain(musician))
-            musician
         } catch (e: IOException) {
             dao.getDetailById(id)?.toDomain() ?: throw e
         }

@@ -14,6 +14,7 @@ import com.misw4203.vinilos.data.remote.dto.CreateAlbumRequestDto
 import com.misw4203.vinilos.data.remote.dto.CreatePrizeRequest
 import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.data.remote.dto.MusicianDetailDto
+import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDetailDto
 import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDto
 import com.misw4203.vinilos.data.remote.dto.PrizeDetailDto
 import com.misw4203.vinilos.data.remote.dto.TrackDto
@@ -44,6 +45,9 @@ interface VinilosApiService {
 
     @GET("prizes/{id}")
     suspend fun getPrizeDetail(@Path("id") id: Int): PrizeDetailDto
+
+    @GET("performerprizes")
+    suspend fun getPerformerPrizes(): List<PerformerPrizeDetailDto>
 
     @POST("prizes")
     suspend fun createPrize(@Body body: CreatePrizeRequest): PrizeDetailDto
