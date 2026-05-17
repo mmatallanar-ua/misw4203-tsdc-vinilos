@@ -27,6 +27,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -69,10 +71,11 @@ private val CardRadius = 24.dp
 fun CollectorDetailScreen(
     collectorId: Int,
     onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-    onAddFavoritePerformer: () -> Unit = {},
+    onAddAlbum: () -> Unit = {},
     refreshKey: Boolean = false,
     onRefreshHandled: () -> Unit = {},
+    modifier: Modifier = Modifier,
+    onAddFavoritePerformer: () -> Unit = {}, ,
     viewModel: CollectorDetailViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(refreshKey) {
@@ -83,14 +86,20 @@ fun CollectorDetailScreen(
     }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    LaunchedEffect(refreshKey) {
+        if (refreshKey) {
+            viewModel.retry()
+            onRefreshHandled()
+        }
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         when (val state = uiState) {
             is CollectorDetailUiState.Loading -> LoadingState()
-            is CollectorDetailUiState.Success -> CollectorDetailContent(
-                collector = state.collector,
+            is CollectorDetailUiState.Success -> CollectorDetailContent( collector = state.collector,
                 onBack = onBack,
-                onAddFavoritePerformer = onAddFavoritePerformer,
-            )
+                onAddAlbum = onAddAlbum,
+                onAddFavoritePerformer = onAddFavoritePerformer,)
             is CollectorDetailUiState.NotFound -> NotFoundState(onBack)
             is CollectorDetailUiState.Error -> ErrorState(
                 onRetry = viewModel::retry,
@@ -104,6 +113,7 @@ fun CollectorDetailScreen(
 private fun CollectorDetailContent(
     collector: CollectorDetail,
     onBack: () -> Unit,
+    onAddAlbum: () -> Unit,
     onAddFavoritePerformer: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize().testTag("collector_detail_root")) {
@@ -222,10 +232,11 @@ private fun CollectorDetailContent(
                     }
 
                     // Sections — left-aligned
-                    if (collector.collectorAlbums.isNotEmpty()) {
-                        Spacer(Modifier.height(28.dp))
-                        AlbumsSection(collector.collectorAlbums)
-                    }
+                    Spacer(Modifier.height(28.dp))
+                    AlbumsSection(
+                        albums = collector.collectorAlbums,
+                        onAddAlbum = onAddAlbum,
+                    )
 
                     Spacer(Modifier.height(28.dp))
                     PerformersSection(
@@ -268,8 +279,8 @@ private fun CollectorDetailContent(
 private fun SectionHeader(title: String) {
     Text(
         text = title.uppercase(),
-        style = MaterialTheme.typography.labelSmall,
-        fontWeight = FontWeight.SemiBold,
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.semantics { heading() },
     )
@@ -278,12 +289,52 @@ private fun SectionHeader(title: String) {
 // ─── Albums ───────────────────────────────────────────────────────────────────
 
 @Composable
-private fun AlbumsSection(albums: List<CollectorAlbum>) {
-    SectionHeader(stringResource(R.string.collector_section_albums))
+private fun AlbumsSection(albums: List<CollectorAlbum>, onAddAlbum: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        SectionHeader(stringResource(R.string.collector_section_albums))
+        Button(
+            onClick = onAddAlbum,
+            shape = RoundedCornerShape(50),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.onSurface,
+                contentColor = MaterialTheme.colorScheme.surface,
+            ),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                horizontal = 14.dp,
+                vertical = 6.dp,
+            ),
+            modifier = Modifier.testTag("collector_add_album_cta"),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                text = stringResource(R.string.add_album_collector_cta),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+    }
     Spacer(Modifier.height(12.dp))
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        items(albums, key = { it.id }) { collectorAlbum ->
-            CollectorAlbumCard(collectorAlbum)
+    if (albums.isEmpty()) {
+        Text(
+            text = stringResource(R.string.add_album_collector_empty_collection),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(vertical = 4.dp),
+        )
+    } else {
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            items(albums, key = { it.id }) { collectorAlbum ->
+                CollectorAlbumCard(collectorAlbum)
+            }
         }
     }
 }

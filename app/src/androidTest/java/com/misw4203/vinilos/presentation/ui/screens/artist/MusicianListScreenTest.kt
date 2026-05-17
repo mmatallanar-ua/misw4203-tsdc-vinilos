@@ -25,6 +25,7 @@ class MusicianListScreenTest {
     ) : MusicianRepository {
         override suspend fun getMusicians(): List<MusicianSummary> = result.getOrThrow()
         override suspend fun getMusicianDetail(id: Int): Musician = error("unused")
+        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
     }
 
     private fun vm(result: Result<List<MusicianSummary>>) =

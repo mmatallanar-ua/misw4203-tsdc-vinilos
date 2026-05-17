@@ -162,10 +162,53 @@
     <string name="add_musician_error_network">Sin conexión. Intenta de nuevo.</string>
     <string name="add_musician_error_server">No pudimos agregar el músico. Inténtalo de nuevo.</string>
 
+    <!-- HU011 - Agregar álbum a coleccionista -->
+    <string name="add_album_collector_title">Agregar álbum a colección</string>
+    <string name="add_album_collector_search_section">Buscar álbum</string>
+    <string name="add_album_collector_search_placeholder">Buscar por título o artista…</string>
+    <string name="add_album_collector_available_empty">No se encontraron álbumes con ese nombre</string>
+    <string name="add_album_collector_form_section">Condiciones de venta o intercambio</string>
+    <string name="add_album_collector_field_status">Estado del álbum</string>
+    <string name="add_album_collector_field_price">Precio estimado</string>
+    <string name="add_album_collector_price_error">Ingresa un precio mayor a cero</string>
+    <string name="add_album_collector_submit">Agregar a mi colección</string>
+    <string name="add_album_collector_submitting">Agregando…</string>
+    <string name="add_album_collector_current_section">Mi colección actual</string>
+    <string name="add_album_collector_empty_collection">Aún no tienes álbumes en tu colección</string>
+    <string name="add_album_collector_cta">Agregar álbum</string>
+    <string name="add_album_collector_success">«%s» fue agregado a tu colección</string>
+    <string name="add_album_collector_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="add_album_collector_error_server">No pudimos agregar el álbum. Inténtalo de nuevo.</string>
+    <string name="cd_add_album_to_collector">Agregar %s a tu colección</string>
+    <string name="cd_adding_album">Agregando álbum</string>
+    <string name="status_active">Activo</string>
+    <string name="status_inactive">Inactivo</string>
+    <plurals name="collector_albums_count">
+        <item quantity="one">%d álbum en tu colección</item>
+        <item quantity="other">%d álbumes en tu colección</item>
+    </plurals>
+
     <!-- HU012 - Content descriptions -->
     <string name="cd_band_image_of">Imagen de la banda %s</string>
     <string name="cd_add_musician_to_band">Agregar %s a la banda</string>
     <string name="cd_adding_musician">Agregando músico</string>
+
+    <!-- HU15 - Agregar álbum a músico -->
+    <string name="add_album_musician_title">Añadir álbum al artista</string>
+    <string name="add_album_musician_cta">Agregar álbum</string>
+    <string name="add_album_musician_search_section">Buscar álbum</string>
+    <string name="add_album_musician_search_placeholder">Buscar por título…</string>
+    <string name="add_album_musician_empty_filter">No se encontraron álbumes con ese nombre</string>
+    <string name="add_album_musician_current_section">Álbumes del artista</string>
+    <string name="add_album_musician_empty_collection">Aún no hay álbumes asociados a este artista</string>
+    <string name="add_album_musician_success">«%s» fue añadido a la discografía</string>
+    <string name="add_album_musician_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="add_album_musician_error_server">No pudimos agregar el álbum. Inténtalo de nuevo.</string>
+    <string name="cd_add_album_to_musician">Agregar %s a la discografía</string>
+    <plurals name="musician_albums_count">
+        <item quantity="one">%d álbum en la discografía</item>
+        <item quantity="other">%d álbumes en la discografía</item>
+    </plurals>
 
     <!-- HU010 - Agregar artistas favoritos -->
     <string name="add_favorite_performer_title">Agregar artista favorito</string>

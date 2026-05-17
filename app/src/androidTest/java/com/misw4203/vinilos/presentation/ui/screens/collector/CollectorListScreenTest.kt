@@ -28,6 +28,7 @@ class CollectorListScreenTest {
         override suspend fun getCollectorDetail(id: Int): CollectorDetail = error("unused")
         override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) = Unit
         override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) = Unit
+        override suspend fun addAlbumToCollector(collectorId: Int, albumId: Int, price: Double, status: String) = Unit
     }
 
     private fun vm(result: Result<List<CollectorSummary>>) =

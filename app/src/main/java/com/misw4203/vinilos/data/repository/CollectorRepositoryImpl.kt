@@ -4,6 +4,7 @@ import com.misw4203.vinilos.data.local.dao.CollectorDao
 import com.misw4203.vinilos.data.local.entity.CollectorDetailEntity
 import com.misw4203.vinilos.data.local.entity.CollectorEntity
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
+import com.misw4203.vinilos.data.remote.dto.AddCollectorAlbumRequest
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.CollectorAlbumDto
 import com.misw4203.vinilos.data.remote.dto.CollectorCommentDto
@@ -91,14 +92,21 @@ class CollectorRepositoryImpl @Inject constructor(
     override suspend fun getCollectorDetail(id: Int): CollectorDetail = withContext(Dispatchers.IO) {
         try {
             val dto = api.getCollectorDetail(id)
-            // Fetch full album data in parallel to get name + artistName
             val enrichedAlbums = coroutineScope {
+                // GET /collectors/{id}/albums always returns album objects with the real album ID,
+                // so we use it as the authoritative source when album is null in the detail DTO.
+                val albumIdLookupAsync = async {
+                    runCatching { api.getCollectorAlbums(id) }
+                        .getOrElse { emptyList() }
+                        .mapNotNull { ca -> ca.album?.id?.let { ca.id to it } }
+                        .toMap()
+                }
+                val albumIdByAssocId = albumIdLookupAsync.await()
                 dto.collectorAlbums.map { collAlbumDto ->
                     async {
-                        // The /collectors/{id} endpoint doesn't nest the album object, so we
-                        // fall back to fetching /albums/{collectorAlbum.id} — the backend's
-                        // seed data uses matching IDs for the association and the album itself.
-                        val albumId = collAlbumDto.album?.id ?: collAlbumDto.id.toLong()
+                        val albumId = collAlbumDto.album?.id
+                            ?: albumIdByAssocId[collAlbumDto.id]
+                            ?: return@async collAlbumDto
                         val fullAlbum = runCatching { api.getAlbum(albumId) }
                             .getOrElse { collAlbumDto.album }
                         collAlbumDto.copy(album = fullAlbum)
@@ -152,6 +160,18 @@ class CollectorRepositoryImpl @Inject constructor(
         name = name.orEmpty(),
         imageUrl = image.orEmpty(),
     )
+
+    override suspend fun addAlbumToCollector(
+        collectorId: Int,
+        albumId: Int,
+        price: Double,
+        status: String,
+    ) = withContext(Dispatchers.IO) {
+        api.addAlbumToCollector(collectorId, albumId, AddCollectorAlbumRequest(price, status))
+        // La caché se reconciliará en el siguiente getCollectorDetail (sin invalidación explícita
+        // porque CollectorDao no expone deleteDetail — misma estrategia que BandRepositoryImpl).
+        Unit
+    }
 
     private fun CollectorCommentDto.toDomain() = CollectorComment(
         id = id,

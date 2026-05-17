@@ -37,6 +37,7 @@ class AddMusiciansToBandViewModelTest {
         var allMusicians: List<MusicianSummary> = emptyList()
         override suspend fun getMusicians(): List<MusicianSummary> = allMusicians
         override suspend fun getMusicianDetail(id: Int): Musician = error("not used")
+        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
     }
 
     private class FakeBandRepo : BandRepository {

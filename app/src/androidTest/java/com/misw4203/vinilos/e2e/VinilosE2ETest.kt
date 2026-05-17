@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performTextInput
 import androidx.test.espresso.Espresso
 import com.misw4203.vinilos.MainActivity
 import com.misw4203.vinilos.R
@@ -309,10 +310,11 @@ class VinilosE2ETest {
         composeRule.onAllNodes(firstCard)[0].performClick()
         waitForTag("collector_detail_root")
 
-        // HU010: el chip del favorito vive en una LazyRow horizontal dentro del
-        // scroll vertical del detalle; en viewports pequenos (Pixel 3a) puede
-        // quedar bajo del fold. assertExists basta para verificar que el layout
-        // incluye al favorito (igual que AD-05 con el rating accesible).
+        // The performers chip lives inside a LazyRow which is itself inside a Column with
+        // verticalScroll. performScrollTo() resolves to the LazyRow (nearest scrollable
+        // ancestor) rather than the outer Column, so it can't guarantee the section is in the
+        // viewport. assertExists() is the correct assertion here: it verifies the performer
+        // was rendered in the semantic tree — same pattern used by collectorDetail_ratingHasAccessibleContentDescription.
         composeRule.onNodeWithText("Rubén Blades Bellido de Luna").assertExists()
     }
 
@@ -426,6 +428,244 @@ class VinilosE2ETest {
         composeRule.onAllNodes(currentMember)[0].assertExists()
     }
 
+    // -- HU11: Agregar álbum a coleccionista ------------------------------------
+
+    /**
+     * HU11-01: el CTA "Agregar álbum" del detalle del coleccionista abre la pantalla
+     * de agregar álbum.
+     */
+    @Test
+    fun hu011_tapAddAlbumCta_opensAddAlbumScreen() {
+        navigateToAddAlbumScreen()
+        composeRule.onNodeWithTag("add_album_collector_screen").assertIsDisplayed()
+    }
+
+    /**
+     * HU11-02: la pantalla de agregar álbum muestra los álbumes disponibles
+     * (aquellos que aún no están en la colección del coleccionista).
+     * Con los fakes: "A Night at the Opera" (id=2) está disponible;
+     * "Buscando América" (id=1) ya está en la colección y no aparece en la lista.
+     */
+    @Test
+    fun hu011_addAlbumScreen_showsAvailableAlbums() {
+        navigateToAddAlbumScreen()
+
+        val availableAlbum = tagStartsWith("available_album_")
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(availableAlbum).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("A Night at the Opera").assertIsDisplayed()
+    }
+
+    /**
+     * HU11-03: la pantalla de agregar álbum muestra la colección actual del coleccionista.
+     * Con el fake, "Buscando América" (id=1) ya está en la colección.
+     */
+    @Test
+    fun hu011_addAlbumScreen_showsCurrentCollection() {
+        navigateToAddAlbumScreen()
+
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("current_album_1").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("current_album_1").assertExists()
+    }
+
+    /**
+     * HU11-04: el buscador filtra los álbumes disponibles; cuando no hay coincidencias
+     * se muestra el mensaje de "sin resultados".
+     */
+    @Test
+    fun hu011_searchWithNoMatch_showsEmptyFilterMessage() {
+        navigateToAddAlbumScreen()
+
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(tagStartsWith("available_album_")).fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithTag("add_album_collector_search")
+            .performClick()
+            .performTextInput("xyz123_sin_coincidencia")
+
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("add_album_collector_empty_filter").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("add_album_collector_empty_filter").assertExists()
+    }
+
+    /**
+     * HU11-05: seleccionar un álbum disponible muestra el formulario de condiciones de venta.
+     */
+    @Test
+    fun hu011_selectAlbum_showsSaleConditionsForm() {
+        navigateToAddAlbumScreen()
+
+        val availableAlbum = tagStartsWith("available_album_")
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(availableAlbum).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodes(availableAlbum)[0].performClick()
+
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("add_album_collector_form").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("add_album_collector_form").assertIsDisplayed()
+    }
+
+    /**
+     * HU11-06: el botón back de la pantalla de agregar álbum regresa al detalle
+     * del coleccionista.
+     */
+    @Test
+    fun hu011_backButton_returnsToCollectorDetail() {
+        navigateToAddAlbumScreen()
+        composeRule.onNodeWithTag("add_album_collector_back").performClick()
+        waitForTag("collector_detail_root")
+        composeRule.onNodeWithTag("collector_detail_root").assertIsDisplayed()
+    }
+
+    /**
+     * HU11-07: flujo completo — seleccionar álbum, rellenar precio, confirmar → el álbum
+     * pasa a la colección actual (actualización optimista en el ViewModel).
+     */
+    @Test
+    fun hu011_fullFlow_addAlbumToCollector() {
+        navigateToAddAlbumScreen()
+
+        // 1. Esperar a que carguen los álbumes disponibles
+        val availableAlbum = tagStartsWith("available_album_")
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(availableAlbum).fetchSemanticsNodes().isNotEmpty()
+        }
+
+        // 2. Tap en el primer álbum disponible ("A Night at the Opera", id=2)
+        composeRule.onAllNodes(availableAlbum)[0].performClick()
+
+        // 3. Esperar que aparezca el formulario de condiciones de venta
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("add_album_collector_form").fetchSemanticsNodes().isNotEmpty()
+        }
+
+        // 4. Ingresar precio válido
+        composeRule.onNodeWithTag("add_album_collector_price")
+            .performScrollTo()
+            .performClick()
+            .performTextInput("25000")
+
+        // 5. Confirmar
+        composeRule.onNodeWithTag("add_album_collector_submit")
+            .performScrollTo()
+            .performClick()
+
+        // 6. El ViewModel hace actualización optimista: el álbum aparece en colección actual
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("current_album_2").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("current_album_2").assertExists()
+    }
+
+    // -- HU15: Agregar álbum a músico ------------------------------------------
+
+    /**
+     * HU15-01: el CTA "Agregar álbum" del detalle del músico abre la pantalla
+     * de agregar álbum al artista.
+     */
+    @Test
+    fun hu015_tapAddAlbumCta_opensAddAlbumScreen() {
+        navigateToAddAlbumMusicianScreen()
+        composeRule.onNodeWithTag("add_album_musician_screen").assertIsDisplayed()
+    }
+
+    /**
+     * HU15-02: la pantalla muestra los álbumes disponibles (los que el músico aún no tiene).
+     * Con los fakes: "A Night at the Opera" (id=2) está disponible;
+     * "Buscando América" (id=1) ya es del artista y no aparece en disponibles.
+     */
+    @Test
+    fun hu015_addAlbumScreen_showsAvailableAlbums() {
+        navigateToAddAlbumMusicianScreen()
+
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("available_album_musician_2").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("A Night at the Opera").assertExists()
+    }
+
+    /**
+     * HU15-03: la pantalla muestra la discografía actual del músico.
+     * Con el fake, "Buscando América" (id=1) ya pertenece al artista.
+     */
+    @Test
+    fun hu015_addAlbumScreen_showsCurrentDiscography() {
+        navigateToAddAlbumMusicianScreen()
+
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("current_album_musician_1").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("current_album_musician_1").assertExists()
+    }
+
+    /**
+     * HU15-04: el buscador filtra los álbumes disponibles por nombre.
+     * Escribir "opera" deja solo "A Night at the Opera".
+     */
+    @Test
+    fun hu015_searchFiltersAvailableAlbums() {
+        navigateToAddAlbumMusicianScreen()
+
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("available_album_musician_2").fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithTag("add_album_musician_search")
+            .performClick()
+            .performTextInput("opera")
+
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("available_album_musician_2").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("A Night at the Opera").assertExists()
+    }
+
+    /**
+     * HU15-05: tocar "+" en un álbum disponible lo mueve a la discografía actual
+     * (actualización optimista en el ViewModel).
+     */
+    @Test
+    fun hu015_tapAddButton_movesAlbumToCurrentDiscography() {
+        navigateToAddAlbumMusicianScreen()
+
+        val available = tagStartsWith("available_album_musician_")
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(available).fetchSemanticsNodes().isNotEmpty()
+        }
+
+        val addButton = SemanticsMatcher("ContentDescription starts with 'Agregar ' and ends with ' a la discografía'") { node ->
+            val cd = node.config.getOrNull(SemanticsProperties.ContentDescription) ?: return@SemanticsMatcher false
+            cd.any { it.startsWith("Agregar ") && it.endsWith(" a la discografía") }
+        }
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(addButton).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodes(addButton)[0].performClick()
+
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("current_album_musician_2").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("current_album_musician_2").assertExists()
+    }
+
+    /**
+     * HU15-06: el botón back regresa al detalle del músico.
+     */
+    @Test
+    fun hu015_backButton_returnsToMusicianDetail() {
+        navigateToAddAlbumMusicianScreen()
+        composeRule.onNodeWithTag("add_album_musician_back").performClick()
+        waitForTag("artist_detail_root")
+        composeRule.onNodeWithTag("artist_detail_root").assertIsDisplayed()
+    }
+
     // -- HU010: Agregar artistas favoritos -----------------------------------
 
     /**
@@ -499,6 +739,31 @@ class VinilosE2ETest {
     }
 
     // -- Helpers -------------------------------------------------------------
+
+    /** Navega desde la lista de coleccionistas hasta la pantalla de agregar álbum. */
+    private fun navigateToAddAlbumScreen() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        waitForTag("collectors_list")
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
+        waitForTag("collector_detail_root")
+        composeRule.onNodeWithTag("collector_add_album_cta").performScrollTo().performClick()
+        waitForTag("add_album_collector_screen")
+    }
+
+    /** Navega desde la lista de músicos hasta la pantalla de agregar álbum al artista. */
+    private fun navigateToAddAlbumMusicianScreen() {
+        composeRule.onNodeWithTag("bottom_nav_artists").performClick()
+        waitForTag("artists_list")
+        val musicianCard = tagStartsWith("musician_card_")
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(musicianCard).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodes(musicianCard)[0].performClick()
+        waitForTag("artist_detail_root")
+        composeRule.onNodeWithTag("musician_add_album_cta").performScrollTo().performClick()
+        waitForTag("add_album_musician_screen")
+    }
 
     private fun waitForTag(tag: String) {
         composeRule.waitUntil(timeoutMs) {

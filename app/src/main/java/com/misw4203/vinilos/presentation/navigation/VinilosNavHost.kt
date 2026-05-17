@@ -29,10 +29,12 @@ import com.misw4203.vinilos.presentation.ui.screens.album.AddTrackScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumListScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.CreateAlbumScreen
+import com.misw4203.vinilos.presentation.ui.screens.artist.AddAlbumToMusicianScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.ArtistsHubScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.band.AddMusiciansToBandScreen
 import com.misw4203.vinilos.presentation.ui.screens.band.BandDetailScreen
+import com.misw4203.vinilos.presentation.ui.screens.collector.AddAlbumToCollectorScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.AddFavoritePerformerScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorListScreen
@@ -168,9 +170,30 @@ fun VinilosNavHost() {
                     arguments = listOf(navArgument("id") { type = NavType.IntType }),
                 ) { backStackEntry ->
                     val id = backStackEntry.arguments?.getInt("id") ?: return@composable
+                    val refreshFlag by backStackEntry.savedStateHandle
+                        .getStateFlow(Destinations.RefreshMusicianDetailKey, false)
+                        .collectAsStateWithLifecycle()
                     MusicianDetailScreen(
                         musicianId = id,
                         onBack = { navController.navigateUp() },
+                        onAddAlbum = { navController.navigate(Destinations.addAlbumToMusician(id)) },
+                        refreshKey = refreshFlag,
+                        onRefreshHandled = {
+                            backStackEntry.savedStateHandle[Destinations.RefreshMusicianDetailKey] = false
+                        },
+                    )
+                }
+                composable(
+                    route = Destinations.AddAlbumToMusician,
+                    arguments = listOf(navArgument(Destinations.AddAlbumMusicianArg) { type = NavType.IntType }),
+                ) {
+                    AddAlbumToMusicianScreen(
+                        onBack = {
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(Destinations.RefreshMusicianDetailKey, true)
+                            navController.popBackStack()
+                        },
                     )
                 }
                 composable(Destinations.Collectors) {
@@ -192,9 +215,23 @@ fun VinilosNavHost() {
                         onAddFavoritePerformer = {
                             navController.navigate(Destinations.addFavoritePerformer(collectorId))
                         },
+                        onAddAlbum = { navController.navigate(Destinations.addAlbumToCollector(collectorId)) },
                         refreshKey = refreshFlag,
                         onRefreshHandled = {
                             entry.savedStateHandle[Destinations.RefreshCollectorDetailKey] = false
+                        },
+                    )
+                }
+                composable(
+                    route = Destinations.AddAlbumToCollector,
+                    arguments = listOf(navArgument(Destinations.AddAlbumCollectorArg) { type = NavType.IntType }),
+                ) {
+                    AddAlbumToCollectorScreen(
+                        onBack = {
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(Destinations.RefreshCollectorDetailKey, true)
+                            navController.popBackStack()
                         },
                     )
                 }
