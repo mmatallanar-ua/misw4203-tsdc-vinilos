@@ -47,7 +47,7 @@ class AddAlbumToMusicianViewModelTest {
     ) : AlbumRepository {
         override suspend fun getAlbums(): List<Album> = albums
         override suspend fun getAlbumById(id: Long) = error("not used")
-        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.data.remote.dto.CreateTrackRequest) = error("not used")
+        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.domain.model.NewTrack) = error("not used")
         override suspend fun addComment(albumId: Long, description: String, rating: Int, collectorId: Int) = error("not used")
         override suspend fun createAlbum(input: com.misw4203.vinilos.domain.model.CreateAlbumInput) = error("not used")
     }

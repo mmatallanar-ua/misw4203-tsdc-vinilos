@@ -10,6 +10,7 @@ import com.misw4203.vinilos.data.remote.dto.CreateAlbumRequestDto
 import com.misw4203.vinilos.data.remote.dto.CreateCommentRequest
 import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.domain.model.Album
+import com.misw4203.vinilos.domain.model.NewTrack
 import com.misw4203.vinilos.domain.model.AlbumDetail
 import com.misw4203.vinilos.domain.model.CollectorSummary
 import com.misw4203.vinilos.domain.model.Comment
@@ -48,9 +49,9 @@ class AlbumRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun addTrack(albumId: Long, request: CreateTrackRequest): Track =
+    override suspend fun addTrack(albumId: Long, track: NewTrack): Track =
         withContext(Dispatchers.IO) {
-            val dto = api.addTrack(albumId, request)
+            val dto = api.addTrack(albumId, CreateTrackRequest(track.name, track.duration))
             val track = Track(
                 id = dto.id,
                 name = dto.name.orEmpty(),

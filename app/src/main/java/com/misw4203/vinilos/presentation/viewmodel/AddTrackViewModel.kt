@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
+import com.misw4203.vinilos.domain.model.NewTrack
 import com.misw4203.vinilos.domain.usecase.AddTrackUseCase
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,7 +45,7 @@ class AddTrackViewModel @Inject constructor(
         _uiState.value = AddTrackUiState.Loading
         viewModelScope.launch {
             _uiState.value = try {
-                val track = addTrack(albumId, CreateTrackRequest(name.trim(), duration.trim()))
+                val track = addTrack(albumId, NewTrack(name.trim(), duration.trim()))
                 AddTrackUiState.Success(track)
             } catch (e: CancellationException) {
                 throw e

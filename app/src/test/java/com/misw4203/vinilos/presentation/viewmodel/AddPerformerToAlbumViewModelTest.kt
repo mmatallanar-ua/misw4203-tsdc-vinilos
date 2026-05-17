@@ -44,7 +44,7 @@ class AddPerformerToAlbumViewModelTest {
         val addedBands = mutableListOf<Pair<Long, Int>>()
         override suspend fun getAlbums(): List<Album> = emptyList()
         override suspend fun getAlbumById(id: Long): AlbumDetail = detailResult.getOrThrow()
-        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.data.remote.dto.CreateTrackRequest): Track = error("unused")
+        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.domain.model.NewTrack): Track = error("unused")
         override suspend fun addComment(albumId: Long, description: String, rating: Int, collectorId: Int): Comment = error("unused")
         override suspend fun createAlbum(input: CreateAlbumInput): Album = error("unused")
         override suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) {

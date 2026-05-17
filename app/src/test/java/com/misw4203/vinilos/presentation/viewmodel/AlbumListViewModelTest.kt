@@ -34,7 +34,7 @@ class AlbumListViewModelTest {
             return nextResult.getOrThrow()
         }
         override suspend fun getAlbumById(id: Long): AlbumDetail = error("not used")
-        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.data.remote.dto.CreateTrackRequest) =
+        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.domain.model.NewTrack) =
             error("not used")
         override suspend fun addComment(
             albumId: Long,

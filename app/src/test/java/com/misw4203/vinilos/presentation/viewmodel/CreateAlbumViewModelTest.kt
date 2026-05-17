@@ -30,7 +30,7 @@ class CreateAlbumViewModelTest {
         var createResult: Result<Album> = Result.success(sampleAlbum())
         override suspend fun getAlbums(): List<Album> = emptyList()
         override suspend fun getAlbumById(id: Long): AlbumDetail = error("not used")
-        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.data.remote.dto.CreateTrackRequest) =
+        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.domain.model.NewTrack) =
             error("not used")
         override suspend fun addComment(albumId: Long, description: String, rating: Int, collectorId: Int): com.misw4203.vinilos.domain.model.Comment =
             error("not used")

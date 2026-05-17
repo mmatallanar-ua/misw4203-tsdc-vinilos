@@ -3,7 +3,7 @@ package com.misw4203.vinilos.presentation.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.misw4203.vinilos.MainDispatcherRule
-import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
+import com.misw4203.vinilos.domain.model.NewTrack
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
 import com.misw4203.vinilos.domain.model.Comment
@@ -38,7 +38,7 @@ class AddTrackViewModelTest {
         override suspend fun getAlbumById(id: Long): AlbumDetail = AlbumDetail(
             id, "", "", "", "", "", "", "", emptyList(), emptyList(), emptyList()
         )
-        override suspend fun addTrack(albumId: Long, request: CreateTrackRequest): Track =
+        override suspend fun addTrack(albumId: Long, request: NewTrack): Track =
             result.getOrThrow()
         override suspend fun addComment(
             albumId: Long,

@@ -7,6 +7,7 @@ import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.CommentDto
 import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
+import com.misw4203.vinilos.domain.model.NewTrack
 import com.misw4203.vinilos.data.remote.dto.PerformerDto
 import com.misw4203.vinilos.data.remote.dto.TrackDto
 import com.misw4203.vinilos.domain.model.Comment
@@ -93,12 +94,13 @@ class AlbumRepositoryImplTest {
     }
 
     @Test
-    fun `addTrack returns mapped Track from API`() = runTest {
-        val request = CreateTrackRequest("Get Lucky", "04:08")
-        coEvery { api.addTrack(100L, request) } returns TrackDto(1L, "Get Lucky", "04:08")
+    fun `addTrack maps NewTrack to CreateTrackRequest and returns mapped Track`() = runTest {
+        val sentToApi = slot<CreateTrackRequest>()
+        coEvery { api.addTrack(100L, capture(sentToApi)) } returns TrackDto(1L, "Get Lucky", "04:08")
 
-        val result = repository.addTrack(100L, request)
+        val result = repository.addTrack(100L, NewTrack("Get Lucky", "04:08"))
 
+        assertEquals(CreateTrackRequest("Get Lucky", "04:08"), sentToApi.captured)
         assertEquals(1L, result.id)
         assertEquals("Get Lucky", result.name)
         assertEquals("04:08", result.duration)
@@ -107,7 +109,7 @@ class AlbumRepositoryImplTest {
     @Test(expected = IOException::class)
     fun `addTrack propagates IOException`() = runTest {
         coEvery { api.addTrack(any(), any()) } throws IOException("offline")
-        repository.addTrack(100L, CreateTrackRequest("X", "01:00"))
+        repository.addTrack(100L, NewTrack("X", "01:00"))
     }
 
     @Test(expected = HttpException::class)
@@ -115,7 +117,7 @@ class AlbumRepositoryImplTest {
         coEvery { api.addTrack(any(), any()) } throws HttpException(
             Response.error<Any>(404, "".toResponseBody("text/plain".toMediaType()))
         )
-        repository.addTrack(999L, CreateTrackRequest("X", "01:00"))
+        repository.addTrack(999L, NewTrack("X", "01:00"))
     }
 
     @Test(expected = IOException::class)
@@ -213,7 +215,7 @@ class AlbumRepositoryImplTest {
         val captured = slot<AlbumDetailEntity>()
         coEvery { dao.upsertDetail(capture(captured)) } returns Unit
 
-        val result = repository.addTrack(albumId, CreateTrackRequest("Karma Police", "04:21"))
+        val result = repository.addTrack(albumId, NewTrack("Karma Police", "04:21"))
 
         assertEquals(2L, result.id)
         coVerify(exactly = 1) { dao.upsertDetail(any()) }
@@ -227,7 +229,7 @@ class AlbumRepositoryImplTest {
         coEvery { dao.getDetailById(albumId) } returns null
         coEvery { api.addTrack(albumId, any()) } returns TrackDto(3L, "X", "01:00")
 
-        repository.addTrack(albumId, CreateTrackRequest("X", "01:00"))
+        repository.addTrack(albumId, NewTrack("X", "01:00"))
 
         coVerify(exactly = 0) { dao.upsertDetail(any()) }
     }
