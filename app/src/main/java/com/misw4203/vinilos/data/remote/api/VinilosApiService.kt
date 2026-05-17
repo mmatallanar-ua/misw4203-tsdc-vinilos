@@ -80,4 +80,10 @@ interface VinilosApiService {
         @Path("albumId") albumId: Int,
         @Body request: AddCollectorAlbumRequest,
     ): CollectorAlbumDto
+
+    @POST("musicians/{musicianId}/albums/{albumId}")
+    suspend fun addAlbumToMusician(
+        @Path("musicianId") musicianId: Int,
+        @Path("albumId") albumId: Int,
+    )
 }

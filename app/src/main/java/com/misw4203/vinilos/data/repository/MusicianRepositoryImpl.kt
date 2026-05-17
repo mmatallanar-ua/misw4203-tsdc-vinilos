@@ -11,6 +11,7 @@ import com.misw4203.vinilos.domain.model.Musician
 import com.misw4203.vinilos.domain.model.MusicianPrize
 import com.misw4203.vinilos.domain.model.MusicianSummary
 import com.misw4203.vinilos.domain.repository.MusicianRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -76,6 +77,20 @@ class MusicianRepositoryImpl @Inject constructor(
         albums = albums.map { it.toDomain() },
         prizes = prizes,
     )
+
+    override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = withContext(Dispatchers.IO) {
+        api.addAlbumToMusician(musicianId, albumId)
+        try {
+            val cached = dao.getDetailById(musicianId)
+            if (cached != null) {
+                val newAlbum = api.getAlbum(albumId.toLong()).toDomain()
+                dao.upsertDetail(cached.copy(albums = cached.albums + newAlbum))
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) { /* best-effort */ }
+        Unit
+    }
 
     private fun AlbumDto.toDomain() = Album(
         id = id,

@@ -564,6 +564,108 @@ class VinilosE2ETest {
         composeRule.onNodeWithTag("current_album_2").assertExists()
     }
 
+    // -- HU15: Agregar álbum a músico ------------------------------------------
+
+    /**
+     * HU15-01: el CTA "Agregar álbum" del detalle del músico abre la pantalla
+     * de agregar álbum al artista.
+     */
+    @Test
+    fun hu015_tapAddAlbumCta_opensAddAlbumScreen() {
+        navigateToAddAlbumMusicianScreen()
+        composeRule.onNodeWithTag("add_album_musician_screen").assertIsDisplayed()
+    }
+
+    /**
+     * HU15-02: la pantalla muestra los álbumes disponibles (los que el músico aún no tiene).
+     * Con los fakes: "A Night at the Opera" (id=2) está disponible;
+     * "Buscando América" (id=1) ya es del artista y no aparece en disponibles.
+     */
+    @Test
+    fun hu015_addAlbumScreen_showsAvailableAlbums() {
+        navigateToAddAlbumMusicianScreen()
+
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("available_album_musician_2").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("A Night at the Opera").assertExists()
+    }
+
+    /**
+     * HU15-03: la pantalla muestra la discografía actual del músico.
+     * Con el fake, "Buscando América" (id=1) ya pertenece al artista.
+     */
+    @Test
+    fun hu015_addAlbumScreen_showsCurrentDiscography() {
+        navigateToAddAlbumMusicianScreen()
+
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("current_album_musician_1").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("current_album_musician_1").assertExists()
+    }
+
+    /**
+     * HU15-04: el buscador filtra los álbumes disponibles por nombre.
+     * Escribir "opera" deja solo "A Night at the Opera".
+     */
+    @Test
+    fun hu015_searchFiltersAvailableAlbums() {
+        navigateToAddAlbumMusicianScreen()
+
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("available_album_musician_2").fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeRule.onNodeWithTag("add_album_musician_search")
+            .performClick()
+            .performTextInput("opera")
+
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("available_album_musician_2").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("A Night at the Opera").assertExists()
+    }
+
+    /**
+     * HU15-05: tocar "+" en un álbum disponible lo mueve a la discografía actual
+     * (actualización optimista en el ViewModel).
+     */
+    @Test
+    fun hu015_tapAddButton_movesAlbumToCurrentDiscography() {
+        navigateToAddAlbumMusicianScreen()
+
+        val available = tagStartsWith("available_album_musician_")
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(available).fetchSemanticsNodes().isNotEmpty()
+        }
+
+        val addButton = SemanticsMatcher("ContentDescription starts with 'Agregar ' and ends with ' a la discografía'") { node ->
+            val cd = node.config.getOrNull(SemanticsProperties.ContentDescription) ?: return@SemanticsMatcher false
+            cd.any { it.startsWith("Agregar ") && it.endsWith(" a la discografía") }
+        }
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(addButton).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodes(addButton)[0].performClick()
+
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodesWithTag("current_album_musician_2").fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithTag("current_album_musician_2").assertExists()
+    }
+
+    /**
+     * HU15-06: el botón back regresa al detalle del músico.
+     */
+    @Test
+    fun hu015_backButton_returnsToMusicianDetail() {
+        navigateToAddAlbumMusicianScreen()
+        composeRule.onNodeWithTag("add_album_musician_back").performClick()
+        waitForTag("artist_detail_root")
+        composeRule.onNodeWithTag("artist_detail_root").assertIsDisplayed()
+    }
+
     // -- Helpers -------------------------------------------------------------
 
     /** Navega desde la lista de coleccionistas hasta la pantalla de agregar álbum. */
@@ -575,6 +677,20 @@ class VinilosE2ETest {
         waitForTag("collector_detail_root")
         composeRule.onNodeWithTag("collector_add_album_cta").performScrollTo().performClick()
         waitForTag("add_album_collector_screen")
+    }
+
+    /** Navega desde la lista de músicos hasta la pantalla de agregar álbum al artista. */
+    private fun navigateToAddAlbumMusicianScreen() {
+        composeRule.onNodeWithTag("bottom_nav_artists").performClick()
+        waitForTag("artists_list")
+        val musicianCard = tagStartsWith("musician_card_")
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(musicianCard).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodes(musicianCard)[0].performClick()
+        waitForTag("artist_detail_root")
+        composeRule.onNodeWithTag("musician_add_album_cta").performScrollTo().performClick()
+        waitForTag("add_album_musician_screen")
     }
 
     private fun waitForTag(tag: String) {

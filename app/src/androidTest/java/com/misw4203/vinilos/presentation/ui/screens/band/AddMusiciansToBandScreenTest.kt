@@ -34,6 +34,7 @@ class AddMusiciansToBandScreenTest {
     private class FakeMusicianRepo(val list: List<MusicianSummary>) : MusicianRepository {
         override suspend fun getMusicians() = list
         override suspend fun getMusicianDetail(id: Int) = error("not used")
+        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
     }
 
     private class FakeBandRepo(val band: Band) : BandRepository {
