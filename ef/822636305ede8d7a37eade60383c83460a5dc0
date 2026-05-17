@@ -1,0 +1,23 @@
+app/src/main/java/com/misw4203/vinilos/presentation/viewmodel/AddPrizeToMusicianViewModel.kt
+  s_8c2349ac000eb7::t_e61a8b65953650 1-187
+app/src/main/java/com/misw4203/vinilos/presentation/viewmodel/AddPrizeToMusicianUiState.kt
+  s_8c2349ac000eb7::t_dd6bd6d424f4f1 1-8
+app/src/main/java/com/misw4203/vinilos/presentation/viewmodel/AddPrizeToMusicianFormState.kt
+  s_8c2349ac000eb7::t_844e9333294781 1-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "ef822636305ede8d7a37eade60383c83460a5dc0",
+  "prompts": {},
+  "sessions": {
+    "s_8c2349ac000eb7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a23d02ac-91eb-4f28-b112-955eb941439f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "jarodriguezf-uni <ja.rodriguezf@uniandes.edu.co>"
+    }
+  }
+}
