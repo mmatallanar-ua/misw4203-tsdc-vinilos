@@ -166,4 +166,32 @@
     <string name="cd_band_image_of">Imagen de la banda %s</string>
     <string name="cd_add_musician_to_band">Agregar %s a la banda</string>
     <string name="cd_adding_musician">Agregando músico</string>
+
+    <!-- HU010 - Agregar artistas favoritos -->
+    <string name="add_favorite_performer_title">Agregar artista favorito</string>
+    <string name="add_favorite_performer_context_label">Coleccionista</string>
+    <string name="add_favorite_performer_search_placeholder">Buscar por nombre</string>
+    <string name="add_favorite_performer_empty_filter">No se encontraron artistas con ese nombre</string>
+    <string name="add_favorite_performer_success">«%s» fue agregado a tus favoritos</string>
+    <string name="add_favorite_performer_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="add_favorite_performer_error_server">No pudimos agregar el artista. Inténtalo de nuevo.</string>
+    <string name="add_favorite_performer_tab_musicians">Músicos</string>
+    <string name="add_favorite_performer_tab_bands">Bandas</string>
+    <string name="add_favorite_performer_available_musicians">Músicos disponibles</string>
+    <string name="add_favorite_performer_available_bands">Bandas disponibles</string>
+    <string name="add_favorite_performer_current_musicians">Mis músicos favoritos</string>
+    <string name="add_favorite_performer_current_bands">Mis bandas favoritas</string>
+    <string name="collector_no_favorite_performers">Aún no tienes artistas favoritos. Toca + para agregar.</string>
+    <string name="cd_add_favorite_performer">Agregar artista favorito</string>
+    <string name="cd_add_musician_to_favorites">Agregar %s a favoritos</string>
+    <string name="cd_add_band_to_favorites">Agregar banda %s a favoritos</string>
+    <string name="cd_adding_favorite_performer">Agregando artista favorito</string>
+    <plurals name="favorite_musicians_count">
+        <item quantity="one">%d músico favorito</item>
+        <item quantity="other">%d músicos favoritos</item>
+    </plurals>
+    <plurals name="favorite_bands_count">
+        <item quantity="one">%d banda favorita</item>
+        <item quantity="other">%d bandas favoritas</item>
+    </plurals>
 </resources>

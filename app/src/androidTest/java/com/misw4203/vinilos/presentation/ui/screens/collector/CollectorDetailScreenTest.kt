@@ -36,6 +36,8 @@ class CollectorDetailScreenTest {
     private class FakeRepo(val result: Result<CollectorDetail>) : CollectorRepository {
         override suspend fun getCollectors(): List<CollectorSummary> = error("unused")
         override suspend fun getCollectorDetail(id: Int): CollectorDetail = result.getOrThrow()
+        override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) = Unit
+        override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) = Unit
     }
 
     private fun vm(result: Result<CollectorDetail>): CollectorDetailViewModel {
@@ -193,16 +195,18 @@ class CollectorDetailScreenTest {
     }
 
     @Test
-    fun performersSectionHiddenWhenNoPerformers() {
+    fun performersSectionShowsEmptyMessageWhenNoFavorites() {
         val detailWithoutPerformers = sampleDetail().copy(favoritePerformers = emptyList())
         composeTestRule.setContent {
             MaterialTheme { CollectorDetailScreen(100, onBack = {}, viewModel = vm(Result.success(detailWithoutPerformers))) }
         }
         val ctx = composeTestRule.activity
         val header = ctx.getString(R.string.collector_section_performers).uppercase()
-        assert(composeTestRule.onAllNodesWithText(header).fetchSemanticsNodes().isEmpty()) {
-            "Performers section header should not be shown when favoritePerformers is empty"
-        }
+        // HU010: the section header is always shown so the "+" entry point is reachable,
+        // and an empty-state message replaces the chip list.
+        composeTestRule.onNodeWithText(header).assertIsDisplayed()
+        composeTestRule.onNodeWithTag("collector_detail_no_favorites").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("collector_detail_add_favorite_performer").assertIsDisplayed()
     }
 
     // ── Comments section ─────────────────────────────────────────────────────

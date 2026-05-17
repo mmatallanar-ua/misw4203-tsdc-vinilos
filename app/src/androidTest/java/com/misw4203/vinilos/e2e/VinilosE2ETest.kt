@@ -309,7 +309,11 @@ class VinilosE2ETest {
         composeRule.onAllNodes(firstCard)[0].performClick()
         waitForTag("collector_detail_root")
 
-        composeRule.onNodeWithText("Rubén Blades Bellido de Luna").assertIsDisplayed()
+        // HU010: el chip del favorito vive en una LazyRow horizontal dentro del
+        // scroll vertical del detalle; en viewports pequenos (Pixel 3a) puede
+        // quedar bajo del fold. assertExists basta para verificar que el layout
+        // incluye al favorito (igual que AD-05 con el rating accesible).
+        composeRule.onNodeWithText("Rubén Blades Bellido de Luna").assertExists()
     }
 
     /** CD-06: el rating del comentario expone contentDescription accesible. */
@@ -420,6 +424,78 @@ class VinilosE2ETest {
             composeRule.onAllNodes(currentMember).fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onAllNodes(currentMember)[0].assertExists()
+    }
+
+    // -- HU010: Agregar artistas favoritos -----------------------------------
+
+    /**
+     * HU010: flujo completo de agregar un músico favorito a un coleccionista.
+     * Bottom-nav → lista de coleccionistas → detalle → "+" en sección
+     * "Artistas favoritos" → picker → tab Músicos → "+" en disponibles →
+     * verificación de que aparece en "Mis músicos favoritos".
+     */
+    @Test
+    fun hu010_addFavoriteMusicianToCollector_flow() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        waitForTag("collectors_list")
+
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
+        waitForTag("collector_detail_root")
+
+        composeRule.onNodeWithTag("collector_detail_add_favorite_performer").performClick()
+
+        waitForTag("add_favorite_performer_screen_root")
+        val availablePerformer = tagStartsWith("available_favorite_performer_")
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(availablePerformer).fetchSemanticsNodes().isNotEmpty()
+        }
+        // El "+" expone contentDescription "Agregar {nombre} a favoritos".
+        val addFavoriteButton = SemanticsMatcher("ContentDescription ends with ' a favoritos'") { node ->
+            val cd = node.config.getOrNull(SemanticsProperties.ContentDescription) ?: return@SemanticsMatcher false
+            cd.any { it.startsWith("Agregar ") && it.endsWith(" a favoritos") }
+        }
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(addFavoriteButton).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodes(addFavoriteButton)[0].performClick()
+
+        val currentFavorite = tagStartsWith("current_favorite_performer_")
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(currentFavorite).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodes(currentFavorite)[0].assertExists()
+    }
+
+    /**
+     * HU010: el picker tiene tab "Bandas" que muestra bandas disponibles para
+     * marcar como favoritas.
+     */
+    @Test
+    fun hu010_addFavoriteBandToCollector_flow() {
+        composeRule.onNodeWithTag("bottom_nav_collectors").performClick()
+        waitForTag("collectors_list")
+
+        val firstCard = tagStartsWith("collector_card_")
+        composeRule.onAllNodes(firstCard)[0].performClick()
+        waitForTag("collector_detail_root")
+
+        composeRule.onNodeWithTag("collector_detail_add_favorite_performer").performClick()
+        waitForTag("add_favorite_performer_screen_root")
+
+        composeRule.onNodeWithTag("add_favorite_performer_tab_bands").performClick()
+
+        val availableBand = tagStartsWith("available_favorite_band_")
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(availableBand).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodes(availableBand)[0].performClick()
+
+        val currentBand = tagStartsWith("current_favorite_band_")
+        composeRule.waitUntil(timeoutMs) {
+            composeRule.onAllNodes(currentBand).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onAllNodes(currentBand)[0].assertExists()
     }
 
     // -- Helpers -------------------------------------------------------------

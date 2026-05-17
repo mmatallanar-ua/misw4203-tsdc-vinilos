@@ -33,6 +33,7 @@ import com.misw4203.vinilos.presentation.ui.screens.artist.ArtistsHubScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.band.AddMusiciansToBandScreen
 import com.misw4203.vinilos.presentation.ui.screens.band.BandDetailScreen
+import com.misw4203.vinilos.presentation.ui.screens.collector.AddFavoritePerformerScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorListScreen
 
@@ -182,9 +183,34 @@ fun VinilosNavHost() {
                     arguments = listOf(navArgument(Destinations.CollectorDetailArg) { type = NavType.IntType }),
                 ) { entry ->
                     val collectorId = entry.arguments?.getInt(Destinations.CollectorDetailArg) ?: return@composable
+                    val refreshFlag by entry.savedStateHandle
+                        .getStateFlow(Destinations.RefreshCollectorDetailKey, false)
+                        .collectAsStateWithLifecycle()
                     CollectorDetailScreen(
                         collectorId = collectorId,
                         onBack = { navController.popBackStack() },
+                        onAddFavoritePerformer = {
+                            navController.navigate(Destinations.addFavoritePerformer(collectorId))
+                        },
+                        refreshKey = refreshFlag,
+                        onRefreshHandled = {
+                            entry.savedStateHandle[Destinations.RefreshCollectorDetailKey] = false
+                        },
+                    )
+                }
+                composable(
+                    route = Destinations.AddFavoritePerformer,
+                    arguments = listOf(
+                        navArgument(Destinations.AddFavoritePerformerCollectorArg) { type = NavType.IntType },
+                    ),
+                ) {
+                    AddFavoritePerformerScreen(
+                        onBack = {
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(Destinations.RefreshCollectorDetailKey, true)
+                            navController.popBackStack()
+                        },
                     )
                 }
                 composable(
