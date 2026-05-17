@@ -1,0 +1,30 @@
+app/src/main/java/com/misw4203/vinilos/data/repository/MusicianRepositoryImpl.kt
+  s_8c2349ac000eb7::t_8b2957de84e492 96-100
+app/src/main/java/com/misw4203/vinilos/domain/repository/MusicianRepository.kt
+  s_8c2349ac000eb7::t_9cef3b859f993c 10
+app/src/main/java/com/misw4203/vinilos/data/remote/api/VinilosApiService.kt
+  s_8c2349ac000eb7::t_f22babec254c26 4
+  s_8c2349ac000eb7::t_fb79361476a2da 97-103
+app/src/main/java/com/misw4203/vinilos/data/remote/dto/AddPrizeToMusicianRequest.kt
+  s_8c2349ac000eb7::t_e8e3c94d7419a4 1-7
+app/src/main/java/com/misw4203/vinilos/domain/usecase/AddPrizeToMusicianUseCase.kt
+  s_8c2349ac000eb7::t_16ee7ea0ad764b 1-11
+app/src/androidTest/java/com/misw4203/vinilos/di/FakeMusicianRepository.kt
+  s_8c2349ac000eb7::t_7a6c44667f2e59 27-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "9f359bd439967a1217d64629f8e5b6cb1ae180aa",
+  "prompts": {},
+  "sessions": {
+    "s_8c2349ac000eb7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a23d02ac-91eb-4f28-b112-955eb941439f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "jarodriguezf-uni <ja.rodriguezf@uniandes.edu.co>"
+    }
+  }
+}
