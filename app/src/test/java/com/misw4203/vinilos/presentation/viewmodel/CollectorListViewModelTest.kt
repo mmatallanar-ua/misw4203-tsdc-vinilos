@@ -34,6 +34,8 @@ class CollectorListViewModelTest {
         }
         override suspend fun getCollectorDetail(id: Int): CollectorDetail = error("not used")
         override suspend fun addAlbumToCollector(collectorId: Int, albumId: Int, price: Double, status: String) = Unit
+        override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) = Unit
+        override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) = Unit
     }
 
     private fun buildViewModel(repo: FakeCollectorRepository) =

@@ -43,6 +43,52 @@ class CollectorRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) = withContext(Dispatchers.IO) {
+        api.addMusicianToCollector(collectorId, musicianId)
+        try {
+            val cached = dao.getDetailById(collectorId)
+            val musicianIdLong = musicianId.toLong()
+            if (cached != null && cached.favoritePerformers.none { it.id == musicianIdLong }) {
+                val musicianDto = api.getMusicianDetail(musicianId)
+                val newFavorite = Performer(
+                    id = musicianDto.id.toLong(),
+                    name = musicianDto.name,
+                    imageUrl = musicianDto.image,
+                )
+                val updated = cached.copy(favoritePerformers = cached.favoritePerformers + newFavorite)
+                dao.upsertDetail(updated)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // best-effort
+        }
+        Unit
+    }
+
+    override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) = withContext(Dispatchers.IO) {
+        api.addBandToCollector(collectorId, bandId)
+        try {
+            val cached = dao.getDetailById(collectorId)
+            val bandIdLong = bandId.toLong()
+            if (cached != null && cached.favoritePerformers.none { it.id == bandIdLong }) {
+                val bandDto = api.getBandDetail(bandId)
+                val newFavorite = Performer(
+                    id = bandDto.id.toLong(),
+                    name = bandDto.name.orEmpty(),
+                    imageUrl = bandDto.image.orEmpty(),
+                )
+                val updated = cached.copy(favoritePerformers = cached.favoritePerformers + newFavorite)
+                dao.upsertDetail(updated)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // best-effort
+        }
+        Unit
+    }
+
     override suspend fun getCollectorDetail(id: Int): CollectorDetail = withContext(Dispatchers.IO) {
         try {
             val dto = api.getCollectorDetail(id)

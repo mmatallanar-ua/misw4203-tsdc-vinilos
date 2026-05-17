@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import com.misw4203.vinilos.domain.model.Prize
 import com.misw4203.vinilos.domain.repository.PrizeRepository
@@ -82,7 +83,11 @@ class CreatePrizeScreenTest {
         composeTestRule.onNodeWithTag("create_prize_organization").assertIsDisplayed()
         composeTestRule.onNodeWithTag("create_prize_description").assertIsDisplayed()
         composeTestRule.onNodeWithTag("create_prize_submit").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("registered_prizes_section").assertIsDisplayed()
+        // En viewports compactos (Pixel 3a) la seccion de premios registrados
+        // queda bajo el fold del scroll vertical; scroll antes del assert.
+        composeTestRule.onNodeWithTag("registered_prizes_section")
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     // CA04 – submit button disabled when fields empty

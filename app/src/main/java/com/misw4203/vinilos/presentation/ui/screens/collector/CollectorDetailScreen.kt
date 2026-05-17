@@ -75,8 +75,15 @@ fun CollectorDetailScreen(
     refreshKey: Boolean = false,
     onRefreshHandled: () -> Unit = {},
     modifier: Modifier = Modifier,
+    onAddFavoritePerformer: () -> Unit = {},
     viewModel: CollectorDetailViewModel = hiltViewModel(),
 ) {
+    LaunchedEffect(refreshKey) {
+        if (refreshKey) {
+            viewModel.retry()
+            onRefreshHandled()
+        }
+    }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(refreshKey) {
@@ -89,7 +96,10 @@ fun CollectorDetailScreen(
     Box(modifier = modifier.fillMaxSize()) {
         when (val state = uiState) {
             is CollectorDetailUiState.Loading -> LoadingState()
-            is CollectorDetailUiState.Success -> CollectorDetailContent(state.collector, onBack, onAddAlbum)
+            is CollectorDetailUiState.Success -> CollectorDetailContent( collector = state.collector,
+                onBack = onBack,
+                onAddAlbum = onAddAlbum,
+                onAddFavoritePerformer = onAddFavoritePerformer,)
             is CollectorDetailUiState.NotFound -> NotFoundState(onBack)
             is CollectorDetailUiState.Error -> ErrorState(
                 onRetry = viewModel::retry,
@@ -104,6 +114,7 @@ private fun CollectorDetailContent(
     collector: CollectorDetail,
     onBack: () -> Unit,
     onAddAlbum: () -> Unit,
+    onAddFavoritePerformer: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize().testTag("collector_detail_root")) {
         Column(
@@ -227,10 +238,11 @@ private fun CollectorDetailContent(
                         onAddAlbum = onAddAlbum,
                     )
 
-                    if (collector.favoritePerformers.isNotEmpty()) {
-                        Spacer(Modifier.height(28.dp))
-                        PerformersSection(collector.favoritePerformers)
-                    }
+                    Spacer(Modifier.height(28.dp))
+                    PerformersSection(
+                        performers = collector.favoritePerformers,
+                        onAddFavoritePerformer = onAddFavoritePerformer,
+                    )
 
                     if (collector.comments.isNotEmpty()) {
                         Spacer(Modifier.height(28.dp))
@@ -397,12 +409,42 @@ private fun CollectorAlbumCard(collectorAlbum: CollectorAlbum) {
 // ─── Performers ───────────────────────────────────────────────────────────────
 
 @Composable
-private fun PerformersSection(performers: List<Performer>) {
-    SectionHeader(stringResource(R.string.collector_section_performers))
+private fun PerformersSection(
+    performers: List<Performer>,
+    onAddFavoritePerformer: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        SectionHeader(stringResource(R.string.collector_section_performers))
+        Spacer(Modifier.weight(1f))
+        IconButton(
+            onClick = onAddFavoritePerformer,
+            modifier = Modifier
+                .size(32.dp)
+                .testTag("collector_detail_add_favorite_performer"),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = stringResource(R.string.cd_add_favorite_performer),
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        }
+    }
     Spacer(Modifier.height(12.dp))
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        items(performers, key = { it.id }) { performer ->
-            PerformerChip(performer)
+    if (performers.isEmpty()) {
+        Text(
+            text = stringResource(R.string.collector_no_favorite_performers),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.testTag("collector_detail_no_favorites"),
+        )
+    } else {
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(performers, key = { it.id }) { performer ->
+                PerformerChip(performer)
+            }
         }
     }
 }

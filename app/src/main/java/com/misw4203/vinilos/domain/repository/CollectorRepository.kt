@@ -7,4 +7,6 @@ interface CollectorRepository {
     suspend fun getCollectors(): List<CollectorSummary>
     suspend fun getCollectorDetail(id: Int): CollectorDetail
     suspend fun addAlbumToCollector(collectorId: Int, albumId: Int, price: Double, status: String)
+    suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int)
+    suspend fun addFavoriteBand(collectorId: Int, bandId: Int)
 }

@@ -43,9 +43,11 @@ fun MusicianRow(
     isAdding: Boolean,
     onAdd: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    addContentDescription: String = stringResource(R.string.cd_add_musician_to_band, musician.name),
+    addingContentDescription: String = stringResource(R.string.cd_adding_musician),
 ) {
-    val addCd = stringResource(R.string.cd_add_musician_to_band, musician.name)
-    val addingCd = stringResource(R.string.cd_adding_musician)
+    val addCd = addContentDescription
+    val addingCd = addingContentDescription
     Row(
         modifier = modifier
             .fillMaxWidth()
