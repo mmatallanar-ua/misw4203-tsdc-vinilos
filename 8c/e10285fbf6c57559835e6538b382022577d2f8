@@ -1,0 +1,9 @@
+app/src/main/res/values/strings.xml
+  ai_agent 235-262
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "8ce10285fbf6c57559835e6538b382022577d2f8",
+  "prompts": {}
+}
