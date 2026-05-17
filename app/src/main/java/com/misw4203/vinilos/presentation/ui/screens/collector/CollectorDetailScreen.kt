@@ -75,7 +75,7 @@ fun CollectorDetailScreen(
     refreshKey: Boolean = false,
     onRefreshHandled: () -> Unit = {},
     modifier: Modifier = Modifier,
-    onAddFavoritePerformer: () -> Unit = {}, ,
+    onAddFavoritePerformer: () -> Unit = {},
     viewModel: CollectorDetailViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(refreshKey) {

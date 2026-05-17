@@ -38,6 +38,7 @@ class AddFavoritePerformerScreenTest {
     private class FakeMusicianRepo(val list: List<MusicianSummary>) : MusicianRepository {
         override suspend fun getMusicians() = list
         override suspend fun getMusicianDetail(id: Int) = error("not used")
+        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int)  = error("not used")
     }
 
     private class FakeBandRepo(val list: List<BandSummary>) : BandRepository {
@@ -51,6 +52,13 @@ class AddFavoritePerformerScreenTest {
         val addedBands = mutableListOf<Pair<Int, Int>>()
         override suspend fun getCollectors(): List<CollectorSummary> = error("not used")
         override suspend fun getCollectorDetail(id: Int): CollectorDetail = detail
+        override suspend fun addAlbumToCollector(
+            collectorId: Int,
+            albumId: Int,
+            price: Double,
+            status: String
+        ) = error("not used")
+
         override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) {
             addedMusicians += collectorId to musicianId
         }
