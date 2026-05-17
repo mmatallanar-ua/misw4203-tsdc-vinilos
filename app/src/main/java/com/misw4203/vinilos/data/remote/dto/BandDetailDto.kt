@@ -10,4 +10,5 @@ data class BandDetailDto(
     @SerializedName("creationDate") val creationDate: String?,
     @SerializedName("musicians") val musicians: List<MusicianDetailDto>?,
     @SerializedName("albums") val albums: List<AlbumDto>?,
+    @SerializedName("performerPrizes") val performerPrizes: List<PerformerPrizeDto>? = null,
 )

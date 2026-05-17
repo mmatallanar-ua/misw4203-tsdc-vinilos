@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -50,6 +52,7 @@ import coil.compose.AsyncImage
 import com.misw4203.vinilos.R
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.Band
+import com.misw4203.vinilos.domain.model.MusicianPrize
 import com.misw4203.vinilos.domain.model.MusicianSummary
 import com.misw4203.vinilos.presentation.ui.components.EmptyMembersState
 import com.misw4203.vinilos.presentation.ui.components.ErrorState
@@ -67,6 +70,8 @@ fun BandDetailScreen(
     onBack: () -> Unit,
     onMusicianClick: (Int) -> Unit,
     onAddMusicians: () -> Unit,
+    onAddAlbum: () -> Unit = {},
+    onAwardPrize: () -> Unit = {},
     modifier: Modifier = Modifier,
     refreshKey: Boolean = false,
     onRefreshHandled: () -> Unit = {},
@@ -115,6 +120,8 @@ fun BandDetailScreen(
                     band = state.band,
                     onMusicianClick = onMusicianClick,
                     onAddMusicians = onAddMusicians,
+                    onAddAlbum = onAddAlbum,
+                    onAwardPrize = onAwardPrize,
                 )
             }
         }
@@ -126,6 +133,8 @@ private fun BandBody(
     band: Band,
     onMusicianClick: (Int) -> Unit,
     onAddMusicians: () -> Unit,
+    onAddAlbum: () -> Unit,
+    onAwardPrize: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -148,10 +157,11 @@ private fun BandBody(
             onAddMusicians = onAddMusicians,
         )
 
-        if (band.albums.isNotEmpty()) {
-            Spacer(Modifier.height(24.dp))
-            AlbumsSection(band.albums)
-        }
+        Spacer(Modifier.height(24.dp))
+        AlbumsSection(albums = band.albums, onAddAlbum = onAddAlbum)
+
+        Spacer(Modifier.height(24.dp))
+        PrizesSection(prizes = band.prizes, onAwardPrize = onAwardPrize)
 
         Spacer(Modifier.height(32.dp))
     }
@@ -205,41 +215,143 @@ private fun MembersSection(
 }
 
 @Composable
-private fun AlbumsSection(albums: List<Album>) {
+private fun AlbumsSection(albums: List<Album>, onAddAlbum: () -> Unit) {
     SectionHeader(stringResource(R.string.band_albums_section_title))
     Spacer(Modifier.height(8.dp))
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        items(albums) { album ->
-            Column(modifier = Modifier.width(120.dp)) {
-                AsyncImage(
-                    model = album.coverUrl,
-                    contentDescription = stringResource(R.string.cd_album_cover_of, album.name),
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = album.name,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (album.releaseYear.isNotBlank()) {
-                    Text(
-                        text = album.releaseYear,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    if (albums.isEmpty()) {
+        Text(
+            text = stringResource(R.string.band_albums_empty),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 24.dp),
+        )
+    } else {
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            items(albums) { album ->
+                Column(modifier = Modifier.width(120.dp)) {
+                    AsyncImage(
+                        model = album.coverUrl,
+                        contentDescription = stringResource(R.string.cd_album_cover_of, album.name),
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
                     )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = album.name,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (album.releaseYear.isNotBlank()) {
+                        Text(
+                            text = album.releaseYear,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }
+    }
+    Spacer(Modifier.height(12.dp))
+    Button(
+        onClick = onAddAlbum,
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .height(48.dp)
+            .testTag("band_detail_add_album"),
+    ) {
+        Icon(imageVector = Icons.Outlined.Add, contentDescription = null)
+        Spacer(Modifier.width(8.dp))
+        Text(stringResource(R.string.band_add_album_cta))
+    }
+}
+
+@Composable
+private fun PrizesSection(prizes: List<MusicianPrize>, onAwardPrize: () -> Unit) {
+    SectionHeader(stringResource(R.string.band_prizes_section_title))
+    Spacer(Modifier.height(8.dp))
+    if (prizes.isEmpty()) {
+        Text(
+            text = stringResource(R.string.band_prizes_empty),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .testTag("band_detail_no_prizes"),
+        )
+    } else {
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            prizes.forEach { prize ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                        .padding(12.dp)
+                        .testTag("band_prize_${prize.id}"),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = prize.name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            text = prize.organization,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    if (prize.premiationDate.isNotBlank()) {
+                        Text(
+                            text = prize.premiationDate.take(10),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    }
+                }
+            }
+        }
+    }
+    Spacer(Modifier.height(12.dp))
+    Button(
+        onClick = onAwardPrize,
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .height(48.dp)
+            .testTag("band_detail_award_prize"),
+    ) {
+        Icon(imageVector = Icons.Outlined.Add, contentDescription = null)
+        Spacer(Modifier.width(8.dp))
+        Text(stringResource(R.string.band_award_prize_cta))
     }
 }
 

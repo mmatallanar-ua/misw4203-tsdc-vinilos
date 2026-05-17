@@ -118,3 +118,30 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+
+// --- Monkey: pruebas de exploración aleatoria sistemática ---
+// Lanza la matriz de semillas vía scripts/monkey.{ps1,sh}. Requiere un
+// emulador/dispositivo arrancado (ver flujo híbrido E2E en CLAUDE.md).
+// Configurable: -PmonkeyEvents=, -PmonkeySeeds=, -PmonkeyThrottle=.
+tasks.register<Exec>("monkeyTest") {
+    group = "verification"
+    description = "Random systematic exploration with the Android Monkey (seed matrix)."
+    workingDir = rootProject.projectDir
+    val scriptsDir = rootProject.file("scripts")
+    val events = (project.findProperty("monkeyEvents") as String?) ?: "500"
+    val seeds = (project.findProperty("monkeySeeds") as String?) ?: "1 42 123 2024 7777"
+    val throttle = (project.findProperty("monkeyThrottle") as String?) ?: "200"
+    val isWindows = System.getProperty("os.name").lowercase().contains("win")
+    if (isWindows) {
+        commandLine(
+            "powershell", "-ExecutionPolicy", "Bypass", "-File",
+            scriptsDir.resolve("monkey.ps1").absolutePath,
+            "-Events", events, "-Seeds", seeds, "-Throttle", throttle,
+        )
+    } else {
+        commandLine(
+            "bash", scriptsDir.resolve("monkey.sh").absolutePath,
+            "--events", events, "--seeds", seeds, "--throttle", throttle,
+        )
+    }
+}

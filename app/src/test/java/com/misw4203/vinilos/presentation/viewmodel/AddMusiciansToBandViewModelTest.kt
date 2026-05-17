@@ -38,6 +38,7 @@ class AddMusiciansToBandViewModelTest {
         override suspend fun getMusicians(): List<MusicianSummary> = allMusicians
         override suspend fun getMusicianDetail(id: Int): Musician = error("not used")
         override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+        override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) = Unit
     }
 
     private class FakeBandRepo : BandRepository {
@@ -99,7 +100,9 @@ class AddMusiciansToBandViewModelTest {
     }
 
     @Test
-    fun `query change with debounce filters by normalized name`() = runTest {
+    fun `query change filters by normalized name`() = runTest {
+        // Filtering is synchronous (no debounce), consistent with the sibling
+        // AddAlbumToMusician / AddFavoritePerformer view models.
         val musicianRepo = FakeMusicianRepo().apply {
             allMusicians = listOf(
                 MusicianSummary(10, "José Pérez", "", ""),
@@ -111,11 +114,7 @@ class AddMusiciansToBandViewModelTest {
         advanceUntilIdle()
 
         vm.onQueryChange("jose")
-        advanceTimeBy(299L)
-        assertEquals(2, vm.form.value.filteredAvailable.size)
 
-        advanceTimeBy(1L)
-        advanceUntilIdle()
         assertEquals(1, vm.form.value.filteredAvailable.size)
         assertEquals("José Pérez", vm.form.value.filteredAvailable[0].name)
     }

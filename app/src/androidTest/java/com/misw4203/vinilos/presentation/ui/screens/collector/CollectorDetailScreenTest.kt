@@ -19,6 +19,9 @@ import com.misw4203.vinilos.domain.model.CollectorSummary
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.repository.CollectorRepository
 import com.misw4203.vinilos.domain.usecase.GetCollectorDetailUseCase
+import com.misw4203.vinilos.domain.usecase.RemoveAlbumFromCollectorUseCase
+import com.misw4203.vinilos.domain.usecase.RemoveFavoriteBandUseCase
+import com.misw4203.vinilos.domain.usecase.RemoveFavoriteMusicianUseCase
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import com.misw4203.vinilos.presentation.viewmodel.CollectorDetailViewModel
 import okhttp3.MediaType.Companion.toMediaType
@@ -44,7 +47,14 @@ class CollectorDetailScreenTest {
 
     private fun vm(result: Result<CollectorDetail>): CollectorDetailViewModel {
         val handle = SavedStateHandle(mapOf(Destinations.CollectorDetailArg to 100))
-        return CollectorDetailViewModel(GetCollectorDetailUseCase(FakeRepo(result)), handle)
+        val repo = FakeRepo(result)
+        return CollectorDetailViewModel(
+            GetCollectorDetailUseCase(repo),
+            RemoveFavoriteMusicianUseCase(repo),
+            RemoveFavoriteBandUseCase(repo),
+            RemoveAlbumFromCollectorUseCase(repo),
+            handle,
+        )
     }
 
     private fun sampleDetail() = CollectorDetail(

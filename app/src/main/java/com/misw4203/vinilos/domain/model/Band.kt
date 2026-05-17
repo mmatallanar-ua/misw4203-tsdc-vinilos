@@ -8,4 +8,5 @@ data class Band(
     val creationDate: String,
     val members: List<MusicianSummary>,
     val albums: List<Album>,
+    val prizes: List<MusicianPrize> = emptyList(),
 )

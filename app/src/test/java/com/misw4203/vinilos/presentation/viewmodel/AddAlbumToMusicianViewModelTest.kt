@@ -39,6 +39,7 @@ class AddAlbumToMusicianViewModelTest {
         override suspend fun getMusicians(): List<MusicianSummary> = emptyList()
         override suspend fun getMusicianDetail(id: Int): Musician = musicianResult.getOrThrow()
         override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = addResult.getOrThrow()
+        override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) = Unit
     }
 
     private class FakeAlbumRepo(
@@ -140,7 +141,8 @@ class AddAlbumToMusicianViewModelTest {
 
             vm.events.test {
                 vm.onAddAlbum(2)
-                assertEquals(AddAlbumToMusicianUiState.Adding(2), awaitItem())
+                // Adding is set synchronously on uiState, not emitted as an event.
+                assertEquals(AddAlbumToMusicianUiState.Adding(2), vm.uiState.value)
                 advanceUntilIdle()
                 capturedEvent = awaitItem()
                 cancelAndIgnoreRemainingEvents()

@@ -1,0 +1,169 @@
+{
+  "info": {
+    "name": "BackVynils API (completa)",
+    "description": "Colección completa de los 73 endpoints del backend. Variables: {{baseUrl}} (def. http://localhost:3000). POST devuelve 200, DELETE 204.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "albumId", "value": "100" },
+    { "key": "bandId", "value": "101" },
+    { "key": "musicianId", "value": "102" },
+    { "key": "collectorId", "value": "100" },
+    { "key": "prizeId", "value": "100" },
+    { "key": "trackId", "value": "100" },
+    { "key": "commentId", "value": "100" }
+  ],
+  "item": [
+    {
+      "name": "Albums",
+      "item": [
+        { "name": "GET listar", "request": { "method": "GET", "url": "{{baseUrl}}/albums" } },
+        { "name": "GET uno", "request": { "method": "GET", "url": "{{baseUrl}}/albums/{{albumId}}" } },
+        { "name": "POST crear", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Buscando America\",\n  \"cover\": \"https://example.com/cover.jpg\",\n  \"releaseDate\": \"1984-08-01T00:00:00.000Z\",\n  \"description\": \"Album de prueba\",\n  \"genre\": \"Salsa\",\n  \"recordLabel\": \"Elektra\"\n}" }, "url": "{{baseUrl}}/albums" } },
+        { "name": "PUT actualizar", "request": { "method": "PUT", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Buscando America (ed.)\",\n  \"cover\": \"https://example.com/cover.jpg\",\n  \"releaseDate\": \"1984-08-01T00:00:00.000Z\",\n  \"description\": \"Album actualizado\",\n  \"genre\": \"Salsa\",\n  \"recordLabel\": \"Elektra\"\n}" }, "url": "{{baseUrl}}/albums/{{albumId}}" } },
+        { "name": "DELETE", "request": { "method": "DELETE", "url": "{{baseUrl}}/albums/{{albumId}}" } }
+      ]
+    },
+    {
+      "name": "Bands",
+      "item": [
+        { "name": "GET listar", "request": { "method": "GET", "url": "{{baseUrl}}/bands" } },
+        { "name": "GET uno", "request": { "method": "GET", "url": "{{baseUrl}}/bands/{{bandId}}" } },
+        { "name": "POST crear", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Los Tigres\",\n  \"image\": \"https://example.com/band.jpg\",\n  \"description\": \"Banda de prueba\",\n  \"creationDate\": \"1990-01-01T00:00:00.000Z\"\n}" }, "url": "{{baseUrl}}/bands" } },
+        { "name": "PUT actualizar", "request": { "method": "PUT", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Los Tigres (ed.)\",\n  \"image\": \"https://example.com/band.jpg\",\n  \"description\": \"Banda actualizada\",\n  \"creationDate\": \"1990-01-01T00:00:00.000Z\"\n}" }, "url": "{{baseUrl}}/bands/{{bandId}}" } },
+        { "name": "DELETE", "request": { "method": "DELETE", "url": "{{baseUrl}}/bands/{{bandId}}" } }
+      ]
+    },
+    {
+      "name": "Musicians",
+      "item": [
+        { "name": "GET listar", "request": { "method": "GET", "url": "{{baseUrl}}/musicians" } },
+        { "name": "GET uno", "request": { "method": "GET", "url": "{{baseUrl}}/musicians/{{musicianId}}" } },
+        { "name": "POST crear", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Ruben Blades\",\n  \"image\": \"https://example.com/m.jpg\",\n  \"description\": \"Musico de prueba\",\n  \"birthDate\": \"1948-07-16T00:00:00.000Z\"\n}" }, "url": "{{baseUrl}}/musicians" } },
+        { "name": "PUT actualizar", "request": { "method": "PUT", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Ruben Blades (ed.)\",\n  \"image\": \"https://example.com/m.jpg\",\n  \"description\": \"Musico actualizado\",\n  \"birthDate\": \"1948-07-16T00:00:00.000Z\"\n}" }, "url": "{{baseUrl}}/musicians/{{musicianId}}" } },
+        { "name": "DELETE", "request": { "method": "DELETE", "url": "{{baseUrl}}/musicians/{{musicianId}}" } }
+      ]
+    },
+    {
+      "name": "Collectors",
+      "item": [
+        { "name": "GET listar", "request": { "method": "GET", "url": "{{baseUrl}}/collectors" } },
+        { "name": "GET uno", "request": { "method": "GET", "url": "{{baseUrl}}/collectors/{{collectorId}}" } },
+        { "name": "POST crear", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Manolo Bellon\",\n  \"telephone\": \"3001234567\",\n  \"email\": \"manolo@example.com\"\n}" }, "url": "{{baseUrl}}/collectors" } },
+        { "name": "PUT actualizar", "request": { "method": "PUT", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Manolo Bellon (ed.)\",\n  \"telephone\": \"3001234567\",\n  \"email\": \"manolo@example.com\"\n}" }, "url": "{{baseUrl}}/collectors/{{collectorId}}" } },
+        { "name": "DELETE", "request": { "method": "DELETE", "url": "{{baseUrl}}/collectors/{{collectorId}}" } }
+      ]
+    },
+    {
+      "name": "Prizes",
+      "item": [
+        { "name": "GET listar", "request": { "method": "GET", "url": "{{baseUrl}}/prizes" } },
+        { "name": "GET uno", "request": { "method": "GET", "url": "{{baseUrl}}/prizes/{{prizeId}}" } },
+        { "name": "POST crear", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Grammy\",\n  \"description\": \"Premio musical\",\n  \"organization\": \"Recording Academy\"\n}" }, "url": "{{baseUrl}}/prizes" } },
+        { "name": "PUT actualizar", "request": { "method": "PUT", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Grammy (ed.)\",\n  \"description\": \"Premio actualizado\",\n  \"organization\": \"Recording Academy\"\n}" }, "url": "{{baseUrl}}/prizes/{{prizeId}}" } },
+        { "name": "DELETE", "request": { "method": "DELETE", "url": "{{baseUrl}}/prizes/{{prizeId}}" } }
+      ]
+    },
+    {
+      "name": "Tracks (album)",
+      "item": [
+        { "name": "GET listar", "request": { "method": "GET", "url": "{{baseUrl}}/albums/{{albumId}}/tracks" } },
+        { "name": "GET uno", "request": { "method": "GET", "url": "{{baseUrl}}/albums/{{albumId}}/tracks/{{trackId}}" } },
+        { "name": "POST crear", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Decisiones\",\n  \"duration\": \"5:05\"\n}" }, "url": "{{baseUrl}}/albums/{{albumId}}/tracks" } },
+        { "name": "PUT actualizar", "request": { "method": "PUT", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Decisiones (ed.)\",\n  \"duration\": \"5:10\"\n}" }, "url": "{{baseUrl}}/albums/{{albumId}}/tracks/{{trackId}}" } },
+        { "name": "DELETE", "request": { "method": "DELETE", "url": "{{baseUrl}}/albums/{{albumId}}/tracks/{{trackId}}" } }
+      ]
+    },
+    {
+      "name": "Comments (album)",
+      "item": [
+        { "name": "GET listar", "request": { "method": "GET", "url": "{{baseUrl}}/albums/{{albumId}}/comments" } },
+        { "name": "GET uno", "request": { "method": "GET", "url": "{{baseUrl}}/albums/{{albumId}}/comments/{{commentId}}" } },
+        { "name": "POST crear", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"description\": \"Excelente album\",\n  \"rating\": 5,\n  \"collector\": { \"id\": 100 }\n}" }, "url": "{{baseUrl}}/albums/{{albumId}}/comments" } },
+        { "name": "PUT actualizar", "request": { "method": "PUT", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"description\": \"Comentario actualizado\",\n  \"rating\": 4,\n  \"collector\": { \"id\": 100 }\n}" }, "url": "{{baseUrl}}/albums/{{albumId}}/comments/{{commentId}}" } },
+        { "name": "DELETE", "request": { "method": "DELETE", "url": "{{baseUrl}}/albums/{{albumId}}/comments/{{commentId}}" } }
+      ]
+    },
+    {
+      "name": "CollectorAlbum",
+      "item": [
+        { "name": "GET albumes del coleccionista", "request": { "method": "GET", "url": "{{baseUrl}}/collectors/{{collectorId}}/albums" } },
+        { "name": "GET uno", "request": { "method": "GET", "url": "{{baseUrl}}/collectors/{{collectorId}}/albums/{{albumId}}" } },
+        { "name": "POST agregar", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"price\": 50000,\n  \"status\": \"Active\"\n}" }, "url": "{{baseUrl}}/collectors/{{collectorId}}/albums/{{albumId}}" } },
+        { "name": "PUT actualizar", "request": { "method": "PUT", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"price\": 60000,\n  \"status\": \"Inactive\"\n}" }, "url": "{{baseUrl}}/collectors/{{collectorId}}/albums/{{albumId}}" } },
+        { "name": "DELETE", "request": { "method": "DELETE", "url": "{{baseUrl}}/collectors/{{collectorId}}/albums/{{albumId}}" } }
+      ]
+    },
+    {
+      "name": "CollectorPerformer",
+      "item": [
+        { "name": "GET performers favoritos", "request": { "method": "GET", "url": "{{baseUrl}}/collectors/{{collectorId}}/performers" } },
+        { "name": "POST asociar banda", "request": { "method": "POST", "url": "{{baseUrl}}/collectors/{{collectorId}}/bands/{{bandId}}" } },
+        { "name": "POST asociar musico", "request": { "method": "POST", "url": "{{baseUrl}}/collectors/{{collectorId}}/musicians/{{musicianId}}" } },
+        { "name": "DELETE banda", "request": { "method": "DELETE", "url": "{{baseUrl}}/collectors/{{collectorId}}/bands/{{bandId}}" } },
+        { "name": "DELETE musico", "request": { "method": "DELETE", "url": "{{baseUrl}}/collectors/{{collectorId}}/musicians/{{musicianId}}" } }
+      ]
+    },
+    {
+      "name": "AlbumBand",
+      "item": [
+        { "name": "GET bandas del album", "request": { "method": "GET", "url": "{{baseUrl}}/albums/{{albumId}}/bands" } },
+        { "name": "GET una", "request": { "method": "GET", "url": "{{baseUrl}}/albums/{{albumId}}/bands/{{bandId}}" } },
+        { "name": "POST asociar", "request": { "method": "POST", "url": "{{baseUrl}}/albums/{{albumId}}/bands/{{bandId}}/" } },
+        { "name": "PUT reemplazar todas", "request": { "method": "PUT", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "[ { \"id\": 101 } ]" }, "url": "{{baseUrl}}/albums/{{albumId}}/bands" } },
+        { "name": "DELETE", "request": { "method": "DELETE", "url": "{{baseUrl}}/albums/{{albumId}}/bands/{{bandId}}" } }
+      ]
+    },
+    {
+      "name": "AlbumMusician",
+      "item": [
+        { "name": "GET musicos del album", "request": { "method": "GET", "url": "{{baseUrl}}/albums/{{albumId}}/musicians" } },
+        { "name": "GET uno", "request": { "method": "GET", "url": "{{baseUrl}}/albums/{{albumId}}/musicians/{{musicianId}}" } },
+        { "name": "POST asociar", "request": { "method": "POST", "url": "{{baseUrl}}/albums/{{albumId}}/musicians/{{musicianId}}/" } },
+        { "name": "PUT reemplazar todos", "request": { "method": "PUT", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "[ { \"id\": 102 } ]" }, "url": "{{baseUrl}}/albums/{{albumId}}/musicians" } },
+        { "name": "DELETE", "request": { "method": "DELETE", "url": "{{baseUrl}}/albums/{{albumId}}/musicians/{{musicianId}}" } }
+      ]
+    },
+    {
+      "name": "BandAlbum",
+      "item": [
+        { "name": "GET albumes de la banda", "request": { "method": "GET", "url": "{{baseUrl}}/bands/{{bandId}}/albums/" } },
+        { "name": "GET uno", "request": { "method": "GET", "url": "{{baseUrl}}/bands/{{bandId}}/albums/{{albumId}}" } },
+        { "name": "POST asociar", "request": { "method": "POST", "url": "{{baseUrl}}/bands/{{bandId}}/albums/{{albumId}}" } },
+        { "name": "PUT reemplazar todos", "request": { "method": "PUT", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "[ { \"id\": 100 } ]" }, "url": "{{baseUrl}}/bands/{{bandId}}/albums/" } },
+        { "name": "DELETE", "request": { "method": "DELETE", "url": "{{baseUrl}}/bands/{{bandId}}/albums/{{albumId}}" } }
+      ]
+    },
+    {
+      "name": "MusicianAlbum",
+      "item": [
+        { "name": "GET albumes del musico", "request": { "method": "GET", "url": "{{baseUrl}}/musicians/{{musicianId}}/albums/" } },
+        { "name": "GET uno", "request": { "method": "GET", "url": "{{baseUrl}}/musicians/{{musicianId}}/albums/{{albumId}}" } },
+        { "name": "POST asociar", "request": { "method": "POST", "url": "{{baseUrl}}/musicians/{{musicianId}}/albums/{{albumId}}" } },
+        { "name": "PUT reemplazar todos", "request": { "method": "PUT", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "[ { \"id\": 100 } ]" }, "url": "{{baseUrl}}/musicians/{{musicianId}}/albums/" } },
+        { "name": "DELETE", "request": { "method": "DELETE", "url": "{{baseUrl}}/musicians/{{musicianId}}/albums/{{albumId}}" } }
+      ]
+    },
+    {
+      "name": "BandMusician",
+      "item": [
+        { "name": "GET musicos de la banda", "request": { "method": "GET", "url": "{{baseUrl}}/bands/{{bandId}}/musicians/" } },
+        { "name": "GET uno", "request": { "method": "GET", "url": "{{baseUrl}}/bands/{{bandId}}/musicians/{{musicianId}}" } },
+        { "name": "POST agregar", "request": { "method": "POST", "url": "{{baseUrl}}/bands/{{bandId}}/musicians/{{musicianId}}" } },
+        { "name": "DELETE", "request": { "method": "DELETE", "url": "{{baseUrl}}/bands/{{bandId}}/musicians/{{musicianId}}" } }
+      ]
+    },
+    {
+      "name": "PerformerPrize",
+      "item": [
+        { "name": "GET todas las premiaciones", "request": { "method": "GET", "url": "{{baseUrl}}/performerprizes" } },
+        { "name": "GET performers del premio", "request": { "method": "GET", "url": "{{baseUrl}}/prizes/{{prizeId}}/performers" } },
+        { "name": "POST premio a musico", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"premiationDate\": \"2020-01-01T00:00:00.000Z\"\n}" }, "url": "{{baseUrl}}/prizes/{{prizeId}}/musicians/{{musicianId}}" } },
+        { "name": "POST premio a banda", "request": { "method": "POST", "header": [{"key":"Content-Type","value":"application/json"}], "body": { "mode": "raw", "raw": "{\n  \"premiationDate\": \"2020-01-01T00:00:00.000Z\"\n}" }, "url": "{{baseUrl}}/prizes/{{prizeId}}/bands/{{bandId}}" } },
+        { "name": "DELETE premio-musico", "request": { "method": "DELETE", "url": "{{baseUrl}}/prizes/{{prizeId}}/musicians/{{musicianId}}" } },
+        { "name": "DELETE premio-banda", "request": { "method": "DELETE", "url": "{{baseUrl}}/prizes/{{prizeId}}/bands/{{bandId}}" } }
+      ]
+    }
+  ]
+}

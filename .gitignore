@@ -29,6 +29,9 @@ proguard/
 # Log Files
 *.log
 
+# Monkey: artefactos de corridas de exploración aleatoria (evidencia local/efímera)
+scripts/monkey-results/
+
 # Android Studio Navigation editor temp files
 .navigation/
 
@@ -61,7 +64,6 @@ SPECS_DESARROLLO_4_DEVS_S2.md
 SPECS_DESARROLLO_4_DEVS_S3.md
 SPECS_DESARROLLO_4_DEVS_MOVILES_SPRINT_2.md
 CORRUTINAS_MICROOPTIMIZACIONES.md
-collections/
 
 # Stitch files
 stitch_vinilos_app_screen_design_HU01/*

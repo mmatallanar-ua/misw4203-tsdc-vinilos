@@ -20,10 +20,19 @@ data class Track(
     val duration: String,
 )
 
+/**
+ * El backend no etiqueta el tipo de un performer; se infiere por los campos
+ * propios de cada entidad: `creationDate` ⇒ banda, `birthDate` (o ausencia de
+ * `creationDate`) ⇒ músico. Necesario para elegir el endpoint correcto al
+ * quitar un favorito (`/musicians/{id}` vs `/bands/{id}`).
+ */
+enum class PerformerKind { MUSICIAN, BAND, UNKNOWN }
+
 data class Performer(
     val id: Long,
     val name: String,
     val imageUrl: String,
+    val kind: PerformerKind = PerformerKind.UNKNOWN,
 )
 
 data class Comment(

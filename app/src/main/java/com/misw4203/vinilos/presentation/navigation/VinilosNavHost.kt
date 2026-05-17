@@ -25,6 +25,7 @@ import androidx.navigation.navArgument
 import com.misw4203.vinilos.presentation.ui.components.VinilosBottomNav
 import com.misw4203.vinilos.presentation.ui.components.VinilosDestination
 import com.misw4203.vinilos.presentation.ui.screens.album.AddCommentScreen
+import com.misw4203.vinilos.presentation.ui.screens.album.AddPerformerToAlbumScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AddTrackScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumListScreen
@@ -33,7 +34,9 @@ import com.misw4203.vinilos.presentation.ui.screens.artist.AddAlbumToMusicianScr
 import com.misw4203.vinilos.presentation.ui.screens.artist.AddPrizeToMusicianScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.ArtistsHubScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianDetailScreen
+import com.misw4203.vinilos.presentation.ui.screens.band.AddAlbumToBandScreen
 import com.misw4203.vinilos.presentation.ui.screens.band.AddMusiciansToBandScreen
+import com.misw4203.vinilos.presentation.ui.screens.band.AddPrizeToBandScreen
 import com.misw4203.vinilos.presentation.ui.screens.band.BandDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.AddAlbumToCollectorScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.AddFavoritePerformerScreen
@@ -127,11 +130,27 @@ fun VinilosNavHost() {
                         onBack = { navController.popBackStack() },
                         onAddTrack = { navController.navigate(Destinations.addTrack(albumId)) },
                         onAddComment = { navController.navigate(Destinations.addComment(albumId)) },
+                        onAddPerformer = {
+                            navController.navigate(Destinations.addPerformerToAlbum(albumId))
+                        },
                         refreshKey = refreshFlag,
                         onRefreshHandled = {
                             entry.savedStateHandle[Destinations.RefreshAlbumDetailKey] = false
                         },
                         viewModel = viewModel,
+                    )
+                }
+                composable(
+                    route = Destinations.AddPerformerToAlbum,
+                    arguments = listOf(navArgument(Destinations.AddPerformerAlbumArg) { type = NavType.LongType }),
+                ) {
+                    AddPerformerToAlbumScreen(
+                        onBack = {
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(Destinations.RefreshAlbumDetailKey, true)
+                            navController.popBackStack()
+                        },
                     )
                 }
                 composable(
@@ -272,6 +291,12 @@ fun VinilosNavHost() {
                         onAddMusicians = {
                             navController.navigate(Destinations.addMusiciansToBand(bandId))
                         },
+                        onAddAlbum = {
+                            navController.navigate(Destinations.addAlbumToBand(bandId))
+                        },
+                        onAwardPrize = {
+                            navController.navigate(Destinations.addPrizeToBand(bandId))
+                        },
                         refreshKey = refreshFlag,
                         onRefreshHandled = {
                             entry.savedStateHandle[Destinations.RefreshBandDetailKey] = false
@@ -283,6 +308,32 @@ fun VinilosNavHost() {
                     arguments = listOf(navArgument(Destinations.AddMusiciansBandArg) { type = NavType.IntType }),
                 ) {
                     AddMusiciansToBandScreen(
+                        onBack = {
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(Destinations.RefreshBandDetailKey, true)
+                            navController.popBackStack()
+                        },
+                    )
+                }
+                composable(
+                    route = Destinations.AddAlbumToBand,
+                    arguments = listOf(navArgument(Destinations.AddAlbumBandArg) { type = NavType.IntType }),
+                ) {
+                    AddAlbumToBandScreen(
+                        onBack = {
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(Destinations.RefreshBandDetailKey, true)
+                            navController.popBackStack()
+                        },
+                    )
+                }
+                composable(
+                    route = Destinations.AddPrizeToBand,
+                    arguments = listOf(navArgument(Destinations.AddPrizeBandArg) { type = NavType.IntType }),
+                ) {
+                    AddPrizeToBandScreen(
                         onBack = {
                             navController.previousBackStackEntry
                                 ?.savedStateHandle

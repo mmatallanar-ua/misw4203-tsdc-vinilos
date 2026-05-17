@@ -28,7 +28,7 @@ import com.misw4203.vinilos.data.local.entity.MusicianListEntity
         BandListEntity::class,
         BandDetailEntity::class,
     ],
-    version = 5,
+    version = 7,
     exportSchema = false,
 )
 @TypeConverters(Converters::class)
