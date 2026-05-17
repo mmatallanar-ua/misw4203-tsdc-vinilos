@@ -44,6 +44,11 @@ class CreatePrizeViewModel @Inject constructor(
     }
 
     fun submit(name: String, description: String, organization: String) {
+        if (name.isBlank() || organization.isBlank() || description.isBlank()) {
+            _uiState.value = CreatePrizeUiState.Error("Todos los campos son obligatorios.")
+            return
+        }
+
         val current = _uiState.value
         val existingPrizes = if (current is CreatePrizeUiState.Ready) current.existingPrizes else emptyList()
 
