@@ -1,0 +1,501 @@
+openapi: 3.0.3
+info:
+  title: BackVynils API
+  description: >-
+    API REST del backend de la app de coleccionistas de vinilos (NestJS + TypeORM).
+    Sin autenticación. POST devuelve 200 (no 201). DELETE devuelve 204.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local
+  - url: https://{herokuApp}.herokuapp.com
+    description: Heroku
+    variables:
+      herokuApp:
+        default: backvynils
+
+tags:
+  - name: Albums
+  - name: Bands
+  - name: Musicians
+  - name: Collectors
+  - name: Prizes
+  - name: Tracks
+  - name: Comments
+  - name: CollectorAlbum
+  - name: CollectorPerformer
+  - name: AlbumBand
+  - name: AlbumMusician
+  - name: BandAlbum
+  - name: MusicianAlbum
+  - name: BandMusician
+  - name: PerformerPrize
+
+components:
+  schemas:
+    GENRE:
+      type: string
+      enum: [Classical, Salsa, Rock, Folk]
+    RECORD_LABEL:
+      type: string
+      enum: [Sony Music, EMI, Discos Fuentes, Elektra, Fania Records]
+    ALBUM_STATUS:
+      type: string
+      enum: [Active, Inactive]
+    Error:
+      type: object
+      properties:
+        statusCode: { type: integer }
+        message: { type: string }
+    AlbumDTO:
+      type: object
+      required: [name, cover, releaseDate, description, genre, recordLabel]
+      properties:
+        id: { type: integer, readOnly: true }
+        name: { type: string }
+        cover: { type: string }
+        releaseDate: { type: string, format: date-time }
+        description: { type: string }
+        genre: { $ref: '#/components/schemas/GENRE' }
+        recordLabel: { $ref: '#/components/schemas/RECORD_LABEL' }
+    BandDTO:
+      type: object
+      required: [name, description, creationDate]
+      properties:
+        id: { type: integer, readOnly: true }
+        name: { type: string }
+        image: { type: string, format: uri }
+        description: { type: string }
+        creationDate: { type: string, format: date-time }
+    MusicianDTO:
+      type: object
+      required: [name, description]
+      properties:
+        id: { type: integer, readOnly: true }
+        name: { type: string }
+        image: { type: string, format: uri }
+        description: { type: string }
+        birthDate: { type: string, format: date-time }
+    CollectorDTO:
+      type: object
+      required: [name, telephone, email]
+      properties:
+        id: { type: integer, readOnly: true }
+        name: { type: string }
+        telephone: { type: string }
+        email: { type: string, format: email }
+    PrizeDTO:
+      type: object
+      required: [name, description, organization]
+      properties:
+        id: { type: integer, readOnly: true }
+        name: { type: string }
+        description: { type: string }
+        organization: { type: string }
+    TrackDTO:
+      type: object
+      required: [name, duration]
+      properties:
+        id: { type: integer, readOnly: true }
+        name: { type: string }
+        duration: { type: string, example: "3:45" }
+    CommentDTO:
+      type: object
+      required: [description, rating]
+      properties:
+        id: { type: integer, readOnly: true }
+        description: { type: string }
+        rating: { type: integer, minimum: 0, maximum: 5 }
+        collector: { $ref: '#/components/schemas/CollectorDTO' }
+    CollectorAlbumDTO:
+      type: object
+      required: [price, status]
+      properties:
+        id: { type: integer, readOnly: true }
+        price: { type: number }
+        status: { $ref: '#/components/schemas/ALBUM_STATUS' }
+        album: { $ref: '#/components/schemas/AlbumDTO' }
+    PerformerPrizeDTO:
+      type: object
+      properties:
+        premiationDate: { type: string, format: date-time }
+  responses:
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    BadRequest:
+      description: Validación fallida o petición inválida
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  parameters:
+    albumId: { name: albumId, in: path, required: true, schema: { type: integer } }
+    bandId: { name: bandId, in: path, required: true, schema: { type: integer } }
+    musicianId: { name: musicianId, in: path, required: true, schema: { type: integer } }
+    collectorId: { name: collectorId, in: path, required: true, schema: { type: integer } }
+    prizeId: { name: prizeId, in: path, required: true, schema: { type: integer } }
+    trackId: { name: trackId, in: path, required: true, schema: { type: integer } }
+    commentId: { name: commentId, in: path, required: true, schema: { type: integer } }
+
+paths:
+  /albums:
+    get:
+      tags: [Albums]
+      summary: Listar álbumes
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/AlbumDTO' } }
+    post:
+      tags: [Albums]
+      summary: Crear álbum
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AlbumDTO' }
+      responses:
+        '200': { description: Creado, content: { application/json: { schema: { $ref: '#/components/schemas/AlbumDTO' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /albums/{albumId}:
+    parameters: [{ $ref: '#/components/parameters/albumId' }]
+    get:
+      tags: [Albums]
+      summary: Obtener álbum
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AlbumDTO' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Albums]
+      summary: Actualizar álbum
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AlbumDTO' }
+      responses:
+        '200': { description: OK }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Albums]
+      summary: Eliminar álbum
+      responses:
+        '204': { description: Eliminado }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /bands:
+    get:
+      tags: [Bands]
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BandDTO' } } } } } }
+    post:
+      tags: [Bands]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/BandDTO' } } } }
+      responses: { '200': { description: Creado }, '400': { $ref: '#/components/responses/BadRequest' } }
+  /bands/{bandId}:
+    parameters: [{ $ref: '#/components/parameters/bandId' }]
+    get:
+      tags: [Bands]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    put:
+      tags: [Bands]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/BandDTO' } } } }
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [Bands]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
+
+  /musicians:
+    get:
+      tags: [Musicians]
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicianDTO' } } } } } }
+    post:
+      tags: [Musicians]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MusicianDTO' } } } }
+      responses: { '200': { description: Creado }, '400': { $ref: '#/components/responses/BadRequest' } }
+  /musicians/{musicianId}:
+    parameters: [{ $ref: '#/components/parameters/musicianId' }]
+    get:
+      tags: [Musicians]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    put:
+      tags: [Musicians]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MusicianDTO' } } } }
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [Musicians]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
+
+  /collectors:
+    get:
+      tags: [Collectors]
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/CollectorDTO' } } } } } }
+    post:
+      tags: [Collectors]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CollectorDTO' } } } }
+      responses: { '200': { description: Creado }, '400': { $ref: '#/components/responses/BadRequest' } }
+  /collectors/{collectorId}:
+    parameters: [{ $ref: '#/components/parameters/collectorId' }]
+    get:
+      tags: [Collectors]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    put:
+      tags: [Collectors]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CollectorDTO' } } } }
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [Collectors]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
+
+  /prizes:
+    get:
+      tags: [Prizes]
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/PrizeDTO' } } } } } }
+    post:
+      tags: [Prizes]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/PrizeDTO' } } } }
+      responses: { '200': { description: Creado }, '400': { $ref: '#/components/responses/BadRequest' } }
+  /prizes/{prizeId}:
+    parameters: [{ $ref: '#/components/parameters/prizeId' }]
+    get:
+      tags: [Prizes]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    put:
+      tags: [Prizes]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/PrizeDTO' } } } }
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [Prizes]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
+
+  /albums/{albumId}/tracks:
+    parameters: [{ $ref: '#/components/parameters/albumId' }]
+    get:
+      tags: [Tracks]
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/TrackDTO' } } } } } }
+    post:
+      tags: [Tracks]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/TrackDTO' } } } }
+      responses: { '200': { description: Creado }, '400': { $ref: '#/components/responses/BadRequest' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /albums/{albumId}/tracks/{trackId}:
+    parameters: [{ $ref: '#/components/parameters/albumId' }, { $ref: '#/components/parameters/trackId' }]
+    get:
+      tags: [Tracks]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    put:
+      tags: [Tracks]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/TrackDTO' } } } }
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [Tracks]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
+
+  /albums/{albumId}/comments:
+    parameters: [{ $ref: '#/components/parameters/albumId' }]
+    get:
+      tags: [Comments]
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/CommentDTO' } } } } } }
+    post:
+      tags: [Comments]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CommentDTO' } } } }
+      responses: { '200': { description: Creado }, '400': { $ref: '#/components/responses/BadRequest' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /albums/{albumId}/comments/{commentId}:
+    parameters: [{ $ref: '#/components/parameters/albumId' }, { $ref: '#/components/parameters/commentId' }]
+    get:
+      tags: [Comments]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    put:
+      tags: [Comments]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CommentDTO' } } } }
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [Comments]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
+
+  /collectors/{collectorId}/albums:
+    parameters: [{ $ref: '#/components/parameters/collectorId' }]
+    get:
+      tags: [CollectorAlbum]
+      responses: { '200': { description: OK } }
+  /collectors/{collectorId}/albums/{albumId}:
+    parameters: [{ $ref: '#/components/parameters/collectorId' }, { $ref: '#/components/parameters/albumId' }]
+    get:
+      tags: [CollectorAlbum]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    post:
+      tags: [CollectorAlbum]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CollectorAlbumDTO' } } } }
+      responses: { '200': { description: Asociado }, '400': { $ref: '#/components/responses/BadRequest' }, '404': { $ref: '#/components/responses/NotFound' } }
+    put:
+      tags: [CollectorAlbum]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CollectorAlbumDTO' } } } }
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [CollectorAlbum]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
+
+  /collectors/{collectorId}/performers:
+    parameters: [{ $ref: '#/components/parameters/collectorId' }]
+    get:
+      tags: [CollectorPerformer]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+  /collectors/{collectorId}/bands/{bandId}:
+    parameters: [{ $ref: '#/components/parameters/collectorId' }, { $ref: '#/components/parameters/bandId' }]
+    post:
+      tags: [CollectorPerformer]
+      summary: Asociar banda favorita
+      responses: { '200': { description: Asociado }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [CollectorPerformer]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
+  /collectors/{collectorId}/musicians/{musicianId}:
+    parameters: [{ $ref: '#/components/parameters/collectorId' }, { $ref: '#/components/parameters/musicianId' }]
+    post:
+      tags: [CollectorPerformer]
+      summary: Asociar músico favorito
+      responses: { '200': { description: Asociado }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [CollectorPerformer]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
+
+  /albums/{albumId}/bands:
+    parameters: [{ $ref: '#/components/parameters/albumId' }]
+    get:
+      tags: [AlbumBand]
+      responses: { '200': { description: OK } }
+    put:
+      tags: [AlbumBand]
+      summary: Reemplazar todas las bandas del álbum
+      requestBody: { required: true, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BandDTO' } } } } }
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+  /albums/{albumId}/bands/{bandId}:
+    parameters: [{ $ref: '#/components/parameters/albumId' }, { $ref: '#/components/parameters/bandId' }]
+    get:
+      tags: [AlbumBand]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    post:
+      tags: [AlbumBand]
+      summary: Asociar banda al álbum
+      responses: { '200': { description: Asociado }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [AlbumBand]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
+
+  /albums/{albumId}/musicians:
+    parameters: [{ $ref: '#/components/parameters/albumId' }]
+    get:
+      tags: [AlbumMusician]
+      responses: { '200': { description: OK } }
+    put:
+      tags: [AlbumMusician]
+      summary: Reemplazar todos los músicos del álbum
+      requestBody: { required: true, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/MusicianDTO' } } } } }
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+  /albums/{albumId}/musicians/{musicianId}:
+    parameters: [{ $ref: '#/components/parameters/albumId' }, { $ref: '#/components/parameters/musicianId' }]
+    get:
+      tags: [AlbumMusician]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    post:
+      tags: [AlbumMusician]
+      summary: Asociar músico al álbum
+      responses: { '200': { description: Asociado }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [AlbumMusician]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
+
+  /bands/{bandId}/albums:
+    parameters: [{ $ref: '#/components/parameters/bandId' }]
+    get:
+      tags: [BandAlbum]
+      responses: { '200': { description: OK } }
+    put:
+      tags: [BandAlbum]
+      summary: Reemplazar todos los álbumes de la banda
+      requestBody: { required: true, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/AlbumDTO' } } } } }
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+  /bands/{bandId}/albums/{albumId}:
+    parameters: [{ $ref: '#/components/parameters/bandId' }, { $ref: '#/components/parameters/albumId' }]
+    get:
+      tags: [BandAlbum]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    post:
+      tags: [BandAlbum]
+      responses: { '200': { description: Asociado }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [BandAlbum]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
+
+  /musicians/{musicianId}/albums:
+    parameters: [{ $ref: '#/components/parameters/musicianId' }]
+    get:
+      tags: [MusicianAlbum]
+      responses: { '200': { description: OK } }
+    put:
+      tags: [MusicianAlbum]
+      summary: Reemplazar todos los álbumes del músico
+      requestBody: { required: true, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/AlbumDTO' } } } } }
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+  /musicians/{musicianId}/albums/{albumId}:
+    parameters: [{ $ref: '#/components/parameters/musicianId' }, { $ref: '#/components/parameters/albumId' }]
+    get:
+      tags: [MusicianAlbum]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    post:
+      tags: [MusicianAlbum]
+      responses: { '200': { description: Asociado }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [MusicianAlbum]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
+
+  /bands/{bandId}/musicians:
+    parameters: [{ $ref: '#/components/parameters/bandId' }]
+    get:
+      tags: [BandMusician]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+  /bands/{bandId}/musicians/{musicianId}:
+    parameters: [{ $ref: '#/components/parameters/bandId' }, { $ref: '#/components/parameters/musicianId' }]
+    get:
+      tags: [BandMusician]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+    post:
+      tags: [BandMusician]
+      summary: Agregar músico a la banda
+      responses: { '200': { description: Asociado }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [BandMusician]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
+
+  /performerprizes:
+    get:
+      tags: [PerformerPrize]
+      summary: Listar todas las premiaciones
+      responses: { '200': { description: OK } }
+  /prizes/{prizeId}/performers:
+    parameters: [{ $ref: '#/components/parameters/prizeId' }]
+    get:
+      tags: [PerformerPrize]
+      responses: { '200': { description: OK }, '404': { $ref: '#/components/responses/NotFound' } }
+  /prizes/{prizeId}/musicians/{musicianId}:
+    parameters: [{ $ref: '#/components/parameters/prizeId' }, { $ref: '#/components/parameters/musicianId' }]
+    post:
+      tags: [PerformerPrize]
+      summary: Asociar premio a músico
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/PerformerPrizeDTO' } } } }
+      responses: { '200': { description: Asociado }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [PerformerPrize]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
+  /prizes/{prizeId}/bands/{bandId}:
+    parameters: [{ $ref: '#/components/parameters/prizeId' }, { $ref: '#/components/parameters/bandId' }]
+    post:
+      tags: [PerformerPrize]
+      summary: Asociar premio a banda
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/PerformerPrizeDTO' } } } }
+      responses: { '200': { description: Asociado }, '404': { $ref: '#/components/responses/NotFound' } }
+    delete:
+      tags: [PerformerPrize]
+      responses: { '204': { description: Eliminado }, '404': { $ref: '#/components/responses/NotFound' } }
