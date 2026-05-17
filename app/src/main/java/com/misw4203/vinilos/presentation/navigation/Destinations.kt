@@ -42,6 +42,10 @@ object Destinations {
     const val AddAlbumMusicianArg = "musicianId"
     const val RefreshMusicianDetailKey = "refresh_musician_detail"
 
+    const val Prizes = "prizes"
+    const val CreatePrize = "prizes/create"
+    const val RefreshPrizesKey = "refresh_prizes"
+
     const val AddFavoritePerformer = "collector/{collectorId}/favorites/add"
     const val AddFavoritePerformerCollectorArg = "collectorId"
 
