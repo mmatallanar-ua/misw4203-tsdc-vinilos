@@ -1,0 +1,33 @@
+app/src/main/java/com/misw4203/vinilos/presentation/navigation/Destinations.kt
+  s_8c2349ac000eb7::t_ec340ae800aded 58-62
+app/src/main/java/com/misw4203/vinilos/presentation/ui/screens/artist/AddPrizeToMusicianScreen.kt
+  s_8c2349ac000eb7::t_23683ac9d8be9b 1-504
+app/src/main/java/com/misw4203/vinilos/presentation/navigation/VinilosNavHost.kt
+  s_8c2349ac000eb7::t_59bab4cffa8754 185
+  s_8c2349ac000eb7::t_d750c8af008eda 54-55
+  s_8c2349ac000eb7::t_a16997b938bbbf 275-287
+  s_8c2349ac000eb7::t_02129e1a764090 33
+app/src/main/java/com/misw4203/vinilos/presentation/ui/screens/artist/MusicianDetailScreen.kt
+  s_8c2349ac000eb7::t_81f4cb38426f8c 356,359-364,366-418
+  s_8c2349ac000eb7::t_6f7da936690091 81
+  s_8c2349ac000eb7::t_ffab9bf4a5854c 124
+  s_8c2349ac000eb7::t_7035c7c30ff5b3 155,168
+app/src/main/res/values/strings.xml
+  s_8c2349ac000eb7::t_d45dcdcdd622b2 213-234
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "17d11c9fb8c100698e45d3c7a836694394b04eae",
+  "prompts": {},
+  "sessions": {
+    "s_8c2349ac000eb7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a23d02ac-91eb-4f28-b112-955eb941439f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "jarodriguezf-uni <ja.rodriguezf@uniandes.edu.co>"
+    }
+  }
+}
