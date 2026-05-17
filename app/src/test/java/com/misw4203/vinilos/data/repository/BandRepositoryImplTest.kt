@@ -8,6 +8,9 @@ import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.BandDetailDto
 import com.misw4203.vinilos.data.remote.dto.BandDto
 import com.misw4203.vinilos.data.remote.dto.MusicianDetailDto
+import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDetailDto
+import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDto
+import com.misw4203.vinilos.data.remote.dto.PrizeInAssociationDto
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -95,6 +98,19 @@ class BandRepositoryImplTest {
             albums = listOf(
                 AlbumDto(100L, "A Night at the Opera", "cover", "1975-01-01", null, "Rock", null, null, null, null)
             ),
+            performerPrizes = listOf(PerformerPrizeDto(id = 10, premiationDate = "1985-01-01")),
+        )
+        coEvery { api.getPerformerPrizes() } returns listOf(
+            PerformerPrizeDetailDto(
+                id = 10,
+                premiationDate = "1985-01-01",
+                prize = PrizeInAssociationDto(
+                    id = 10,
+                    name = "Grammy",
+                    description = "Best Rock",
+                    organization = "Recording Academy",
+                ),
+            ),
         )
 
         val result = repo.getBandDetail(1)
@@ -102,12 +118,15 @@ class BandRepositoryImplTest {
         assertEquals("Queen", result.name)
         assertEquals(1, result.members.size)
         assertEquals("Freddie", result.members[0].name)
+        assertEquals(1, result.prizes.size)
+        assertEquals("Grammy", result.prizes[0].name)
         coVerify { dao.upsertDetail(any()) }
     }
 
     @Test
     fun `getBandDetail IOException returns cache when available`() = runTest {
         coEvery { api.getBandDetail(1) } throws IOException("offline")
+        coEvery { api.getPerformerPrizes() } returns emptyList()
         coEvery { dao.getDetailById(1) } returns BandDetailEntity(
             id = 1, name = "Queen", image = "", description = "", creationDate = "",
             members = emptyList(), albums = emptyList(),
@@ -120,6 +139,7 @@ class BandRepositoryImplTest {
     @Test
     fun `getBandDetail IOException rethrows when no cache`() = runTest {
         coEvery { api.getBandDetail(1) } throws IOException("offline")
+        coEvery { api.getPerformerPrizes() } returns emptyList()
         coEvery { dao.getDetailById(1) } returns null
 
         try {

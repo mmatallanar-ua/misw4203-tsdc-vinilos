@@ -19,6 +19,7 @@ import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDto
 import com.misw4203.vinilos.data.remote.dto.PrizeDetailDto
 import com.misw4203.vinilos.data.remote.dto.TrackDto
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -70,6 +71,18 @@ interface VinilosApiService {
         @Body request: CreateCommentRequest,
     ): CommentDto
 
+    @DELETE("albums/{albumId}/tracks/{trackId}")
+    suspend fun removeTrack(
+        @Path("albumId") albumId: Long,
+        @Path("trackId") trackId: Long,
+    )
+
+    @DELETE("albums/{albumId}/comments/{commentId}")
+    suspend fun removeComment(
+        @Path("albumId") albumId: Long,
+        @Path("commentId") commentId: Long,
+    )
+
     @GET("bands")
     suspend fun getBands(): List<BandDto>
 
@@ -117,5 +130,48 @@ interface VinilosApiService {
     suspend fun addBandToCollector(
         @Path("collectorId") collectorId: Int,
         @Path("bandId") bandId: Int,
+    )
+
+    @POST("albums/{albumId}/musicians/{musicianId}")
+    suspend fun addMusicianToAlbum(
+        @Path("albumId") albumId: Long,
+        @Path("musicianId") musicianId: Int,
+    )
+
+    @POST("albums/{albumId}/bands/{bandId}")
+    suspend fun addBandToAlbum(
+        @Path("albumId") albumId: Long,
+        @Path("bandId") bandId: Int,
+    )
+
+    @POST("bands/{bandId}/albums/{albumId}")
+    suspend fun addAlbumToBand(
+        @Path("bandId") bandId: Int,
+        @Path("albumId") albumId: Long,
+    )
+
+    @POST("prizes/{prizeId}/bands/{bandId}")
+    suspend fun addPrizeToBand(
+        @Path("prizeId") prizeId: Int,
+        @Path("bandId") bandId: Int,
+        @Body request: AddPrizeToMusicianRequest,
+    ): PerformerPrizeDto
+
+    @DELETE("collectors/{collectorId}/musicians/{musicianId}")
+    suspend fun removeMusicianFromCollector(
+        @Path("collectorId") collectorId: Int,
+        @Path("musicianId") musicianId: Int,
+    )
+
+    @DELETE("collectors/{collectorId}/bands/{bandId}")
+    suspend fun removeBandFromCollector(
+        @Path("collectorId") collectorId: Int,
+        @Path("bandId") bandId: Int,
+    )
+
+    @DELETE("collectors/{collectorId}/albums/{albumId}")
+    suspend fun removeAlbumFromCollector(
+        @Path("collectorId") collectorId: Int,
+        @Path("albumId") albumId: Int,
     )
 }

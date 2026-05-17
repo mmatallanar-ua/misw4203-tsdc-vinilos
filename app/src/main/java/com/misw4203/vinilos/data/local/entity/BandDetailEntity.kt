@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.Band
+import com.misw4203.vinilos.domain.model.MusicianPrize
 import com.misw4203.vinilos.domain.model.MusicianSummary
 
 @Entity(tableName = "band_details")
@@ -15,6 +16,7 @@ data class BandDetailEntity(
     val creationDate: String,
     val members: List<MusicianSummary>,
     val albums: List<Album>,
+    val prizes: List<MusicianPrize> = emptyList(),
 ) {
     fun toDomain() = Band(
         id = id,
@@ -24,6 +26,7 @@ data class BandDetailEntity(
         creationDate = creationDate,
         members = members,
         albums = albums,
+        prizes = prizes,
     )
 
     companion object {
@@ -35,6 +38,7 @@ data class BandDetailEntity(
             creationDate = band.creationDate,
             members = band.members,
             albums = band.albums,
+            prizes = band.prizes,
         )
     }
 }

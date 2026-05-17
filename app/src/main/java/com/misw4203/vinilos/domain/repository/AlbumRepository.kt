@@ -13,4 +13,12 @@ interface AlbumRepository {
     suspend fun addTrack(albumId: Long, request: CreateTrackRequest): Track
     suspend fun addComment(albumId: Long, description: String, rating: Int, collectorId: Int): Comment
     suspend fun createAlbum(input: CreateAlbumInput): Album
+
+    // Removal operations. Default no-op keeps in-memory test fakes compiling;
+    // AlbumRepositoryImpl provides the real behaviour.
+    suspend fun removeTrack(albumId: Long, trackId: Long) = Unit
+    suspend fun removeComment(albumId: Long, commentId: Long) = Unit
+
+    suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) = Unit
+    suspend fun addBandToAlbum(albumId: Long, bandId: Int) = Unit
 }

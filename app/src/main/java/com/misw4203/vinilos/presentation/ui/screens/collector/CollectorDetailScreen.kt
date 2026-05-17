@@ -24,19 +24,27 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,6 +68,7 @@ import com.misw4203.vinilos.domain.model.CollectorDetail
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.presentation.ui.components.ErrorState
 import com.misw4203.vinilos.presentation.ui.components.LoadingState
+import com.misw4203.vinilos.presentation.viewmodel.CollectorDetailEvent
 import com.misw4203.vinilos.presentation.viewmodel.CollectorDetailUiState
 import com.misw4203.vinilos.presentation.viewmodel.CollectorDetailViewModel
 
@@ -86,27 +95,92 @@ fun CollectorDetailScreen(
     }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(refreshKey) {
-        if (refreshKey) {
-            viewModel.retry()
-            onRefreshHandled()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val removeSuccess = stringResource(R.string.collector_remove_success)
+    val removeErrorNetwork = stringResource(R.string.collector_remove_error_network)
+    val removeErrorServer = stringResource(R.string.collector_remove_error_server)
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            val message = when (event) {
+                is CollectorDetailEvent.Removed -> removeSuccess.format(event.name)
+                is CollectorDetailEvent.RemoveFailed ->
+                    if (event.isNetworkError) removeErrorNetwork else removeErrorServer
+            }
+            snackbarHostState.showSnackbar(message)
         }
     }
+
+    var pending by remember { mutableStateOf<PendingRemoval?>(null) }
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val state = uiState) {
             is CollectorDetailUiState.Loading -> LoadingState()
-            is CollectorDetailUiState.Success -> CollectorDetailContent( collector = state.collector,
+            is CollectorDetailUiState.Success -> CollectorDetailContent(
+                collector = state.collector,
                 onBack = onBack,
                 onAddAlbum = onAddAlbum,
-                onAddFavoritePerformer = onAddFavoritePerformer,)
+                onAddFavoritePerformer = onAddFavoritePerformer,
+                onRemoveFavorite = { pending = PendingRemoval.Favorite(it) },
+                onRemoveAlbum = { pending = PendingRemoval.AlbumInCollection(it) },
+            )
             is CollectorDetailUiState.NotFound -> NotFoundState(onBack)
             is CollectorDetailUiState.Error -> ErrorState(
                 onRetry = viewModel::retry,
                 isNetworkError = state.isNetworkError,
             )
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
+
+    pending?.let { removal ->
+        val (body, name) = when (removal) {
+            is PendingRemoval.Favorite ->
+                stringResource(
+                    R.string.collector_remove_favorite_confirm_body,
+                    removal.performer.name,
+                ) to removal.performer.name
+            is PendingRemoval.AlbumInCollection ->
+                stringResource(
+                    R.string.collector_remove_album_confirm_body,
+                    removal.collectorAlbum.album?.name.orEmpty(),
+                ) to removal.collectorAlbum.album?.name.orEmpty()
+        }
+        AlertDialog(
+            onDismissRequest = { pending = null },
+            title = { Text(stringResource(R.string.collector_remove_confirm_title)) },
+            text = { Text(body) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        when (removal) {
+                            is PendingRemoval.Favorite ->
+                                viewModel.removeFavorite(removal.performer)
+                            is PendingRemoval.AlbumInCollection ->
+                                viewModel.removeAlbum(removal.collectorAlbum)
+                        }
+                        pending = null
+                    },
+                    modifier = Modifier.testTag("collector_remove_confirm"),
+                ) {
+                    Text(stringResource(R.string.collector_remove_action))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pending = null }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
+    }
+}
+
+private sealed interface PendingRemoval {
+    data class Favorite(val performer: Performer) : PendingRemoval
+    data class AlbumInCollection(val collectorAlbum: CollectorAlbum) : PendingRemoval
 }
 
 @Composable
@@ -115,6 +189,8 @@ private fun CollectorDetailContent(
     onBack: () -> Unit,
     onAddAlbum: () -> Unit,
     onAddFavoritePerformer: () -> Unit,
+    onRemoveFavorite: (Performer) -> Unit,
+    onRemoveAlbum: (CollectorAlbum) -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize().testTag("collector_detail_root")) {
         Column(
@@ -236,12 +312,14 @@ private fun CollectorDetailContent(
                     AlbumsSection(
                         albums = collector.collectorAlbums,
                         onAddAlbum = onAddAlbum,
+                        onRemoveAlbum = onRemoveAlbum,
                     )
 
                     Spacer(Modifier.height(28.dp))
                     PerformersSection(
                         performers = collector.favoritePerformers,
                         onAddFavoritePerformer = onAddFavoritePerformer,
+                        onRemoveFavorite = onRemoveFavorite,
                     )
 
                     if (collector.comments.isNotEmpty()) {
@@ -289,7 +367,11 @@ private fun SectionHeader(title: String) {
 // ─── Albums ───────────────────────────────────────────────────────────────────
 
 @Composable
-private fun AlbumsSection(albums: List<CollectorAlbum>, onAddAlbum: () -> Unit) {
+private fun AlbumsSection(
+    albums: List<CollectorAlbum>,
+    onAddAlbum: () -> Unit,
+    onRemoveAlbum: (CollectorAlbum) -> Unit,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -333,31 +415,56 @@ private fun AlbumsSection(albums: List<CollectorAlbum>, onAddAlbum: () -> Unit) 
     } else {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             items(albums, key = { it.id }) { collectorAlbum ->
-                CollectorAlbumCard(collectorAlbum)
+                CollectorAlbumCard(collectorAlbum, onRemoveAlbum)
             }
         }
     }
 }
 
 @Composable
-private fun CollectorAlbumCard(collectorAlbum: CollectorAlbum) {
+private fun CollectorAlbumCard(
+    collectorAlbum: CollectorAlbum,
+    onRemove: (CollectorAlbum) -> Unit,
+) {
     val albumName = collectorAlbum.album?.name.orEmpty()
     Column(
         modifier = Modifier
             .width(120.dp)
             .semantics(mergeDescendants = true) {},
     ) {
-        AsyncImage(
-            model = collectorAlbum.album?.coverUrl,
-            contentDescription = if (albumName.isNotBlank()) {
-                stringResource(R.string.cd_album_cover_of, albumName)
-            } else null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(120.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
-        )
+        Box(modifier = Modifier.size(120.dp)) {
+            AsyncImage(
+                model = collectorAlbum.album?.coverUrl,
+                contentDescription = if (albumName.isNotBlank()) {
+                    stringResource(R.string.cd_album_cover_of, albumName)
+                } else null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+            )
+            IconButton(
+                onClick = { onRemove(collectorAlbum) },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(4.dp)
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f))
+                    .testTag("collector_remove_album_${collectorAlbum.id}"),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = stringResource(
+                        R.string.collector_remove_album_cd,
+                        albumName,
+                    ),
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(16.dp),
+                )
+            }
+        }
         Spacer(Modifier.height(8.dp))
         Text(
             text = collectorAlbum.album?.name.orEmpty(),
@@ -412,6 +519,7 @@ private fun CollectorAlbumCard(collectorAlbum: CollectorAlbum) {
 private fun PerformersSection(
     performers: List<Performer>,
     onAddFavoritePerformer: () -> Unit,
+    onRemoveFavorite: (Performer) -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -442,20 +550,20 @@ private fun PerformersSection(
         )
     } else {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            items(performers, key = { it.id }) { performer ->
-                PerformerChip(performer)
+            items(performers, key = { "${it.kind}_${it.id}" }) { performer ->
+                PerformerChip(performer, onRemoveFavorite)
             }
         }
     }
 }
 
 @Composable
-private fun PerformerChip(performer: Performer) {
+private fun PerformerChip(performer: Performer, onRemove: (Performer) -> Unit) {
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(999.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .padding(start = 12.dp, end = 4.dp, top = 6.dp, bottom = 6.dp)
             .semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -475,6 +583,22 @@ private fun PerformerChip(performer: Performer) {
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,
         )
+        IconButton(
+            onClick = { onRemove(performer) },
+            modifier = Modifier
+                .size(28.dp)
+                .testTag("collector_remove_favorite_${performer.kind}_${performer.id}"),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Close,
+                contentDescription = stringResource(
+                    R.string.collector_remove_favorite_cd,
+                    performer.name,
+                ),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(16.dp),
+            )
+        }
     }
 }
 

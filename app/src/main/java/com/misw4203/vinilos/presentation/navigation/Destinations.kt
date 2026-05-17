@@ -28,11 +28,20 @@ object Destinations {
 
     const val RefreshAlbumDetailKey = "refresh_album_detail"
 
+    const val AddPerformerToAlbum = "album/{albumId}/performers/add"
+    const val AddPerformerAlbumArg = "albumId"
+
     const val BandDetail = "band/{bandId}"
     const val BandDetailArg = "bandId"
     const val AddMusiciansToBand = "band/{bandId}/musicians/add"
     const val AddMusiciansBandArg = "bandId"
     const val RefreshBandDetailKey = "refresh_band_detail"
+
+    const val AddAlbumToBand = "band/{bandId}/albums/add"
+    const val AddAlbumBandArg = "bandId"
+
+    const val AddPrizeToBand = "band/{bandId}/prizes/add"
+    const val AddPrizeBandArg = "bandId"
 
     const val AddAlbumToCollector = "collector/{collectorId}/albums/add"
     const val AddAlbumCollectorArg = "collectorId"
@@ -52,10 +61,13 @@ object Destinations {
     fun albumDetail(albumId: Long) = "album_detail/$albumId"
     fun collectorDetail(collectorId: Int) = "collector/$collectorId"
     fun addTrack(albumId: Long) = "album/$albumId/track/add"
+    fun addPerformerToAlbum(albumId: Long) = "album/$albumId/performers/add"
     fun addComment(albumId: Long, collectorId: Int = DefaultCollectorId) =
         "album/$albumId/comment/add/$collectorId"
     fun bandDetail(bandId: Int) = "band/$bandId"
     fun addMusiciansToBand(bandId: Int) = "band/$bandId/musicians/add"
+    fun addAlbumToBand(bandId: Int) = "band/$bandId/albums/add"
+    fun addPrizeToBand(bandId: Int) = "band/$bandId/prizes/add"
     fun addAlbumToCollector(collectorId: Int) = "collector/$collectorId/albums/add"
     fun addAlbumToMusician(musicianId: Int) = "musician/$musicianId/albums/add"
 

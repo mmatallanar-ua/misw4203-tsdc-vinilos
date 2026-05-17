@@ -7,4 +7,9 @@ interface BandRepository {
     suspend fun getBands(): List<BandSummary>
     suspend fun getBandDetail(id: Int): Band
     suspend fun addMusicianToBand(bandId: Int, musicianId: Int)
+
+    // Default no-op keeps in-memory test fakes compiling; BandRepositoryImpl
+    // provides the real behaviour.
+    suspend fun addAlbumToBand(bandId: Int, albumId: Long) = Unit
+    suspend fun addPrizeToBand(bandId: Int, prizeId: Int, premiationDate: String) = Unit
 }

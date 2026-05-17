@@ -94,6 +94,52 @@ class AlbumRepositoryImpl @Inject constructor(
         comment
     }
 
+    override suspend fun removeTrack(albumId: Long, trackId: Long) = withContext(Dispatchers.IO) {
+        api.removeTrack(albumId, trackId)
+        // Write-through cache prune: ver nota en addTrack.
+        dao.getDetailById(albumId)?.let { cached ->
+            val updated = cached.toDomain()
+                .copy(tracks = cached.tracks.filterNot { it.id == trackId })
+            dao.upsertDetail(AlbumDetailEntity.fromDomain(updated))
+        }
+        Unit
+    }
+
+    override suspend fun removeComment(albumId: Long, commentId: Long) = withContext(Dispatchers.IO) {
+        api.removeComment(albumId, commentId)
+        dao.getDetailById(albumId)?.let { cached ->
+            val updated = cached.toDomain()
+                .copy(comments = cached.comments.filterNot { it.id == commentId })
+            dao.upsertDetail(AlbumDetailEntity.fromDomain(updated))
+        }
+        Unit
+    }
+
+    override suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) =
+        withContext(Dispatchers.IO) {
+            api.addMusicianToAlbum(albumId, musicianId)
+            invalidateDetailCache(albumId)
+        }
+
+    override suspend fun addBandToAlbum(albumId: Long, bandId: Int) =
+        withContext(Dispatchers.IO) {
+            api.addBandToAlbum(albumId, bandId)
+            invalidateDetailCache(albumId)
+        }
+
+    // The performer payload returned by these association POSTs is partial, so
+    // instead of patching the cached detail we refetch authoritative data; on
+    // failure the stale entry is dropped so the next read goes to the network.
+    private suspend fun invalidateDetailCache(albumId: Long) {
+        try {
+            val fresh = api.getAlbum(albumId).toAlbumDetail()
+            dao.upsertDetail(AlbumDetailEntity.fromDomain(fresh))
+        } catch (e: IOException) {
+            // offline: leave the cache; next online getAlbumById reconciles it
+        }
+        Unit
+    }
+
     override suspend fun createAlbum(input: CreateAlbumInput): Album = withContext(Dispatchers.IO) {
         val dto = api.createAlbum(
             CreateAlbumRequestDto(
