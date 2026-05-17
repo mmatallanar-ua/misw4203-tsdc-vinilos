@@ -11,63 +11,73 @@ import com.misw4203.vinilos.domain.model.MusicianPrize
 import com.misw4203.vinilos.domain.model.MusicianSummary
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.Track
+import java.lang.reflect.Type
 
 class Converters {
-    private val gson = Gson()
+
+    private companion object {
+        val GSON = Gson()
+        val TRACK_LIST: Type = object : TypeToken<List<Track>>() {}.type
+        val PERFORMER_LIST: Type = object : TypeToken<List<Performer>>() {}.type
+        val COMMENT_LIST: Type = object : TypeToken<List<Comment>>() {}.type
+        val ALBUM_LIST: Type = object : TypeToken<List<Album>>() {}.type
+        val PRIZE_LIST: Type = object : TypeToken<List<MusicianPrize>>() {}.type
+        val COLLECTOR_ALBUM_LIST: Type = object : TypeToken<List<CollectorAlbum>>() {}.type
+        val COLLECTOR_COMMENT_LIST: Type = object : TypeToken<List<CollectorComment>>() {}.type
+        val MUSICIAN_SUMMARY_LIST: Type = object : TypeToken<List<MusicianSummary>>() {}.type
+    }
+
+    private inline fun <reified T> decode(value: String, type: Type): List<T> =
+        runCatching { GSON.fromJson<List<T>>(value, type) }.getOrNull() ?: emptyList()
 
     @TypeConverter
-    fun tracksToJson(value: List<Track>): String = gson.toJson(value)
+    fun tracksToJson(value: List<Track>): String = GSON.toJson(value)
 
     @TypeConverter
-    fun jsonToTracks(value: String): List<Track> =
-        gson.fromJson(value, object : TypeToken<List<Track>>() {}.type)
+    fun jsonToTracks(value: String): List<Track> = decode(value, TRACK_LIST)
 
     @TypeConverter
-    fun performersToJson(value: List<Performer>): String = gson.toJson(value)
+    fun performersToJson(value: List<Performer>): String = GSON.toJson(value)
 
     @TypeConverter
-    fun jsonToPerformers(value: String): List<Performer> =
-        gson.fromJson(value, object : TypeToken<List<Performer>>() {}.type)
+    fun jsonToPerformers(value: String): List<Performer> = decode(value, PERFORMER_LIST)
 
     @TypeConverter
-    fun commentsToJson(value: List<Comment>): String = gson.toJson(value)
+    fun commentsToJson(value: List<Comment>): String = GSON.toJson(value)
 
     @TypeConverter
-    fun jsonToComments(value: String): List<Comment> =
-        gson.fromJson(value, object : TypeToken<List<Comment>>() {}.type)
+    fun jsonToComments(value: String): List<Comment> = decode(value, COMMENT_LIST)
 
     @TypeConverter
-    fun albumsToJson(value: List<Album>): String = gson.toJson(value)
+    fun albumsToJson(value: List<Album>): String = GSON.toJson(value)
 
     @TypeConverter
-    fun jsonToAlbums(value: String): List<Album> =
-        gson.fromJson(value, object : TypeToken<List<Album>>() {}.type)
+    fun jsonToAlbums(value: String): List<Album> = decode(value, ALBUM_LIST)
 
     @TypeConverter
-    fun prizesToJson(value: List<MusicianPrize>): String = gson.toJson(value)
+    fun prizesToJson(value: List<MusicianPrize>): String = GSON.toJson(value)
 
     @TypeConverter
-    fun jsonToPrizes(value: String): List<MusicianPrize> =
-        gson.fromJson(value, object : TypeToken<List<MusicianPrize>>() {}.type)
+    fun jsonToPrizes(value: String): List<MusicianPrize> = decode(value, PRIZE_LIST)
 
     @TypeConverter
-    fun collectorAlbumsToJson(value: List<CollectorAlbum>): String = gson.toJson(value)
+    fun collectorAlbumsToJson(value: List<CollectorAlbum>): String = GSON.toJson(value)
 
     @TypeConverter
     fun jsonToCollectorAlbums(value: String): List<CollectorAlbum> =
-        gson.fromJson(value, object : TypeToken<List<CollectorAlbum>>() {}.type)
+        decode(value, COLLECTOR_ALBUM_LIST)
 
     @TypeConverter
-    fun collectorCommentsToJson(value: List<CollectorComment>): String = gson.toJson(value)
+    fun collectorCommentsToJson(value: List<CollectorComment>): String = GSON.toJson(value)
 
     @TypeConverter
     fun jsonToCollectorComments(value: String): List<CollectorComment> =
-        gson.fromJson(value, object : TypeToken<List<CollectorComment>>() {}.type)
+        decode(value, COLLECTOR_COMMENT_LIST)
 
     @TypeConverter
-    fun musicianSummariesToJson(value: List<MusicianSummary>): String = gson.toJson(value)
+    fun musicianSummariesToJson(value: List<MusicianSummary>): String = GSON.toJson(value)
 
     @TypeConverter
     fun jsonToMusicianSummaries(value: String): List<MusicianSummary> =
-        gson.fromJson(value, object : TypeToken<List<MusicianSummary>>() {}.type)
+        decode(value, MUSICIAN_SUMMARY_LIST)
 }
