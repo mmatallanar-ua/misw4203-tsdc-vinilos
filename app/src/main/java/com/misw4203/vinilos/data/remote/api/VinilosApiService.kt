@@ -10,6 +10,7 @@ import com.misw4203.vinilos.data.remote.dto.CollectorDto
 import com.misw4203.vinilos.data.remote.dto.CommentDto
 import com.misw4203.vinilos.data.remote.dto.CreateCommentRequest
 import com.misw4203.vinilos.data.remote.dto.CreateAlbumRequestDto
+import com.misw4203.vinilos.data.remote.dto.CreatePrizeRequest
 import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.data.remote.dto.MusicianDetailDto
 import com.misw4203.vinilos.data.remote.dto.PrizeDetailDto
@@ -36,8 +37,14 @@ interface VinilosApiService {
     @GET("musicians/{id}")
     suspend fun getMusicianDetail(@Path("id") id: Int): MusicianDetailDto
 
+    @GET("prizes")
+    suspend fun getPrizes(): List<PrizeDetailDto>
+
     @GET("prizes/{id}")
     suspend fun getPrizeDetail(@Path("id") id: Int): PrizeDetailDto
+
+    @POST("prizes")
+    suspend fun createPrize(@Body body: CreatePrizeRequest): PrizeDetailDto
 
     @GET("collectors")
     suspend fun getCollectors(): List<CollectorDto>

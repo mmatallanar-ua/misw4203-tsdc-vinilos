@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Album
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.outlined.Album
+import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.PersonSearch
 import androidx.compose.material3.Icon
@@ -36,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import com.misw4203.vinilos.R
 
-enum class VinilosDestination { Albums, Artists, Collectors }
+enum class VinilosDestination { Albums, Artists, Collectors, Prizes }
 
 @Composable
 fun VinilosBottomNav(
@@ -74,6 +76,13 @@ fun VinilosBottomNav(
             active = selected == VinilosDestination.Collectors,
             onClick = { onSelect(VinilosDestination.Collectors) },
             modifier = Modifier.testTag("bottom_nav_collectors"),
+        )
+        NavTab(
+            label = stringResource(R.string.nav_prizes),
+            icon = if (selected == VinilosDestination.Prizes) Icons.Filled.EmojiEvents else Icons.Outlined.EmojiEvents,
+            active = selected == VinilosDestination.Prizes,
+            onClick = { onSelect(VinilosDestination.Prizes) },
+            modifier = Modifier.testTag("bottom_nav_prizes"),
         )
     }
 }

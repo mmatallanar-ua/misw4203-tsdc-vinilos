@@ -37,6 +37,8 @@ import com.misw4203.vinilos.presentation.ui.screens.band.BandDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.AddAlbumToCollectorScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorListScreen
+import com.misw4203.vinilos.presentation.ui.screens.prize.CreatePrizeScreen
+import com.misw4203.vinilos.presentation.ui.screens.prize.PrizeListScreen
 
 @Composable
 fun VinilosNavHost() {
@@ -50,6 +52,7 @@ fun VinilosNavHost() {
             currentRoute?.startsWith("artist/") == true ||
             currentRoute?.startsWith("band/") == true -> VinilosDestination.Artists
         currentRoute == Destinations.Collectors || currentRoute?.startsWith("collector/") == true -> VinilosDestination.Collectors
+        currentRoute == Destinations.Prizes || currentRoute == Destinations.CreatePrize -> VinilosDestination.Prizes
         else -> VinilosDestination.Albums
     }
 
@@ -63,6 +66,7 @@ fun VinilosNavHost() {
                         VinilosDestination.Albums -> Destinations.AlbumList
                         VinilosDestination.Artists -> Destinations.ArtistList
                         VinilosDestination.Collectors -> Destinations.Collectors
+                        VinilosDestination.Prizes -> Destinations.Prizes
                     }
                     navController.navigate(route) {
                         popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -261,6 +265,29 @@ fun VinilosNavHost() {
                             navController.previousBackStackEntry
                                 ?.savedStateHandle
                                 ?.set(Destinations.RefreshBandDetailKey, true)
+                            navController.popBackStack()
+                        },
+                    )
+                }
+                composable(Destinations.Prizes) { entry ->
+                    val refreshFlag by entry.savedStateHandle
+                        .getStateFlow(Destinations.RefreshPrizesKey, false)
+                        .collectAsStateWithLifecycle()
+                    PrizeListScreen(
+                        onCreatePrize = { navController.navigate(Destinations.CreatePrize) },
+                        refreshKey = refreshFlag,
+                        onRefreshHandled = {
+                            entry.savedStateHandle[Destinations.RefreshPrizesKey] = false
+                        },
+                    )
+                }
+                composable(Destinations.CreatePrize) {
+                    CreatePrizeScreen(
+                        onBack = { navController.popBackStack() },
+                        onSuccess = {
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(Destinations.RefreshPrizesKey, true)
                             navController.popBackStack()
                         },
                     )
