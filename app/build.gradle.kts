@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -19,12 +22,26 @@ android {
         testInstrumentationRunner = "com.misw4203.vinilos.HiltTestRunner"
     }
 
+    val keystorePropsFile = rootProject.file("keystore.properties")
+    val keystoreProps = Properties().apply {
+        if (keystorePropsFile.exists()) FileInputStream(keystorePropsFile).use { load(it) }
+    }
+    fun keystoreValue(propKey: String, envKey: String): String? =
+        keystoreProps.getProperty(propKey) ?: System.getenv(envKey)
+
     signingConfigs {
         create("release") {
-            storeFile = file("vinilos-release.jks")
-            storePassword = "vinilos123"
-            keyAlias = "vinilos"
-            keyPassword = "vinilos123"
+            val storePw = keystoreValue("storePassword", "VINILOS_STORE_PASSWORD")
+            val keyPw = keystoreValue("keyPassword", "VINILOS_KEY_PASSWORD")
+            val alias = keystoreValue("keyAlias", "VINILOS_KEY_ALIAS")
+            val storePath = keystoreValue("storeFile", "VINILOS_STORE_FILE")
+                ?: "vinilos-release.jks"
+            if (storePw != null && keyPw != null && alias != null) {
+                storeFile = file(storePath)
+                storePassword = storePw
+                keyAlias = alias
+                keyPassword = keyPw
+            }
         }
     }
 
