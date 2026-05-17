@@ -469,6 +469,15 @@ private fun PrizeRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            if (prize.description.isNotBlank()) {
+                Text(
+                    text = prize.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
         Box(
             modifier = Modifier
