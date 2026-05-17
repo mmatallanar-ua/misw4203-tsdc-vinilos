@@ -1,0 +1,36 @@
+app/src/test/java/com/misw4203/vinilos/presentation/viewmodel/CreatePrizeViewModelTest.kt
+  s_1d607917f3cf32::t_5b700fda7b1cb5 1-267
+app/src/androidTest/java/com/misw4203/vinilos/di/FakePrizeRepository.kt
+  s_1d607917f3cf32::t_0cee810e725f79 1-21
+app/src/androidTest/java/com/misw4203/vinilos/presentation/ui/screens/prize/CreatePrizeScreenTest.kt
+  s_1d607917f3cf32::t_cec09730c27ff0 9
+  s_1d607917f3cf32::t_8155e738ed71b5 1-8,10-206
+app/src/androidTest/java/com/misw4203/vinilos/di/FakeRepositoryModule.kt
+  s_1d607917f3cf32::t_8a04b85957f87c 7
+  s_1d607917f3cf32::t_4c7e92f711f851 36-39
+app/src/test/java/com/misw4203/vinilos/presentation/viewmodel/PrizesViewModelTest.kt
+  s_1d607917f3cf32::t_fac16945100f05 1-107
+app/src/main/java/com/misw4203/vinilos/presentation/viewmodel/CreatePrizeViewModel.kt
+  s_1d607917f3cf32::t_48be9caf8a1fb0 47-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "5a55c1568fb167ed0516537c5df42f51b358692a",
+  "prompts": {},
+  "humans": {
+    "h_6d0817ae4adbcb": {
+      "author": "jarodriguezf-uni <ja.rodriguezf@uniandes.edu.co>"
+    }
+  },
+  "sessions": {
+    "s_1d607917f3cf32": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7abee41e-91cc-40c9-83cd-ed681ff60eaf",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "jarodriguezf-uni <ja.rodriguezf@uniandes.edu.co>"
+    }
+  }
+}
