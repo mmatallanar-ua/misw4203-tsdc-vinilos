@@ -262,7 +262,7 @@ private fun AlbumsSection(albums: List<Album>, onAddAlbum: () -> Unit) {
     ) {
         Text(
             text = stringResource(R.string.artist_section_albums),
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.semantics { heading() },
         )
@@ -308,8 +308,9 @@ private fun AlbumsSection(albums: List<Album>, onAddAlbum: () -> Unit) {
         )
     } else {
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
         ) {
             items(albums) { album ->
                 AlbumCard(album)
@@ -322,7 +323,7 @@ private fun AlbumsSection(albums: List<Album>, onAddAlbum: () -> Unit) {
 private fun AlbumCard(album: Album) {
     Column(
         modifier = Modifier
-            .width(120.dp)
+            .width(96.dp)
             .semantics(mergeDescendants = true) {},
     ) {
         AsyncImage(
@@ -330,7 +331,7 @@ private fun AlbumCard(album: Album) {
             contentDescription = stringResource(R.string.cd_album_cover_of, album.name),
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(120.dp)
+                .size(96.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         )

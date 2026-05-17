@@ -267,8 +267,8 @@ private fun CollectorDetailContent(
 private fun SectionHeader(title: String) {
     Text(
         text = title.uppercase(),
-        style = MaterialTheme.typography.labelSmall,
-        fontWeight = FontWeight.SemiBold,
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.semantics { heading() },
     )
