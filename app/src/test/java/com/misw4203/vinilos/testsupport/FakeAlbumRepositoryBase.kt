@@ -12,6 +12,9 @@ import com.misw4203.vinilos.domain.repository.AlbumRepository
  * Base de fake reutilizable para AlbumRepository en tests unitarios.
  * Los métodos de negocio lanzan error() para que el test falle claramente si se
  * invocan sin sobrescribir. Los ex-métodos no-op son explícitamente vacíos.
+ *
+ * Infra entregada por M1: aún sin usar; los fakes anidados existentes se
+ * migrarán a extender esta base en una fase posterior. No borrar.
  */
 open class FakeAlbumRepositoryBase : AlbumRepository {
 
