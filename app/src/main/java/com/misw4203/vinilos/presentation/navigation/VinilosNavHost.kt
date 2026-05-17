@@ -30,6 +30,7 @@ import com.misw4203.vinilos.presentation.ui.screens.album.AlbumDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.AlbumListScreen
 import com.misw4203.vinilos.presentation.ui.screens.album.CreateAlbumScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.AddAlbumToMusicianScreen
+import com.misw4203.vinilos.presentation.ui.screens.artist.AddPrizeToMusicianScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.ArtistsHubScreen
 import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.band.AddMusiciansToBandScreen
@@ -51,7 +52,8 @@ fun VinilosNavHost() {
     val selectedDestination = when {
         currentRoute == Destinations.ArtistList ||
             currentRoute?.startsWith("artist/") == true ||
-            currentRoute?.startsWith("band/") == true -> VinilosDestination.Artists
+            currentRoute?.startsWith("band/") == true ||
+            currentRoute?.startsWith("musician/") == true -> VinilosDestination.Artists
         currentRoute == Destinations.Collectors || currentRoute?.startsWith("collector/") == true -> VinilosDestination.Collectors
         currentRoute == Destinations.Prizes || currentRoute == Destinations.CreatePrize -> VinilosDestination.Prizes
         else -> VinilosDestination.Albums
@@ -181,6 +183,7 @@ fun VinilosNavHost() {
                         musicianId = id,
                         onBack = { navController.navigateUp() },
                         onAddAlbum = { navController.navigate(Destinations.addAlbumToMusician(id)) },
+                        onAddPrize = { navController.navigate(Destinations.addPrizeToMusician(id)) },
                         refreshKey = refreshFlag,
                         onRefreshHandled = {
                             backStackEntry.savedStateHandle[Destinations.RefreshMusicianDetailKey] = false
@@ -284,6 +287,19 @@ fun VinilosNavHost() {
                             navController.previousBackStackEntry
                                 ?.savedStateHandle
                                 ?.set(Destinations.RefreshBandDetailKey, true)
+                            navController.popBackStack()
+                        },
+                    )
+                }
+                composable(
+                    route = Destinations.AddPrizeToMusician,
+                    arguments = listOf(navArgument(Destinations.AddPrizeMusicianArg) { type = NavType.IntType }),
+                ) {
+                    AddPrizeToMusicianScreen(
+                        onBack = {
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(Destinations.RefreshMusicianDetailKey, true)
                             navController.popBackStack()
                         },
                     )

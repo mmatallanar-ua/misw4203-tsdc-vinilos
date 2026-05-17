@@ -58,5 +58,10 @@ object Destinations {
     fun addMusiciansToBand(bandId: Int) = "band/$bandId/musicians/add"
     fun addAlbumToCollector(collectorId: Int) = "collector/$collectorId/albums/add"
     fun addAlbumToMusician(musicianId: Int) = "musician/$musicianId/albums/add"
+
+    const val AddPrizeToMusician = "musician/{musicianId}/prizes/add"
+    const val AddPrizeMusicianArg = "musicianId"
+
+    fun addPrizeToMusician(musicianId: Int) = "musician/$musicianId/prizes/add"
     fun addFavoritePerformer(collectorId: Int) = "collector/$collectorId/favorites/add"
 }

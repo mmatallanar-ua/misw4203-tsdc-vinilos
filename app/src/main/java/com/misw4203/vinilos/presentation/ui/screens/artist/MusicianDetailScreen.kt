@@ -78,6 +78,7 @@ fun MusicianDetailScreen(
     musicianId: Int,
     onBack: () -> Unit,
     onAddAlbum: () -> Unit = {},
+    onAddPrize: () -> Unit = {},
     refreshKey: Boolean = false,
     onRefreshHandled: () -> Unit = {},
     viewModel: MusicianDetailViewModel = hiltViewModel(),
@@ -120,7 +121,7 @@ fun MusicianDetailScreen(
                     onRetry = viewModel::retry,
                     isNetworkError = state.isNetworkError,
                 )
-                is MusicianDetailUiState.Success -> MusicianBody(state.musician, onAddAlbum)
+                is MusicianDetailUiState.Success -> MusicianBody(state.musician, onAddAlbum, onAddPrize)
             }
         }
     }
@@ -151,7 +152,7 @@ private fun NotFoundContent() {
 }
 
 @Composable
-private fun MusicianBody(musician: Musician, onAddAlbum: () -> Unit) {
+private fun MusicianBody(musician: Musician, onAddAlbum: () -> Unit, onAddPrize: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -164,7 +165,7 @@ private fun MusicianBody(musician: Musician, onAddAlbum: () -> Unit) {
         Spacer(Modifier.height(24.dp))
         AlbumsSection(musician.albums, onAddAlbum)
         Spacer(Modifier.height(24.dp))
-        PrizesSection(musician.prizes)
+        PrizesSection(musician.prizes, onAddPrize)
         Spacer(Modifier.height(24.dp))
     }
 }
@@ -352,17 +353,69 @@ private fun AlbumCard(album: Album) {
 }
 
 @Composable
-private fun PrizesSection(prizes: List<MusicianPrize>) {
+private fun PrizesSection(prizes: List<MusicianPrize>, onAddPrize: () -> Unit) {
     var selectedPrize by remember { mutableStateOf<MusicianPrize?>(null) }
 
-    SectionHeader(stringResource(R.string.artist_section_prizes))
-    Spacer(Modifier.height(8.dp))
-    Column(
-        modifier = Modifier.padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        prizes.forEach { prize ->
-            PrizeItem(prize, onClick = { selectedPrize = prize })
+        Text(
+            text = stringResource(R.string.artist_section_prizes),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.semantics { heading() },
+        )
+        Spacer(Modifier.width(12.dp))
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+        )
+        Spacer(Modifier.width(12.dp))
+        Button(
+            onClick = onAddPrize,
+            shape = RoundedCornerShape(50),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.onSurface,
+                contentColor = MaterialTheme.colorScheme.surface,
+            ),
+            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+            modifier = Modifier.testTag("artist_add_prize_button"),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                text = stringResource(R.string.add_prize_musician_cta),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+    }
+    Spacer(Modifier.height(8.dp))
+    if (prizes.isEmpty()) {
+        Text(
+            text = stringResource(R.string.add_prize_musician_empty_prizes),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .padding(horizontal = 24.dp, vertical = 4.dp)
+                .testTag("artist_prizes_empty"),
+        )
+    } else {
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            prizes.forEach { prize ->
+                PrizeItem(prize, onClick = { selectedPrize = prize })
+            }
         }
     }
 

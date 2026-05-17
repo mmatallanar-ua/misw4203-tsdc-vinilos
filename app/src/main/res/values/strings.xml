@@ -210,6 +210,26 @@
         <item quantity="other">%d álbumes en la discografía</item>
     </plurals>
 
+    <!-- HU014 - Agregar premio a artista -->
+    <string name="add_prize_musician_title">Agregar Premio</string>
+    <string name="add_prize_musician_search_section">Seleccionar Premio</string>
+    <string name="add_prize_musician_search_placeholder">Buscar por nombre u organización…</string>
+    <string name="add_prize_musician_available_empty">No se encontraron premios con esa búsqueda</string>
+    <string name="add_prize_musician_details_section">Detalles de la asociación</string>
+    <string name="add_prize_musician_date_label">Fecha en que fue otorgado</string>
+    <string name="add_prize_musician_date_placeholder">Seleccionar fecha</string>
+    <string name="add_prize_musician_date_error_future">La fecha no puede ser futura</string>
+    <string name="add_prize_musician_date_error_duplicate">Este premio ya fue otorgado en esa fecha</string>
+    <string name="add_prize_musician_submit">Agregar Premio al Artista</string>
+    <string name="add_prize_musician_submitting">Agregando…</string>
+    <string name="add_prize_musician_current_section">Premios del Artista</string>
+    <string name="add_prize_musician_empty_prizes">Aún no tiene premios registrados</string>
+    <string name="add_prize_musician_success">«%s» fue asociado al artista</string>
+    <string name="add_prize_musician_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="add_prize_musician_error_server">No pudimos agregar el premio. Inténtalo de nuevo.</string>
+    <string name="add_prize_musician_cta">Agregar premio</string>
+    <string name="cd_add_prize_to_musician">Agregar %s al artista</string>
+
     <!-- HU010 - Agregar artistas favoritos -->
     <string name="add_favorite_performer_title">Agregar artista favorito</string>
     <string name="add_favorite_performer_context_label">Coleccionista</string>

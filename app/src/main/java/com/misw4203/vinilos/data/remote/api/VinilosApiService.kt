@@ -1,6 +1,7 @@
 package com.misw4203.vinilos.data.remote.api
 
 import com.misw4203.vinilos.data.remote.dto.AddCollectorAlbumRequest
+import com.misw4203.vinilos.data.remote.dto.AddPrizeToMusicianRequest
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.BandDetailDto
 import com.misw4203.vinilos.data.remote.dto.BandDto
@@ -13,6 +14,8 @@ import com.misw4203.vinilos.data.remote.dto.CreateAlbumRequestDto
 import com.misw4203.vinilos.data.remote.dto.CreatePrizeRequest
 import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.data.remote.dto.MusicianDetailDto
+import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDetailDto
+import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDto
 import com.misw4203.vinilos.data.remote.dto.PrizeDetailDto
 import com.misw4203.vinilos.data.remote.dto.TrackDto
 import retrofit2.http.Body
@@ -42,6 +45,9 @@ interface VinilosApiService {
 
     @GET("prizes/{id}")
     suspend fun getPrizeDetail(@Path("id") id: Int): PrizeDetailDto
+
+    @GET("performerprizes")
+    suspend fun getPerformerPrizes(): List<PerformerPrizeDetailDto>
 
     @POST("prizes")
     suspend fun createPrize(@Body body: CreatePrizeRequest): PrizeDetailDto
@@ -93,6 +99,13 @@ interface VinilosApiService {
         @Path("musicianId") musicianId: Int,
         @Path("albumId") albumId: Int,
     )
+
+    @POST("prizes/{prizeId}/musicians/{musicianId}")
+    suspend fun addPrizeToMusician(
+        @Path("prizeId") prizeId: Int,
+        @Path("musicianId") musicianId: Int,
+        @Body request: AddPrizeToMusicianRequest,
+    ): PerformerPrizeDto
 
     @POST("collectors/{collectorId}/musicians/{musicianId}")
     suspend fun addMusicianToCollector(
