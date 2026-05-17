@@ -2,6 +2,7 @@ package com.misw4203.vinilos.data.repository
 
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.CreatePrizeRequest
+import com.misw4203.vinilos.data.remote.dto.toDomain
 import com.misw4203.vinilos.domain.model.Prize
 import com.misw4203.vinilos.domain.repository.PrizeRepository
 import kotlinx.coroutines.Dispatchers

@@ -2,6 +2,7 @@ package com.misw4203.vinilos.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.misw4203.vinilos.domain.model.Prize
 import com.misw4203.vinilos.domain.usecase.CreatePrizeUseCase
 import com.misw4203.vinilos.domain.usecase.GetPrizesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
