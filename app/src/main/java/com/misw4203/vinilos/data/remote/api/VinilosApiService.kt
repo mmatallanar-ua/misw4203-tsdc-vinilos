@@ -93,4 +93,16 @@ interface VinilosApiService {
         @Path("musicianId") musicianId: Int,
         @Path("albumId") albumId: Int,
     )
+
+    @POST("collectors/{collectorId}/musicians/{musicianId}")
+    suspend fun addMusicianToCollector(
+        @Path("collectorId") collectorId: Int,
+        @Path("musicianId") musicianId: Int,
+    )
+
+    @POST("collectors/{collectorId}/bands/{bandId}")
+    suspend fun addBandToCollector(
+        @Path("collectorId") collectorId: Int,
+        @Path("bandId") bandId: Int,
+    )
 }

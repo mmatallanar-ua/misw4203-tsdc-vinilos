@@ -35,6 +35,7 @@ import com.misw4203.vinilos.presentation.ui.screens.artist.MusicianDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.band.AddMusiciansToBandScreen
 import com.misw4203.vinilos.presentation.ui.screens.band.BandDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.AddAlbumToCollectorScreen
+import com.misw4203.vinilos.presentation.ui.screens.collector.AddFavoritePerformerScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorDetailScreen
 import com.misw4203.vinilos.presentation.ui.screens.collector.CollectorListScreen
 import com.misw4203.vinilos.presentation.ui.screens.prize.CreatePrizeScreen
@@ -215,6 +216,9 @@ fun VinilosNavHost() {
                     CollectorDetailScreen(
                         collectorId = collectorId,
                         onBack = { navController.popBackStack() },
+                        onAddFavoritePerformer = {
+                            navController.navigate(Destinations.addFavoritePerformer(collectorId))
+                        },
                         onAddAlbum = { navController.navigate(Destinations.addAlbumToCollector(collectorId)) },
                         refreshKey = refreshFlag,
                         onRefreshHandled = {
@@ -227,6 +231,21 @@ fun VinilosNavHost() {
                     arguments = listOf(navArgument(Destinations.AddAlbumCollectorArg) { type = NavType.IntType }),
                 ) {
                     AddAlbumToCollectorScreen(
+                        onBack = {
+                            navController.previousBackStackEntry
+                                ?.savedStateHandle
+                                ?.set(Destinations.RefreshCollectorDetailKey, true)
+                            navController.popBackStack()
+                        },
+                    )
+                }
+                composable(
+                    route = Destinations.AddFavoritePerformer,
+                    arguments = listOf(
+                        navArgument(Destinations.AddFavoritePerformerCollectorArg) { type = NavType.IntType },
+                    ),
+                ) {
+                    AddFavoritePerformerScreen(
                         onBack = {
                             navController.previousBackStackEntry
                                 ?.savedStateHandle

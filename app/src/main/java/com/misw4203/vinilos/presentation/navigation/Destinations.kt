@@ -46,6 +46,9 @@ object Destinations {
     const val CreatePrize = "prizes/create"
     const val RefreshPrizesKey = "refresh_prizes"
 
+    const val AddFavoritePerformer = "collector/{collectorId}/favorites/add"
+    const val AddFavoritePerformerCollectorArg = "collectorId"
+
     fun albumDetail(albumId: Long) = "album_detail/$albumId"
     fun collectorDetail(collectorId: Int) = "collector/$collectorId"
     fun addTrack(albumId: Long) = "album/$albumId/track/add"
@@ -55,4 +58,5 @@ object Destinations {
     fun addMusiciansToBand(bandId: Int) = "band/$bandId/musicians/add"
     fun addAlbumToCollector(collectorId: Int) = "collector/$collectorId/albums/add"
     fun addAlbumToMusician(musicianId: Int) = "musician/$musicianId/albums/add"
+    fun addFavoritePerformer(collectorId: Int) = "collector/$collectorId/favorites/add"
 }

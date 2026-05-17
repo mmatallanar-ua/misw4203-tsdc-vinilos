@@ -50,4 +50,7 @@ class FakeCollectorRepository @Inject constructor() : CollectorRepository {
             CollectorComment(1L, "Edición impecable, sin ruidos de fondo.", 5, "Buscando América"),
         ),
     )
+
+    override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) = Unit
+    override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) = Unit
 }
