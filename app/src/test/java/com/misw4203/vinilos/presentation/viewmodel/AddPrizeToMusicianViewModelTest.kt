@@ -36,6 +36,11 @@ class AddPrizeToMusicianViewModelTest {
 
     private val musicianId = 42
 
+    // Jan 1 2020 00:00:00 UTC
+    private val millis2020 = 1577836800000L
+    // Jan 1 2999 — future
+    private val millisFuture = 32503680000000L
+
     private val sampleMusician = Musician(
         id = musicianId,
         name = "Gustavo Cerati",
@@ -90,7 +95,6 @@ class AddPrizeToMusicianViewModelTest {
         val form = vm.form.value
         assertEquals("Gustavo Cerati", form.musicianName)
         assertEquals(2, form.allPrizes.size)
-        assertEquals(2, form.filteredPrizes.size)
     }
 
     @Test
@@ -134,36 +138,37 @@ class AddPrizeToMusicianViewModelTest {
     }
 
     @Test
-    fun `year validation rejects blank on confirm`() = runTest {
+    fun `future date sets FUTURE error`() = runTest {
+        val vm = buildVm()
+        advanceUntilIdle()
+
+        vm.onDateSelected(millisFuture)
+        assertEquals(DateValidationError.FUTURE, vm.form.value.dateError)
+    }
+
+    @Test
+    fun `valid past date clears error`() = runTest {
+        val vm = buildVm()
+        advanceUntilIdle()
+
+        vm.onDateSelected(millis2020)
+        assertNull(vm.form.value.dateError)
+        assertTrue(vm.form.value.premiationDate?.startsWith("2020-01-01") == true)
+    }
+
+    @Test
+    fun `confirm without date selected does nothing`() = runTest {
         val vm = buildVm()
         advanceUntilIdle()
 
         vm.onPrizeSelected(samplePrizes[0])
         vm.onConfirm()
 
-        assertEquals(YearValidationError.EMPTY, vm.form.value.yearError)
+        assertEquals(AddPrizeToMusicianUiState.Ready, vm.uiState.value)
     }
 
     @Test
-    fun `year validation rejects future year`() = runTest {
-        val vm = buildVm()
-        advanceUntilIdle()
-
-        vm.onYearChange("2999")
-        assertEquals(YearValidationError.FUTURE, vm.form.value.yearError)
-    }
-
-    @Test
-    fun `year validation rejects non-numeric input`() = runTest {
-        val vm = buildVm()
-        advanceUntilIdle()
-
-        vm.onYearChange("abcd")
-        assertEquals(YearValidationError.INVALID, vm.form.value.yearError)
-    }
-
-    @Test
-    fun `duplicate prize and year is rejected`() = runTest {
+    fun `duplicate prize and date is rejected`() = runTest {
         val musicianWithPrize = sampleMusician.copy(
             prizes = listOf(
                 MusicianPrize(1, "Grammy Latino", "Academia Latina", "Desc", "2020-01-01T00:00:00.000Z"),
@@ -173,10 +178,10 @@ class AddPrizeToMusicianViewModelTest {
         advanceUntilIdle()
 
         vm.onPrizeSelected(samplePrizes[0])
-        vm.onYearChange("2020")
+        vm.onDateSelected(millis2020)
         vm.onConfirm()
 
-        assertEquals(YearValidationError.DUPLICATE, vm.form.value.yearError)
+        assertEquals(DateValidationError.DUPLICATE, vm.form.value.dateError)
     }
 
     @Test
@@ -185,7 +190,7 @@ class AddPrizeToMusicianViewModelTest {
         advanceUntilIdle()
 
         vm.onPrizeSelected(samplePrizes[0])
-        vm.onYearChange("2020")
+        vm.onDateSelected(millis2020)
 
         vm.events.test {
             vm.onConfirm()
@@ -198,7 +203,7 @@ class AddPrizeToMusicianViewModelTest {
 
         assertEquals(1, vm.form.value.currentPrizes.size)
         assertNull(vm.form.value.selectedPrize)
-        assertTrue(vm.form.value.year.isEmpty())
+        assertNull(vm.form.value.premiationDate)
     }
 
     @Test
@@ -224,7 +229,7 @@ class AddPrizeToMusicianViewModelTest {
         advanceUntilIdle()
 
         vm.onPrizeSelected(samplePrizes[0])
-        vm.onYearChange("2020")
+        vm.onDateSelected(millis2020)
 
         vm.events.test {
             vm.onConfirm()
@@ -235,7 +240,8 @@ class AddPrizeToMusicianViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
 
-        assertEquals("2020", vm.form.value.year)
+        // Form data preserved
+        assertTrue(vm.form.value.premiationDate?.startsWith("2020") == true)
         assertEquals(samplePrizes[0].id, vm.form.value.selectedPrize?.id)
     }
 

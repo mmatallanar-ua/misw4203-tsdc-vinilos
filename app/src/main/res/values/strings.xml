@@ -216,12 +216,10 @@
     <string name="add_prize_musician_search_placeholder">Buscar por nombre u organización…</string>
     <string name="add_prize_musician_available_empty">No se encontraron premios con esa búsqueda</string>
     <string name="add_prize_musician_details_section">Detalles de la asociación</string>
-    <string name="add_prize_musician_year_label">Año en que fue otorgado</string>
-    <string name="add_prize_musician_year_placeholder">YYYY</string>
-    <string name="add_prize_musician_year_error_required">Campo obligatorio</string>
-    <string name="add_prize_musician_year_error_invalid">Ingresa un año válido (YYYY)</string>
-    <string name="add_prize_musician_year_error_future">El año no puede ser futuro</string>
-    <string name="add_prize_musician_year_error_duplicate">Este premio ya fue otorgado en ese año</string>
+    <string name="add_prize_musician_date_label">Fecha en que fue otorgado</string>
+    <string name="add_prize_musician_date_placeholder">Seleccionar fecha</string>
+    <string name="add_prize_musician_date_error_future">La fecha no puede ser futura</string>
+    <string name="add_prize_musician_date_error_duplicate">Este premio ya fue otorgado en esa fecha</string>
     <string name="add_prize_musician_submit">Agregar Premio al Artista</string>
     <string name="add_prize_musician_submitting">Agregando…</string>
     <string name="add_prize_musician_current_section">Premios del Artista</string>

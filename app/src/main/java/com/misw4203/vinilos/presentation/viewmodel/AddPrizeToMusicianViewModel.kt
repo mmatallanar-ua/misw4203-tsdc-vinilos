@@ -23,7 +23,10 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 import java.text.Normalizer
-import java.util.Calendar
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 import javax.inject.Inject
 
 sealed interface AddPrizeToMusicianEvent {
@@ -67,35 +70,34 @@ class AddPrizeToMusicianViewModel @Inject constructor(
         val current = _form.value.selectedPrize
         _form.value = _form.value.copy(
             selectedPrize = if (current?.id == prize.id) null else prize,
-            yearError = null,
+            dateError = null,
         )
     }
 
-    fun onYearChange(year: String) {
-        val error = if (year.isBlank()) null else validateYear(year)
-        _form.value = _form.value.copy(year = year, yearError = error)
+    fun onDateSelected(millis: Long) {
+        val iso = millisToIso(millis)
+        val isFuture = millis > System.currentTimeMillis()
+        _form.value = _form.value.copy(
+            premiationDate = iso,
+            dateError = if (isFuture) DateValidationError.FUTURE else null,
+        )
     }
 
     fun onConfirm() {
         if (_uiState.value is AddPrizeToMusicianUiState.Adding) return
         val prize = _form.value.selectedPrize ?: return
+        val premiationDate = _form.value.premiationDate ?: return
 
-        val yearError = validateYear(_form.value.year)
-        if (yearError != null) {
-            _form.value = _form.value.copy(yearError = yearError)
-            return
-        }
+        if (_form.value.dateError != null) return
 
-        val year = _form.value.year
         val isDuplicate = _form.value.currentPrizes.any {
-            it.id == prize.id && it.premiationDate.take(4) == year
+            it.id == prize.id && it.premiationDate.take(10) == premiationDate.take(10)
         }
         if (isDuplicate) {
-            _form.value = _form.value.copy(yearError = YearValidationError.DUPLICATE)
+            _form.value = _form.value.copy(dateError = DateValidationError.DUPLICATE)
             return
         }
 
-        val premiationDate = "$year-01-01T00:00:00.000Z"
         _uiState.value = AddPrizeToMusicianUiState.Adding(prize.id)
         viewModelScope.launch {
             try {
@@ -110,8 +112,8 @@ class AddPrizeToMusicianViewModel @Inject constructor(
                 _form.value = _form.value.copy(
                     currentPrizes = _form.value.currentPrizes + newPrize,
                     selectedPrize = null,
-                    year = "",
-                    yearError = null,
+                    premiationDate = null,
+                    dateError = null,
                 )
                 _uiState.value = AddPrizeToMusicianUiState.Ready
                 _events.tryEmit(AddPrizeToMusicianEvent.AddedSuccessfully(prize.name))
@@ -162,16 +164,6 @@ class AddPrizeToMusicianViewModel @Inject constructor(
         }
     }
 
-    private fun validateYear(year: String): YearValidationError? {
-        if (year.isBlank()) return YearValidationError.EMPTY
-        if (year.length != 4) return YearValidationError.INVALID
-        val y = year.toIntOrNull() ?: return YearValidationError.INVALID
-        if (y < 1900) return YearValidationError.INVALID
-        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-        if (y > currentYear) return YearValidationError.FUTURE
-        return null
-    }
-
     private fun filterPrizes(prizes: List<Prize>, query: String): List<Prize> {
         if (query.isBlank()) return prizes
         val normalized = normalize(query)
@@ -183,5 +175,11 @@ class AddPrizeToMusicianViewModel @Inject constructor(
     private fun normalize(text: String): String {
         val nfd = Normalizer.normalize(text, Normalizer.Form.NFD)
         return nfd.replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "").lowercase()
+    }
+
+    private fun millisToIso(millis: Long): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
+        sdf.timeZone = TimeZone.getTimeZone("UTC")
+        return sdf.format(Date(millis))
     }
 }

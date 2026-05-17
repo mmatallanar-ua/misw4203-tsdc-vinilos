@@ -118,9 +118,9 @@ class AddPrizeToMusicianScreenTest {
         composeTestRule.onNodeWithTag("add_prize_musician_submit").assertIsNotEnabled()
     }
 
-    // CA05 — submit enabled when prize selected and valid year entered
+    // CA05 — submit enabled when prize selected and valid date entered
     @Test
-    fun submitEnabledWhenPrizeSelectedAndValidYear() {
+    fun submitEnabledWhenPrizeSelectedAndValidDate() {
         val vm = buildVm()
 
         composeTestRule.setContent { MaterialTheme { AddPrizeToMusicianScreen(onBack = {}, viewModel = vm) } }
@@ -129,13 +129,14 @@ class AddPrizeToMusicianScreenTest {
             composeTestRule.onAllNodesWithTag("available_prize_10").fetchSemanticsNodes().isNotEmpty()
         }
         composeTestRule.onNodeWithTag("available_prize_10").performClick()
-        composeTestRule.onNodeWithTag("add_prize_musician_year").performTextInput("2020")
+        vm.onDateSelected(1577836800000L) // 2020-01-01 UTC
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("add_prize_musician_submit").assertIsEnabled()
     }
 
-    // CA06 — future year shows validation error
+    // CA06 — future date shows validation error
     @Test
-    fun futureYearShowsValidationError() {
+    fun futureDateShowsValidationError() {
         val vm = buildVm()
 
         composeTestRule.setContent { MaterialTheme { AddPrizeToMusicianScreen(onBack = {}, viewModel = vm) } }
@@ -143,9 +144,10 @@ class AddPrizeToMusicianScreenTest {
         composeTestRule.waitUntil(5000) {
             composeTestRule.onAllNodesWithTag("available_prize_10").fetchSemanticsNodes().isNotEmpty()
         }
-        composeTestRule.onNodeWithTag("add_prize_musician_year").performTextInput("2999")
+        vm.onDateSelected(32503680000000L) // year 2999
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText(
-            composeTestRule.activity.getString(R.string.add_prize_musician_year_error_future)
+            composeTestRule.activity.getString(R.string.add_prize_musician_date_error_future)
         ).assertIsDisplayed()
     }
 
@@ -160,7 +162,8 @@ class AddPrizeToMusicianScreenTest {
             composeTestRule.onAllNodesWithTag("available_prize_10").fetchSemanticsNodes().isNotEmpty()
         }
         composeTestRule.onNodeWithTag("available_prize_10").performClick()
-        composeTestRule.onNodeWithTag("add_prize_musician_year").performTextInput("2020")
+        vm.onDateSelected(1577836800000L) // 2020-01-01 UTC
+        composeTestRule.waitForIdle()
         composeTestRule.onNodeWithTag("add_prize_musician_submit").performClick()
 
         val successText = composeTestRule.activity.getString(
