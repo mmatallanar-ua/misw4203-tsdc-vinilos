@@ -53,4 +53,8 @@ class FakeCollectorRepository @Inject constructor() : CollectorRepository {
 
     override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) = Unit
     override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) = Unit
+
+    override suspend fun removeFavoriteMusician(collectorId: Int, musicianId: Int) {}
+    override suspend fun removeFavoriteBand(collectorId: Int, bandId: Int) {}
+    override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Int) {}
 }

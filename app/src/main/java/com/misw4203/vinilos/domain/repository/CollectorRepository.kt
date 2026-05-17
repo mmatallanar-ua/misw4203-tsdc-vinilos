@@ -10,9 +10,7 @@ interface CollectorRepository {
     suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int)
     suspend fun addFavoriteBand(collectorId: Int, bandId: Int)
 
-    // Removal operations. Default no-op keeps the many in-memory test fakes
-    // compiling; CollectorRepositoryImpl provides the real behaviour.
-    suspend fun removeFavoriteMusician(collectorId: Int, musicianId: Int) = Unit
-    suspend fun removeFavoriteBand(collectorId: Int, bandId: Int) = Unit
-    suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Int) = Unit
+    suspend fun removeFavoriteMusician(collectorId: Int, musicianId: Int)
+    suspend fun removeFavoriteBand(collectorId: Int, bandId: Int)
+    suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Int)
 }

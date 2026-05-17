@@ -25,4 +25,7 @@ class FakeBandRepository @Inject constructor() : BandRepository {
     override suspend fun addMusicianToBand(bandId: Int, musicianId: Int) {
         // no-op
     }
+
+    override suspend fun addAlbumToBand(bandId: Int, albumId: Long) {}
+    override suspend fun addPrizeToBand(bandId: Int, prizeId: Int, premiationDate: String) {}
 }

@@ -45,6 +45,8 @@ class AddMusiciansToBandScreenTest {
         override suspend fun addMusicianToBand(bandId: Int, musicianId: Int) {
             added += bandId to musicianId
         }
+        override suspend fun addAlbumToBand(bandId: Int, albumId: Long) {}
+        override suspend fun addPrizeToBand(bandId: Int, prizeId: Int, premiationDate: String) {}
     }
 
     private fun buildVm(
@@ -152,6 +154,8 @@ class AddMusiciansToBandScreenTest {
             override suspend fun getBands(): List<BandSummary> = error("not used")
             override suspend fun getBandDetail(id: Int): Band = throw java.io.IOException("offline")
             override suspend fun addMusicianToBand(bandId: Int, musicianId: Int) = Unit
+            override suspend fun addAlbumToBand(bandId: Int, albumId: Long) {}
+            override suspend fun addPrizeToBand(bandId: Int, prizeId: Int, premiationDate: String) {}
         }
         val vm = AddMusiciansToBandViewModel(
             getMusicians = GetMusiciansUseCase(musicianRepo),

@@ -47,6 +47,10 @@ class AddTrackViewModelTest {
             collectorId: Int,
         ): com.misw4203.vinilos.domain.model.Comment = error("not used")
         override suspend fun createAlbum(input: com.misw4203.vinilos.domain.model.CreateAlbumInput): Album = error("not used")
+        override suspend fun removeTrack(albumId: Long, trackId: Long) {}
+        override suspend fun removeComment(albumId: Long, commentId: Long) {}
+        override suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) {}
+        override suspend fun addBandToAlbum(albumId: Long, bandId: Int) {}
     }
 
     private fun buildViewModel(repo: FakeRepo, albumId: Long = 100L) = AddTrackViewModel(

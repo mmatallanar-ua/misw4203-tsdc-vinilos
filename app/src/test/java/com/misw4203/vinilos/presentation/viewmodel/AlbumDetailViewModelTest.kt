@@ -58,6 +58,8 @@ class AlbumDetailViewModelTest {
             removeError?.let { throw it }
             removedComments += albumId to commentId
         }
+        override suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) {}
+        override suspend fun addBandToAlbum(albumId: Long, bandId: Int) {}
     }
 
     private fun buildViewModel(

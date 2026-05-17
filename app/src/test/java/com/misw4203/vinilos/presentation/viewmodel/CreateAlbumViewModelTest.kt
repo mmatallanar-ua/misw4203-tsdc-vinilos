@@ -35,6 +35,10 @@ class CreateAlbumViewModelTest {
         override suspend fun addComment(albumId: Long, description: String, rating: Int, collectorId: Int): com.misw4203.vinilos.domain.model.Comment =
             error("not used")
         override suspend fun createAlbum(input: CreateAlbumInput): Album = createResult.getOrThrow()
+        override suspend fun removeTrack(albumId: Long, trackId: Long) {}
+        override suspend fun removeComment(albumId: Long, commentId: Long) {}
+        override suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) {}
+        override suspend fun addBandToAlbum(albumId: Long, bandId: Int) {}
     }
 
     private fun buildViewModel(repo: FakeAlbumRepository): CreateAlbumViewModel =

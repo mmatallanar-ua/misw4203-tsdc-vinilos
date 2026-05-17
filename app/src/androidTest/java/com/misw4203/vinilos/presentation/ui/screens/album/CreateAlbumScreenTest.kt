@@ -37,6 +37,10 @@ class CreateAlbumScreenTest {
         override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.domain.model.NewTrack): com.misw4203.vinilos.domain.model.Track = error("unused")
         override suspend fun addComment(albumId: Long, description: String, rating: Int, collectorId: Int): Comment = error("unused")
         override suspend fun createAlbum(input: CreateAlbumInput): Album = createResult.getOrThrow()
+        override suspend fun removeTrack(albumId: Long, trackId: Long) {}
+        override suspend fun removeComment(albumId: Long, commentId: Long) {}
+        override suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) {}
+        override suspend fun addBandToAlbum(albumId: Long, bandId: Int) {}
     }
 
     private fun vm(repo: AlbumRepository = FakeRepo()): CreateAlbumViewModel =

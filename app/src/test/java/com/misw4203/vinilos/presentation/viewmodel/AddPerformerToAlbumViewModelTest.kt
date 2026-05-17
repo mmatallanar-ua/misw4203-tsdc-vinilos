@@ -55,6 +55,8 @@ class AddPerformerToAlbumViewModelTest {
             addError?.let { throw it }
             addedBands += albumId to bandId
         }
+        override suspend fun removeTrack(albumId: Long, trackId: Long) {}
+        override suspend fun removeComment(albumId: Long, commentId: Long) {}
     }
 
     private class FakeMusicianRepo : MusicianRepository {
@@ -70,6 +72,8 @@ class AddPerformerToAlbumViewModelTest {
         override suspend fun getBands(): List<BandSummary> = all
         override suspend fun getBandDetail(id: Int) = error("unused")
         override suspend fun addMusicianToBand(bandId: Int, musicianId: Int) = Unit
+        override suspend fun addAlbumToBand(bandId: Int, albumId: Long) {}
+        override suspend fun addPrizeToBand(bandId: Int, prizeId: Int, premiationDate: String) {}
     }
 
     private fun build(

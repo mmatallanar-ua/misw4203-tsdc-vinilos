@@ -46,6 +46,8 @@ class AddFavoritePerformerScreenTest {
         override suspend fun getBands(): List<BandSummary> = list
         override suspend fun getBandDetail(id: Int): Band = error("not used")
         override suspend fun addMusicianToBand(bandId: Int, musicianId: Int) = error("not used")
+        override suspend fun addAlbumToBand(bandId: Int, albumId: Long) {}
+        override suspend fun addPrizeToBand(bandId: Int, prizeId: Int, premiationDate: String) {}
     }
 
     private class FakeCollectorRepo(val detail: CollectorDetail) : CollectorRepository {
@@ -66,6 +68,9 @@ class AddFavoritePerformerScreenTest {
         override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) {
             addedBands += collectorId to bandId
         }
+        override suspend fun removeFavoriteMusician(collectorId: Int, musicianId: Int) {}
+        override suspend fun removeFavoriteBand(collectorId: Int, bandId: Int) {}
+        override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Int) {}
     }
 
     private fun buildVm(

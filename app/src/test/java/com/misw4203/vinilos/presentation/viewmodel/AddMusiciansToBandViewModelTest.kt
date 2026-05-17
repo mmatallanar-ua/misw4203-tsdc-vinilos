@@ -51,6 +51,8 @@ class AddMusiciansToBandViewModelTest {
             addCallCount++
             addResult.getOrThrow()
         }
+        override suspend fun addAlbumToBand(bandId: Int, albumId: Long) {}
+        override suspend fun addPrizeToBand(bandId: Int, prizeId: Int, premiationDate: String) {}
     }
 
     companion object {

@@ -40,6 +40,7 @@ class AddPrizeToBandViewModelTest {
             addError?.let { throw it }
             awarded += Triple(bandId, prizeId, premiationDate)
         }
+        override suspend fun addAlbumToBand(bandId: Int, albumId: Long) {}
     }
 
     private class FakePrizeRepo(private val prizes: List<Prize>) : PrizeRepository {
