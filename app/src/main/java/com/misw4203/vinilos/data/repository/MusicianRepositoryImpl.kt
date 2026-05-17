@@ -98,7 +98,7 @@ class MusicianRepositoryImpl @Inject constructor(
 
     override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) =
         withContext(Dispatchers.IO) {
-            api.addPrizeToMusician(musicianId, prizeId, AddPrizeToMusicianRequest(premiationDate))
+            api.addPrizeToMusician(prizeId, musicianId, AddPrizeToMusicianRequest(premiationDate))
             Unit
         }
 
