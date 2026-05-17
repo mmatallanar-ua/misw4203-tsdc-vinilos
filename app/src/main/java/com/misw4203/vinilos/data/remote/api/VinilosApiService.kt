@@ -96,10 +96,10 @@ interface VinilosApiService {
         @Path("albumId") albumId: Int,
     )
 
-    @POST("musicians/{musicianId}/prizes/{prizeId}")
+    @POST("prizes/{prizeId}/musicians/{musicianId}")
     suspend fun addPrizeToMusician(
-        @Path("musicianId") musicianId: Int,
         @Path("prizeId") prizeId: Int,
+        @Path("musicianId") musicianId: Int,
         @Body request: AddPrizeToMusicianRequest,
     ): PerformerPrizeDto
 }
