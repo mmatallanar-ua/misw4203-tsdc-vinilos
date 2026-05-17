@@ -41,6 +41,13 @@ android {
                 storePassword = storePw
                 keyAlias = alias
                 keyPassword = keyPw
+            } else {
+                logger.warn(
+                    "[vinilos] Credenciales de firma de release ausentes — copia " +
+                        "keystore.properties.example a keystore.properties o define las " +
+                        "variables de entorno VINILOS_STORE_PASSWORD/VINILOS_KEY_PASSWORD/" +
+                        "VINILOS_KEY_ALIAS. El build de release no quedará firmado.",
+                )
             }
         }
     }
