@@ -52,7 +52,7 @@ class AlbumRepositoryImpl @Inject constructor(
     override suspend fun addTrack(albumId: Long, track: NewTrack): Track =
         withContext(Dispatchers.IO) {
             val dto = api.addTrack(albumId, CreateTrackRequest(track.name, track.duration))
-            val track = Track(
+            val created = Track(
                 id = dto.id,
                 name = dto.name.orEmpty(),
                 duration = dto.duration.orEmpty(),
@@ -61,10 +61,10 @@ class AlbumRepositoryImpl @Inject constructor(
             // lo actualizamos con el nuevo track para evitar lectura stale
             // antes del próximo getAlbumById().
             dao.getDetailById(albumId)?.let { cached ->
-                val updated = cached.toDomain().copy(tracks = cached.tracks + track)
+                val updated = cached.toDomain().copy(tracks = cached.tracks + created)
                 dao.upsertDetail(AlbumDetailEntity.fromDomain(updated))
             }
-            track
+            created
         }
 
     override suspend fun addComment(

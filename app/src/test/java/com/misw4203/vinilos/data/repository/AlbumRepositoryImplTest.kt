@@ -7,11 +7,11 @@ import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.CommentDto
 import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
-import com.misw4203.vinilos.domain.model.NewTrack
 import com.misw4203.vinilos.data.remote.dto.PerformerDto
 import com.misw4203.vinilos.data.remote.dto.TrackDto
 import com.misw4203.vinilos.domain.model.Comment
 import com.misw4203.vinilos.domain.model.CreateAlbumInput
+import com.misw4203.vinilos.domain.model.NewTrack
 import com.misw4203.vinilos.domain.model.Track
 import io.mockk.coEvery
 import io.mockk.coVerify
