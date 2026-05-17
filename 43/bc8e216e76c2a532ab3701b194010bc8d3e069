@@ -1,0 +1,26 @@
+app/src/main/java/com/misw4203/vinilos/data/repository/PrizeRepositoryImpl.kt
+  s_1d607917f3cf32::t_44d447fab7f66e 5
+app/src/main/java/com/misw4203/vinilos/presentation/viewmodel/CreatePrizeViewModel.kt
+  s_1d607917f3cf32::t_48fa661857648f 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "43bc8e216e76c2a532ab3701b194010bc8d3e069",
+  "prompts": {},
+  "humans": {
+    "h_6d0817ae4adbcb": {
+      "author": "jarodriguezf-uni <ja.rodriguezf@uniandes.edu.co>"
+    }
+  },
+  "sessions": {
+    "s_1d607917f3cf32": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7abee41e-91cc-40c9-83cd-ed681ff60eaf",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "jarodriguezf-uni <ja.rodriguezf@uniandes.edu.co>"
+    }
+  }
+}
