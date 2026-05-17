@@ -17,6 +17,7 @@ import com.misw4203.vinilos.domain.model.CollectorDetail
 import com.misw4203.vinilos.domain.model.CollectorSummary
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.repository.CollectorRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -39,6 +40,52 @@ class CollectorRepositoryImpl @Inject constructor(
             val cached = dao.getAll()
             if (cached.isNotEmpty()) cached.map { it.toDomain() } else throw e
         }
+    }
+
+    override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) = withContext(Dispatchers.IO) {
+        api.addMusicianToCollector(collectorId, musicianId)
+        try {
+            val cached = dao.getDetailById(collectorId)
+            val musicianIdLong = musicianId.toLong()
+            if (cached != null && cached.favoritePerformers.none { it.id == musicianIdLong }) {
+                val musicianDto = api.getMusicianDetail(musicianId)
+                val newFavorite = Performer(
+                    id = musicianDto.id.toLong(),
+                    name = musicianDto.name,
+                    imageUrl = musicianDto.image,
+                )
+                val updated = cached.copy(favoritePerformers = cached.favoritePerformers + newFavorite)
+                dao.upsertDetail(updated)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // best-effort
+        }
+        Unit
+    }
+
+    override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) = withContext(Dispatchers.IO) {
+        api.addBandToCollector(collectorId, bandId)
+        try {
+            val cached = dao.getDetailById(collectorId)
+            val bandIdLong = bandId.toLong()
+            if (cached != null && cached.favoritePerformers.none { it.id == bandIdLong }) {
+                val bandDto = api.getBandDetail(bandId)
+                val newFavorite = Performer(
+                    id = bandDto.id.toLong(),
+                    name = bandDto.name.orEmpty(),
+                    imageUrl = bandDto.image.orEmpty(),
+                )
+                val updated = cached.copy(favoritePerformers = cached.favoritePerformers + newFavorite)
+                dao.upsertDetail(updated)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // best-effort
+        }
+        Unit
     }
 
     override suspend fun getCollectorDetail(id: Int): CollectorDetail = withContext(Dispatchers.IO) {
