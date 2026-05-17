@@ -4,6 +4,7 @@ import com.misw4203.vinilos.data.local.dao.MusicianDao
 import com.misw4203.vinilos.data.local.entity.MusicianDetailEntity
 import com.misw4203.vinilos.data.local.entity.MusicianListEntity
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
+import com.misw4203.vinilos.data.remote.dto.AddPrizeToMusicianRequest
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.MusicianDetailDto
 import com.misw4203.vinilos.domain.model.Album
@@ -91,6 +92,11 @@ class MusicianRepositoryImpl @Inject constructor(
         } catch (_: Exception) { /* best-effort */ }
         Unit
     }
+
+    override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) =
+        withContext(Dispatchers.IO) {
+            api.addPrizeToMusician(musicianId, prizeId, AddPrizeToMusicianRequest(premiationDate))
+        }
 
     private fun AlbumDto.toDomain() = Album(
         id = id,

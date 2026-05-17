@@ -7,4 +7,5 @@ interface MusicianRepository {
     suspend fun getMusicians(): List<MusicianSummary>
     suspend fun getMusicianDetail(id: Int): Musician
     suspend fun addAlbumToMusician(musicianId: Int, albumId: Int)
+    suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String)
 }

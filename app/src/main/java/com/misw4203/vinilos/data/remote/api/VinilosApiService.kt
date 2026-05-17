@@ -1,6 +1,7 @@
 package com.misw4203.vinilos.data.remote.api
 
 import com.misw4203.vinilos.data.remote.dto.AddCollectorAlbumRequest
+import com.misw4203.vinilos.data.remote.dto.AddPrizeToMusicianRequest
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.BandDetailDto
 import com.misw4203.vinilos.data.remote.dto.BandDto
@@ -92,5 +93,12 @@ interface VinilosApiService {
     suspend fun addAlbumToMusician(
         @Path("musicianId") musicianId: Int,
         @Path("albumId") albumId: Int,
+    )
+
+    @POST("musicians/{musicianId}/prizes/{prizeId}")
+    suspend fun addPrizeToMusician(
+        @Path("musicianId") musicianId: Int,
+        @Path("prizeId") prizeId: Int,
+        @Body request: AddPrizeToMusicianRequest,
     )
 }
