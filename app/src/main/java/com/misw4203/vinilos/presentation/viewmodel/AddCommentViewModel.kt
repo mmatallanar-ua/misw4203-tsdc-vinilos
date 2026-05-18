@@ -56,7 +56,7 @@ class AddCommentViewModel @Inject constructor(
 
         _uiState.value = AddCommentUiState.Submitting
         viewModelScope.launch {
-            when (val r = runCatchingDomain {
+            when (runCatchingDomain {
                 addComment(
                     albumId = albumId,
                     description = current.description.trim(),
@@ -64,7 +64,10 @@ class AddCommentViewModel @Inject constructor(
                     collectorId = collectorId,
                 )
             }) {
-                is DomainResult.Ok -> _events.tryEmit(AddCommentEvent.Submitted)
+                is DomainResult.Ok -> {
+                    _uiState.value = AddCommentUiState.Idle
+                    _events.tryEmit(AddCommentEvent.Submitted)
+                }
                 DomainResult.Network -> _uiState.value = AddCommentUiState.Error(DomainFailure.NETWORK)
                 DomainResult.NotFound -> _uiState.value = AddCommentUiState.Error(DomainFailure.NOT_FOUND)
                 DomainResult.Server -> _uiState.value = AddCommentUiState.Error(DomainFailure.SERVER)
