@@ -86,6 +86,15 @@ android {
     }
 }
 
+// --- Compose compiler: reportes de estabilidad/metrics (B3, medición) ---
+// Plugin org.jetbrains.kotlin.plugin.compose ya aplicado (alias libs.plugins.kotlin.compose),
+// así que el DSL composeCompiler {} está disponible sin nuevas dependencias.
+// Costo cero en runtime; hace la medición de strong skipping reproducible.
+composeCompiler {
+    metricsDestination = layout.buildDirectory.dir("compose_metrics")
+    reportsDestination = layout.buildDirectory.dir("compose_reports")
+}
+
 dependencies {
     // Core
     implementation(libs.androidx.core.ktx)
