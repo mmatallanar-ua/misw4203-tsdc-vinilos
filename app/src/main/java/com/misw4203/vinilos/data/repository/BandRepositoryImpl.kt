@@ -27,7 +27,7 @@ import javax.inject.Inject
 class BandRepositoryImpl @Inject constructor(
     private val api: VinilosApiService,
     private val dao: BandDao,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : BandRepository {
 
     override suspend fun getBands(): List<BandSummary> = withContext(ioDispatcher) {

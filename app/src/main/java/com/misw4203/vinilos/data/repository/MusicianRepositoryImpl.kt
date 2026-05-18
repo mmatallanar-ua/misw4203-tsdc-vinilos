@@ -25,7 +25,7 @@ import javax.inject.Inject
 class MusicianRepositoryImpl @Inject constructor(
     private val api: VinilosApiService,
     private val dao: MusicianDao,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : MusicianRepository {
 
     override suspend fun getMusicians(): List<MusicianSummary> = withContext(ioDispatcher) {

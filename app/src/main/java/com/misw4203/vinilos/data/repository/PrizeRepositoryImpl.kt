@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 class PrizeRepositoryImpl @Inject constructor(
     private val api: VinilosApiService,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : PrizeRepository {
 
     override suspend fun getPrizes(): List<Prize> = withContext(ioDispatcher) {

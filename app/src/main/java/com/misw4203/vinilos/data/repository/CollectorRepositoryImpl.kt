@@ -32,7 +32,7 @@ import javax.inject.Inject
 class CollectorRepositoryImpl @Inject constructor(
     private val api: VinilosApiService,
     private val dao: CollectorDao,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : CollectorRepository {
 
     override suspend fun getCollectors(): List<CollectorSummary> = withContext(ioDispatcher) {

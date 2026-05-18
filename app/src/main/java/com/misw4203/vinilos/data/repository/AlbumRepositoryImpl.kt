@@ -27,7 +27,7 @@ import javax.inject.Inject
 class AlbumRepositoryImpl @Inject constructor(
     private val api: VinilosApiService,
     private val dao: AlbumDao,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : AlbumRepository {
 
     override suspend fun getAlbums(): List<Album> = withContext(ioDispatcher) {
