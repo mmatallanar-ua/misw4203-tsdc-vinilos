@@ -13,8 +13,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.misw4203.vinilos.R
+import com.misw4203.vinilos.core.navigation.clearRefresh
+import com.misw4203.vinilos.core.navigation.collectRefresh
+import com.misw4203.vinilos.core.navigation.popWithRefresh
+import com.misw4203.vinilos.core.navigation.rememberRefreshFlag
 import com.misw4203.vinilos.presentation.viewmodel.AlbumDetailViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -116,18 +119,13 @@ fun VinilosNavHost() {
                     val trackAddedMessage = stringResource(R.string.add_track_success)
                     // Track addition: show snackbar + refresh
                     LaunchedEffect(entry) {
-                        entry.savedStateHandle.getStateFlow(Destinations.TrackAddedKey, false).collect { added ->
-                            if (added) {
-                                entry.savedStateHandle[Destinations.TrackAddedKey] = false
-                                viewModel.retry()
-                                snackbarHostState.showSnackbar(trackAddedMessage)
-                            }
+                        entry.collectRefresh(Destinations.TrackAddedKey) {
+                            viewModel.retry()
+                            snackbarHostState.showSnackbar(trackAddedMessage)
                         }
                     }
                     // Comment addition: refresh only (HU09 pattern)
-                    val refreshFlag by entry.savedStateHandle
-                        .getStateFlow(Destinations.RefreshAlbumDetailKey, false)
-                        .collectAsStateWithLifecycle()
+                    val refreshFlag by entry.rememberRefreshFlag(Destinations.RefreshAlbumDetailKey)
                     AlbumDetailScreen(
                         albumId = albumId,
                         onBack = { navController.popBackStack() },
@@ -137,9 +135,7 @@ fun VinilosNavHost() {
                             navController.navigate(Destinations.addPerformerToAlbum(albumId))
                         },
                         refreshKey = refreshFlag,
-                        onRefreshHandled = {
-                            entry.savedStateHandle[Destinations.RefreshAlbumDetailKey] = false
-                        },
+                        onRefreshHandled = { entry.clearRefresh(Destinations.RefreshAlbumDetailKey) },
                         viewModel = viewModel,
                     )
                 }
@@ -148,12 +144,7 @@ fun VinilosNavHost() {
                     arguments = listOf(navArgument(Destinations.AddPerformerAlbumArg) { type = NavType.LongType }),
                 ) {
                     AddPerformerToAlbumScreen(
-                        onBack = {
-                            navController.previousBackStackEntry
-                                ?.savedStateHandle
-                                ?.set(Destinations.RefreshAlbumDetailKey, true)
-                            navController.popBackStack()
-                        },
+                        onBack = { navController.popWithRefresh(Destinations.RefreshAlbumDetailKey) },
                     )
                 }
                 composable(
@@ -162,12 +153,7 @@ fun VinilosNavHost() {
                 ) {
                     AddTrackScreen(
                         onBack = { navController.popBackStack() },
-                        onSuccess = {
-                            navController.previousBackStackEntry
-                                ?.savedStateHandle
-                                ?.set(Destinations.TrackAddedKey, true)
-                            navController.popBackStack()
-                        },
+                        onSuccess = { navController.popWithRefresh(Destinations.TrackAddedKey) },
                     )
                 }
                 composable(
@@ -179,12 +165,7 @@ fun VinilosNavHost() {
                 ) {
                     AddCommentScreen(
                         onBack = { navController.popBackStack() },
-                        onSuccess = {
-                            navController.previousBackStackEntry
-                                ?.savedStateHandle
-                                ?.set(Destinations.RefreshAlbumDetailKey, true)
-                            navController.popBackStack()
-                        },
+                        onSuccess = { navController.popWithRefresh(Destinations.RefreshAlbumDetailKey) },
                     )
                 }
                 composable(Destinations.ArtistList) {
@@ -200,17 +181,13 @@ fun VinilosNavHost() {
                     val id = checkNotNull(backStackEntry.arguments?.getInt(Destinations.ArtistDetailArg)) {
                         "Falta argumento ${Destinations.ArtistDetailArg} en ${Destinations.ArtistDetail}"
                     }
-                    val refreshFlag by backStackEntry.savedStateHandle
-                        .getStateFlow(Destinations.RefreshMusicianDetailKey, false)
-                        .collectAsStateWithLifecycle()
+                    val refreshFlag by backStackEntry.rememberRefreshFlag(Destinations.RefreshMusicianDetailKey)
                     MusicianDetailScreen(
                         onBack = { navController.navigateUp() },
                         onAddAlbum = { navController.navigate(Destinations.addAlbumToMusician(id)) },
                         onAddPrize = { navController.navigate(Destinations.addPrizeToMusician(id)) },
                         refreshKey = refreshFlag,
-                        onRefreshHandled = {
-                            backStackEntry.savedStateHandle[Destinations.RefreshMusicianDetailKey] = false
-                        },
+                        onRefreshHandled = { backStackEntry.clearRefresh(Destinations.RefreshMusicianDetailKey) },
                     )
                 }
                 composable(
@@ -218,12 +195,7 @@ fun VinilosNavHost() {
                     arguments = listOf(navArgument(Destinations.AddAlbumMusicianArg) { type = NavType.IntType }),
                 ) {
                     AddAlbumToMusicianScreen(
-                        onBack = {
-                            navController.previousBackStackEntry
-                                ?.savedStateHandle
-                                ?.set(Destinations.RefreshMusicianDetailKey, true)
-                            navController.popBackStack()
-                        },
+                        onBack = { navController.popWithRefresh(Destinations.RefreshMusicianDetailKey) },
                     )
                 }
                 composable(Destinations.Collectors) {
@@ -238,9 +210,7 @@ fun VinilosNavHost() {
                     val collectorId = checkNotNull(entry.arguments?.getInt(Destinations.CollectorDetailArg)) {
                         "Falta argumento ${Destinations.CollectorDetailArg} en ${Destinations.CollectorDetail}"
                     }
-                    val refreshFlag by entry.savedStateHandle
-                        .getStateFlow(Destinations.RefreshCollectorDetailKey, false)
-                        .collectAsStateWithLifecycle()
+                    val refreshFlag by entry.rememberRefreshFlag(Destinations.RefreshCollectorDetailKey)
                     CollectorDetailScreen(
                         collectorId = collectorId,
                         onBack = { navController.popBackStack() },
@@ -249,9 +219,7 @@ fun VinilosNavHost() {
                         },
                         onAddAlbum = { navController.navigate(Destinations.addAlbumToCollector(collectorId)) },
                         refreshKey = refreshFlag,
-                        onRefreshHandled = {
-                            entry.savedStateHandle[Destinations.RefreshCollectorDetailKey] = false
-                        },
+                        onRefreshHandled = { entry.clearRefresh(Destinations.RefreshCollectorDetailKey) },
                     )
                 }
                 composable(
@@ -259,12 +227,7 @@ fun VinilosNavHost() {
                     arguments = listOf(navArgument(Destinations.AddAlbumCollectorArg) { type = NavType.IntType }),
                 ) {
                     AddAlbumToCollectorScreen(
-                        onBack = {
-                            navController.previousBackStackEntry
-                                ?.savedStateHandle
-                                ?.set(Destinations.RefreshCollectorDetailKey, true)
-                            navController.popBackStack()
-                        },
+                        onBack = { navController.popWithRefresh(Destinations.RefreshCollectorDetailKey) },
                     )
                 }
                 composable(
@@ -274,12 +237,7 @@ fun VinilosNavHost() {
                     ),
                 ) {
                     AddFavoritePerformerScreen(
-                        onBack = {
-                            navController.previousBackStackEntry
-                                ?.savedStateHandle
-                                ?.set(Destinations.RefreshCollectorDetailKey, true)
-                            navController.popBackStack()
-                        },
+                        onBack = { navController.popWithRefresh(Destinations.RefreshCollectorDetailKey) },
                     )
                 }
                 composable(
@@ -289,9 +247,7 @@ fun VinilosNavHost() {
                     val bandId = checkNotNull(entry.arguments?.getInt(Destinations.BandDetailArg)) {
                         "Falta argumento ${Destinations.BandDetailArg} en ${Destinations.BandDetail}"
                     }
-                    val refreshFlag by entry.savedStateHandle
-                        .getStateFlow(Destinations.RefreshBandDetailKey, false)
-                        .collectAsStateWithLifecycle()
+                    val refreshFlag by entry.rememberRefreshFlag(Destinations.RefreshBandDetailKey)
                     BandDetailScreen(
                         bandId = bandId,
                         onBack = { navController.popBackStack() },
@@ -306,9 +262,7 @@ fun VinilosNavHost() {
                             navController.navigate(Destinations.addPrizeToBand(bandId))
                         },
                         refreshKey = refreshFlag,
-                        onRefreshHandled = {
-                            entry.savedStateHandle[Destinations.RefreshBandDetailKey] = false
-                        },
+                        onRefreshHandled = { entry.clearRefresh(Destinations.RefreshBandDetailKey) },
                     )
                 }
                 composable(
@@ -316,12 +270,7 @@ fun VinilosNavHost() {
                     arguments = listOf(navArgument(Destinations.AddMusiciansBandArg) { type = NavType.IntType }),
                 ) {
                     AddMusiciansToBandScreen(
-                        onBack = {
-                            navController.previousBackStackEntry
-                                ?.savedStateHandle
-                                ?.set(Destinations.RefreshBandDetailKey, true)
-                            navController.popBackStack()
-                        },
+                        onBack = { navController.popWithRefresh(Destinations.RefreshBandDetailKey) },
                     )
                 }
                 composable(
@@ -329,12 +278,7 @@ fun VinilosNavHost() {
                     arguments = listOf(navArgument(Destinations.AddAlbumBandArg) { type = NavType.IntType }),
                 ) {
                     AddAlbumToBandScreen(
-                        onBack = {
-                            navController.previousBackStackEntry
-                                ?.savedStateHandle
-                                ?.set(Destinations.RefreshBandDetailKey, true)
-                            navController.popBackStack()
-                        },
+                        onBack = { navController.popWithRefresh(Destinations.RefreshBandDetailKey) },
                     )
                 }
                 composable(
@@ -342,12 +286,7 @@ fun VinilosNavHost() {
                     arguments = listOf(navArgument(Destinations.AddPrizeBandArg) { type = NavType.IntType }),
                 ) {
                     AddPrizeToBandScreen(
-                        onBack = {
-                            navController.previousBackStackEntry
-                                ?.savedStateHandle
-                                ?.set(Destinations.RefreshBandDetailKey, true)
-                            navController.popBackStack()
-                        },
+                        onBack = { navController.popWithRefresh(Destinations.RefreshBandDetailKey) },
                     )
                 }
                 composable(
@@ -355,35 +294,21 @@ fun VinilosNavHost() {
                     arguments = listOf(navArgument(Destinations.AddPrizeMusicianArg) { type = NavType.IntType }),
                 ) {
                     AddPrizeToMusicianScreen(
-                        onBack = {
-                            navController.previousBackStackEntry
-                                ?.savedStateHandle
-                                ?.set(Destinations.RefreshMusicianDetailKey, true)
-                            navController.popBackStack()
-                        },
+                        onBack = { navController.popWithRefresh(Destinations.RefreshMusicianDetailKey) },
                     )
                 }
                 composable(Destinations.Prizes) { entry ->
-                    val refreshFlag by entry.savedStateHandle
-                        .getStateFlow(Destinations.RefreshPrizesKey, false)
-                        .collectAsStateWithLifecycle()
+                    val refreshFlag by entry.rememberRefreshFlag(Destinations.RefreshPrizesKey)
                     PrizeListScreen(
                         onCreatePrize = { navController.navigate(Destinations.CreatePrize) },
                         refreshKey = refreshFlag,
-                        onRefreshHandled = {
-                            entry.savedStateHandle[Destinations.RefreshPrizesKey] = false
-                        },
+                        onRefreshHandled = { entry.clearRefresh(Destinations.RefreshPrizesKey) },
                     )
                 }
                 composable(Destinations.CreatePrize) {
                     CreatePrizeScreen(
                         onBack = { navController.popBackStack() },
-                        onSuccess = {
-                            navController.previousBackStackEntry
-                                ?.savedStateHandle
-                                ?.set(Destinations.RefreshPrizesKey, true)
-                            navController.popBackStack()
-                        },
+                        onSuccess = { navController.popWithRefresh(Destinations.RefreshPrizesKey) },
                     )
                 }
             }
