@@ -205,7 +205,7 @@ private fun AlbumDetailContent(
             .padding(horizontal = 24.dp)
             .padding(top = 28.dp)
 
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(modifier = Modifier.fillMaxSize().testTag("album_detail_scroll")) {
             // Cover image
             item {
                 Box(modifier = Modifier.fillMaxWidth().height(CoverHeight)) {
@@ -289,8 +289,10 @@ private fun AlbumDetailContent(
                 }
             }
 
-            // Tracks (virtualized)
-            itemsIndexed(album.tracks, key = { _, t -> t.id }) { index, track ->
+            // Tracks (virtualized). Keys are namespaced because LazyColumn item
+            // keys must be unique across the WHOLE list: a track id and a
+            // comment id share the same numeric space and would collide.
+            itemsIndexed(album.tracks, key = { _, t -> "track-${t.id}" }) { index, track ->
                 Column(modifier = contentItemModifier) {
                     TrackRow(index = index + 1, track = track, onRemove = onRemoveTrack)
                     Spacer(Modifier.height(8.dp))
@@ -309,7 +311,7 @@ private fun AlbumDetailContent(
 
                 // Comments (virtualized). Original list used Arrangement.spacedBy(12.dp);
                 // reproduced with a 12.dp leading spacer on every card after the first.
-                itemsIndexed(album.comments, key = { _, c -> c.id }) { index, comment ->
+                itemsIndexed(album.comments, key = { _, c -> "comment-${c.id}" }) { index, comment ->
                     Column(modifier = contentItemModifier) {
                         if (index > 0) Spacer(Modifier.height(12.dp))
                         CommentCard(comment, onRemoveComment)

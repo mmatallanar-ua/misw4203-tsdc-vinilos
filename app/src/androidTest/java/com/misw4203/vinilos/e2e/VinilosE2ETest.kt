@@ -4,6 +4,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -359,8 +360,13 @@ class VinilosE2ETest {
         composeRule.onAllNodes(firstCard)[0].performClick()
         waitForTag("album_detail_root")
 
-        // assertExists (no assertIsDisplayed): el nodo puede estar fuera del viewport;
-        // para accesibilidad basta con que exista en el semantic tree — TalkBack lo anuncia.
+        // El detalle es un LazyColumn (M8): los comentarios se virtualizan, así
+        // que el rating no está compuesto hasta desplazarse hasta él. Se hace
+        // scroll para componerlo —igual que TalkBack compone los items al
+        // recorrerlos— y luego se valida que exista en el semantic tree
+        // (assertExists, no assertIsDisplayed: basta con que TalkBack lo anuncie).
+        composeRule.onNodeWithTag("album_detail_scroll")
+            .performScrollToNode(hasContentDescription(value = "de 5", substring = true))
         composeRule.onAllNodesWithContentDescription(label = "de 5", substring = true)[0]
             .assertExists()
     }
