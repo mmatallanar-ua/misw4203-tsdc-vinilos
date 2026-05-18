@@ -93,7 +93,6 @@ class BandRepositoryImpl @Inject constructor(
             throw e
         } catch (e: Exception) {
             logger.w("BandRepositoryImpl", "write-through cache de addMusicianToBand falló", e)
-            // best-effort
         }
         Unit
     }
@@ -112,7 +111,6 @@ class BandRepositoryImpl @Inject constructor(
             throw e
         } catch (e: Exception) {
             logger.w("BandRepositoryImpl", "write-through cache de addAlbumToBand falló", e)
-            // best-effort
         }
         Unit
     }

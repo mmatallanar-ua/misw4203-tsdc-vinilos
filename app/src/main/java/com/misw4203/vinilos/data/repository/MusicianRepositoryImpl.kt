@@ -98,7 +98,6 @@ class MusicianRepositoryImpl @Inject constructor(
             throw e
         } catch (e: Exception) {
             logger.w("MusicianRepositoryImpl", "write-through cache de addAlbumToMusician falló", e)
-            /* best-effort */
         }
         Unit
     }

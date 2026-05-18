@@ -33,7 +33,8 @@ class BandRepositoryImplTest {
 
     private val api: VinilosApiService = mockk()
     private val dao: BandDao = mockk(relaxed = true)
-    private val repo = BandRepositoryImpl(api, dao, UnconfinedTestDispatcher(), RecordingAppLogger())
+    private val logger = RecordingAppLogger()
+    private val repo = BandRepositoryImpl(api, dao, UnconfinedTestDispatcher(), logger)
 
     @Test
     fun `getBands network success caches and returns mapped list`() = runTest {
@@ -213,5 +214,21 @@ class BandRepositoryImplTest {
         }
         assertTrue("Expected HttpException", threw)
         coVerify(exactly = 0) { dao.upsertDetail(any()) }
+    }
+
+    @Test
+    fun `addMusicianToBand write-through failure is logged and swallowed`() = runTest {
+        coEvery { api.addMusicianToBand(1, 10) } returns Unit
+        coEvery { dao.getDetailById(1) } returns BandDetailEntity(
+            id = 1, name = "Queen", image = "", description = "", creationDate = "",
+            members = emptyList(), albums = emptyList(),
+        )
+        // The write-through refetch fails: must be best-effort (no rethrow) and logged.
+        coEvery { api.getMusicianDetail(10) } throws RuntimeException("boom")
+
+        repo.addMusicianToBand(1, 10) // does not throw
+
+        assertEquals(1, logger.entries.size)
+        assertEquals("BandRepositoryImpl", logger.entries[0].tag)
     }
 }

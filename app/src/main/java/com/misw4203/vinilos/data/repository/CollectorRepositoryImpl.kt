@@ -68,7 +68,6 @@ class CollectorRepositoryImpl @Inject constructor(
             throw e
         } catch (e: Exception) {
             logger.w("CollectorRepositoryImpl", "write-through cache de addFavoriteMusician falló", e)
-            // best-effort
         }
         Unit
     }
@@ -93,7 +92,6 @@ class CollectorRepositoryImpl @Inject constructor(
             throw e
         } catch (e: Exception) {
             logger.w("CollectorRepositoryImpl", "write-through cache de addFavoriteBand falló", e)
-            // best-effort
         }
         Unit
     }
@@ -238,7 +236,6 @@ class CollectorRepositoryImpl @Inject constructor(
             throw e
         } catch (e: Exception) {
             logger.w("CollectorRepositoryImpl", "write-through cache de removeFavoriteFromCache falló", e)
-            // best-effort
         }
     }
 

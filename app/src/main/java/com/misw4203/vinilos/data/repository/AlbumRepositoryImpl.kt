@@ -141,7 +141,6 @@ class AlbumRepositoryImpl @Inject constructor(
             dao.upsertDetail(AlbumDetailEntity.fromDomain(fresh))
         } catch (e: IOException) {
             logger.w("AlbumRepositoryImpl", "invalidateDetailCache offline; se reconcilia en el próximo getAlbumById", e)
-            // offline: leave the cache; next online getAlbumById reconciles it
         }
         Unit
     }
