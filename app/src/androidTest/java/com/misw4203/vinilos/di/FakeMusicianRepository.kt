@@ -22,4 +22,8 @@ class FakeMusicianRepository @Inject constructor() : MusicianRepository {
         albums = listOf(Album(1L, "Buscando América", "", "Rubén Blades", "1984", "Salsa")),
         prizes = emptyList(),
     )
+
+    override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+
+    override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) = Unit
 }

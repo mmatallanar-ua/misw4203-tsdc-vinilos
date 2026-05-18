@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import androidx.lifecycle.SavedStateHandle
 import com.misw4203.vinilos.R
 import com.misw4203.vinilos.domain.model.Album
@@ -18,6 +19,9 @@ import com.misw4203.vinilos.domain.model.CollectorSummary
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.repository.CollectorRepository
 import com.misw4203.vinilos.domain.usecase.GetCollectorDetailUseCase
+import com.misw4203.vinilos.domain.usecase.RemoveAlbumFromCollectorUseCase
+import com.misw4203.vinilos.domain.usecase.RemoveFavoriteBandUseCase
+import com.misw4203.vinilos.domain.usecase.RemoveFavoriteMusicianUseCase
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import com.misw4203.vinilos.presentation.viewmodel.CollectorDetailViewModel
 import okhttp3.MediaType.Companion.toMediaType
@@ -36,11 +40,21 @@ class CollectorDetailScreenTest {
     private class FakeRepo(val result: Result<CollectorDetail>) : CollectorRepository {
         override suspend fun getCollectors(): List<CollectorSummary> = error("unused")
         override suspend fun getCollectorDetail(id: Int): CollectorDetail = result.getOrThrow()
+        override suspend fun addAlbumToCollector(collectorId: Int, albumId: Int, price: Double, status: String) = Unit
+        override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) = Unit
+        override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) = Unit
     }
 
     private fun vm(result: Result<CollectorDetail>): CollectorDetailViewModel {
         val handle = SavedStateHandle(mapOf(Destinations.CollectorDetailArg to 100))
-        return CollectorDetailViewModel(GetCollectorDetailUseCase(FakeRepo(result)), handle)
+        val repo = FakeRepo(result)
+        return CollectorDetailViewModel(
+            GetCollectorDetailUseCase(repo),
+            RemoveFavoriteMusicianUseCase(repo),
+            RemoveFavoriteBandUseCase(repo),
+            RemoveAlbumFromCollectorUseCase(repo),
+            handle,
+        )
     }
 
     private fun sampleDetail() = CollectorDetail(
@@ -156,20 +170,20 @@ class CollectorDetailScreenTest {
         composeTestRule.setContent {
             MaterialTheme { CollectorDetailScreen(100, onBack = {}, viewModel = vm(Result.success(sampleDetail()))) }
         }
-        composeTestRule.onNodeWithText("Active").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Active").performScrollTo().assertIsDisplayed()
     }
 
     @Test
-    fun albumsSectionHiddenWhenNoAlbums() {
+    fun albumsSectionAlwaysShownEvenWhenEmpty() {
+        // HU11: albums section is always visible so the user can add albums via the CTA.
         val detailWithoutAlbums = sampleDetail().copy(collectorAlbums = emptyList())
         composeTestRule.setContent {
             MaterialTheme { CollectorDetailScreen(100, onBack = {}, viewModel = vm(Result.success(detailWithoutAlbums))) }
         }
         val ctx = composeTestRule.activity
         val header = ctx.getString(R.string.collector_section_albums).uppercase()
-        assert(composeTestRule.onAllNodesWithText(header).fetchSemanticsNodes().isEmpty()) {
-            "Albums section header should not be shown when collectorAlbums is empty"
-        }
+        composeTestRule.onNodeWithText(header).assertIsDisplayed()
+        composeTestRule.onNodeWithTag("collector_add_album_cta").assertIsDisplayed()
     }
 
     // ── Performers section ───────────────────────────────────────────────────
@@ -193,16 +207,18 @@ class CollectorDetailScreenTest {
     }
 
     @Test
-    fun performersSectionHiddenWhenNoPerformers() {
+    fun performersSectionShowsEmptyMessageWhenNoFavorites() {
         val detailWithoutPerformers = sampleDetail().copy(favoritePerformers = emptyList())
         composeTestRule.setContent {
             MaterialTheme { CollectorDetailScreen(100, onBack = {}, viewModel = vm(Result.success(detailWithoutPerformers))) }
         }
         val ctx = composeTestRule.activity
         val header = ctx.getString(R.string.collector_section_performers).uppercase()
-        assert(composeTestRule.onAllNodesWithText(header).fetchSemanticsNodes().isEmpty()) {
-            "Performers section header should not be shown when favoritePerformers is empty"
-        }
+        // HU010: the section header is always shown so the "+" entry point is reachable,
+        // and an empty-state message replaces the chip list.
+        composeTestRule.onNodeWithText(header).assertIsDisplayed()
+        composeTestRule.onNodeWithTag("collector_detail_no_favorites").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("collector_detail_add_favorite_performer").assertIsDisplayed()
     }
 
     // ── Comments section ─────────────────────────────────────────────────────

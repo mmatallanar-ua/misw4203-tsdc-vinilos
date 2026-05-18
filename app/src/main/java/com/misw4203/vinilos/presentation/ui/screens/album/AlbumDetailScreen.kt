@@ -24,11 +24,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -36,6 +40,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,11 +50,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.misw4203.vinilos.R
@@ -57,6 +65,7 @@ import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.Track
 import com.misw4203.vinilos.presentation.ui.components.ErrorState
 import com.misw4203.vinilos.presentation.ui.components.LoadingState
+import com.misw4203.vinilos.presentation.viewmodel.AlbumDetailEvent
 import com.misw4203.vinilos.presentation.viewmodel.AlbumDetailUiState
 import com.misw4203.vinilos.presentation.viewmodel.AlbumDetailViewModel
 
@@ -71,6 +80,7 @@ fun AlbumDetailScreen(
     modifier: Modifier = Modifier,
     onAddTrack: () -> Unit = {},
     onAddComment: () -> Unit = {},
+    onAddPerformer: () -> Unit = {},
     refreshKey: Boolean = false,
     onRefreshHandled: () -> Unit = {},
     viewModel: AlbumDetailViewModel = hiltViewModel(),
@@ -84,6 +94,23 @@ fun AlbumDetailScreen(
         }
     }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val removeSuccess = stringResource(R.string.album_remove_success)
+    val removeErrorNetwork = stringResource(R.string.album_remove_error_network)
+    val removeErrorServer = stringResource(R.string.album_remove_error_server)
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            val message = when (event) {
+                is AlbumDetailEvent.Removed -> removeSuccess
+                is AlbumDetailEvent.RemoveFailed ->
+                    if (event.isNetworkError) removeErrorNetwork else removeErrorServer
+            }
+            snackbarHostState.showSnackbar(message)
+        }
+    }
+
+    var pending by remember { mutableStateOf<PendingRemoval?>(null) }
+
     Box(modifier = modifier.fillMaxSize()) {
         when (val state = uiState) {
             is AlbumDetailUiState.Loading -> LoadingState()
@@ -92,6 +119,9 @@ fun AlbumDetailScreen(
                 onBack = onBack,
                 onAddTrack = onAddTrack,
                 onAddComment = onAddComment,
+                onRemoveTrack = { pending = PendingRemoval.TrackRemoval(it) },
+                onRemoveComment = { pending = PendingRemoval.CommentRemoval(it) },
+                onAddPerformer = onAddPerformer,
             )
             is AlbumDetailUiState.NotFound -> NotFoundState(onBack = onBack)
             is AlbumDetailUiState.Error -> ErrorState(
@@ -99,7 +129,50 @@ fun AlbumDetailScreen(
                 isNetworkError = state.isNetworkError,
             )
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
+
+    pending?.let { removal ->
+        val body = when (removal) {
+            is PendingRemoval.TrackRemoval ->
+                stringResource(R.string.album_remove_track_confirm_body, removal.track.name)
+            is PendingRemoval.CommentRemoval ->
+                stringResource(R.string.album_remove_comment_confirm_body)
+        }
+        AlertDialog(
+            onDismissRequest = { pending = null },
+            title = { Text(stringResource(R.string.album_remove_confirm_title)) },
+            text = { Text(body) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        when (removal) {
+                            is PendingRemoval.TrackRemoval -> viewModel.removeTrack(removal.track)
+                            is PendingRemoval.CommentRemoval -> viewModel.removeComment(removal.comment)
+                        }
+                        pending = null
+                    },
+                    modifier = Modifier.testTag("album_remove_confirm"),
+                ) {
+                    Text(stringResource(R.string.album_remove_action))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pending = null }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
+    }
+}
+
+private sealed interface PendingRemoval {
+    data class TrackRemoval(val track: Track) : PendingRemoval
+    data class CommentRemoval(val comment: Comment) : PendingRemoval
 }
 
 @Composable
@@ -108,6 +181,9 @@ private fun AlbumDetailContent(
     onBack: () -> Unit,
     onAddTrack: () -> Unit,
     onAddComment: () -> Unit,
+    onRemoveTrack: (Track) -> Unit,
+    onRemoveComment: (Comment) -> Unit,
+    onAddPerformer: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize().testTag("album_detail_root")) {
         Column(
@@ -119,7 +195,7 @@ private fun AlbumDetailContent(
             Box(modifier = Modifier.fillMaxWidth().height(CoverHeight)) {
                 AsyncImage(
                     model = album.coverUrl,
-                    contentDescription = stringResource(R.string.cd_album_cover),
+                    contentDescription = stringResource(R.string.cd_album_cover_of, album.name),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
                 )
@@ -141,6 +217,7 @@ private fun AlbumDetailContent(
                         style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.semantics { heading() },
                     )
                     if (album.artistName.isNotBlank()) {
                         Spacer(Modifier.height(4.dp))
@@ -187,19 +264,27 @@ private fun AlbumDetailContent(
                     }
 
                     // Performers
-                    if (album.performers.isNotEmpty()) {
-                        Spacer(Modifier.height(28.dp))
-                        PerformersSection(performers = album.performers)
-                    }
+                    Spacer(Modifier.height(28.dp))
+                    PerformersSection(
+                        performers = album.performers,
+                        onAddPerformer = onAddPerformer,
+                    )
 
                     // Tracks
                     Spacer(Modifier.height(28.dp))
-                    TracksSection(tracks = album.tracks, onAddTrack = onAddTrack)
+                    TracksSection(
+                        tracks = album.tracks,
+                        onAddTrack = onAddTrack,
+                        onRemoveTrack = onRemoveTrack,
+                    )
 
                     // Comments
                     if (album.comments.isNotEmpty()) {
                         Spacer(Modifier.height(28.dp))
-                        CommentsSection(comments = album.comments)
+                        CommentsSection(
+                            comments = album.comments,
+                            onRemoveComment = onRemoveComment,
+                        )
                     }
 
                     // Record label
@@ -273,7 +358,11 @@ private fun MetadataChip(label: String) {
 }
 
 @Composable
-private fun TracksSection(tracks: List<Track>, onAddTrack: () -> Unit) {
+private fun TracksSection(
+    tracks: List<Track>,
+    onAddTrack: () -> Unit,
+    onRemoveTrack: (Track) -> Unit,
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -299,20 +388,26 @@ private fun TracksSection(tracks: List<Track>, onAddTrack: () -> Unit) {
     Spacer(Modifier.height(12.dp))
     tracks.forEachIndexed { index, track ->
         key(track.id) {
-            TrackRow(index = index + 1, track = track)
+            TrackRow(index = index + 1, track = track, onRemove = onRemoveTrack)
             Spacer(Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
-private fun TrackRow(index: Int, track: Track) {
+private fun TrackRow(index: Int, track: Track, onRemove: (Track) -> Unit) {
+    val rowDesc = if (track.duration.isNotBlank()) {
+        stringResource(R.string.cd_track_with_duration, index, track.name, track.duration)
+    } else {
+        stringResource(R.string.cd_track_no_duration, index, track.name)
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp)
+            .semantics(mergeDescendants = true) { contentDescription = rowDesc },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -334,16 +429,56 @@ private fun TrackRow(index: Int, track: Track) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        IconButton(
+            onClick = { onRemove(track) },
+            modifier = Modifier
+                .size(28.dp)
+                .testTag("album_remove_track_${track.id}"),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Close,
+                contentDescription = stringResource(R.string.album_remove_track_cd, track.name),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(16.dp),
+            )
+        }
     }
 }
 
 @Composable
-private fun PerformersSection(performers: List<Performer>) {
-    SectionHeader(stringResource(R.string.detail_section_performers))
+private fun PerformersSection(performers: List<Performer>, onAddPerformer: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        SectionHeader(stringResource(R.string.detail_section_performers))
+        Spacer(Modifier.weight(1f))
+        IconButton(
+            onClick = onAddPerformer,
+            modifier = Modifier
+                .size(32.dp)
+                .testTag("album_detail_add_performer"),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = stringResource(R.string.cd_add_performer_to_album_action),
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        }
+    }
     Spacer(Modifier.height(12.dp))
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        items(performers, key = { it.id }) { performer ->
-            PerformerChip(performer)
+    if (performers.isEmpty()) {
+        Text(
+            text = stringResource(R.string.album_performers_empty),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.testTag("album_detail_no_performers"),
+        )
+    } else {
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(performers, key = { it.id }) { performer ->
+                PerformerChip(performer)
+            }
         }
     }
 }
@@ -354,7 +489,8 @@ private fun PerformerChip(performer: Performer) {
         modifier = Modifier
             .clip(RoundedCornerShape(999.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -377,20 +513,20 @@ private fun PerformerChip(performer: Performer) {
 }
 
 @Composable
-private fun CommentsSection(comments: List<Comment>) {
+private fun CommentsSection(comments: List<Comment>, onRemoveComment: (Comment) -> Unit) {
     SectionHeader(stringResource(R.string.detail_section_comments))
     Spacer(Modifier.height(12.dp))
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         comments.forEach { comment ->
             key(comment.id) {
-                CommentCard(comment)
+                CommentCard(comment, onRemoveComment)
             }
         }
     }
 }
 
 @Composable
-private fun CommentCard(comment: Comment) {
+private fun CommentCard(comment: Comment, onRemove: (Comment) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -403,16 +539,36 @@ private fun CommentCard(comment: Comment) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.semantics { contentDescription = ratingDesc },
         ) {
-            repeat(5) { index ->
-                Text(
-                    text = if (index < comment.rating) "★" else "☆",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = if (index < comment.rating)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.outlineVariant,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .semantics { contentDescription = ratingDesc },
+            ) {
+                repeat(5) { index ->
+                    Text(
+                        text = if (index < comment.rating) "★" else "☆",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (index < comment.rating)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.outlineVariant,
+                    )
+                }
+            }
+            IconButton(
+                onClick = { onRemove(comment) },
+                modifier = Modifier
+                    .size(28.dp)
+                    .testTag("album_remove_comment_${comment.id}"),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = stringResource(R.string.album_remove_comment_cd),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(16.dp),
                 )
             }
         }
@@ -431,6 +587,7 @@ private fun SectionHeader(title: String) {
         style = MaterialTheme.typography.labelSmall,
         fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.semantics { heading() },
     )
 }
 

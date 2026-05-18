@@ -114,26 +114,35 @@ class AddCommentViewModelTest {
 
         val form = viewModel.form.value
         assertEquals(FormError.EmptyDescription, form.descriptionError)
-        assertEquals(null, form.ratingError)
         assertEquals(AddCommentUiState.Idle, viewModel.uiState.value)
         assertEquals(0, repo.callCount)
     }
 
     @Test
-    fun `submit with rating zero sets ratingError and does not call repo`() = runTest {
-        val repo = FakeAlbumRepository()
+    fun `submit with rating zero is accepted and reaches repo`() = runTest {
+        val repo = FakeAlbumRepository().apply {
+            addCommentResult = Result.success(
+                Comment(id = 7L, description = "Buen álbum", rating = 0),
+            )
+        }
         val viewModel = buildViewModel(repo)
         viewModel.onDescriptionChange("Buen álbum")
-        // rating left at 0
+        // rating left at 0 — backend permite 0..5
 
-        viewModel.submit()
-        advanceUntilIdle()
-
-        val form = viewModel.form.value
-        assertEquals(FormError.InvalidRating, form.ratingError)
-        assertEquals(null, form.descriptionError)
-        assertEquals(AddCommentUiState.Idle, viewModel.uiState.value)
-        assertEquals(0, repo.callCount)
+        viewModel.uiState.test {
+            assertEquals(AddCommentUiState.Idle, awaitItem())
+            viewModel.submit()
+            assertEquals(AddCommentUiState.Loading, awaitItem())
+            advanceUntilIdle()
+            val state = awaitItem()
+            assertTrue(state is AddCommentUiState.Success)
+            cancelAndIgnoreRemainingEvents()
+        }
+        assertEquals(1, repo.callCount)
+        assertEquals(
+            AddCommentArgs(albumId = 42L, description = "Buen álbum", rating = 0, collectorId = 100),
+            repo.lastArgs,
+        )
     }
 
     @Test
@@ -190,21 +199,16 @@ class AddCommentViewModelTest {
     }
 
     @Test
-    fun `onDescriptionChange and onRatingChange clear their respective errors`() = runTest {
+    fun `onDescriptionChange clears descriptionError`() = runTest {
         val repo = FakeAlbumRepository()
         val viewModel = buildViewModel(repo)
-        viewModel.submit() // both errors triggered
+        viewModel.submit() // description error triggered
         advanceUntilIdle()
 
         assertNotNull(viewModel.form.value.descriptionError)
-        assertNotNull(viewModel.form.value.ratingError)
 
         viewModel.onDescriptionChange("now filled")
         assertEquals(null, viewModel.form.value.descriptionError)
-        assertNotNull(viewModel.form.value.ratingError)
-
-        viewModel.onRatingChange(4)
-        assertEquals(null, viewModel.form.value.ratingError)
     }
 
     @Test

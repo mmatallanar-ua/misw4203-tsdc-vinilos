@@ -1,8 +1,10 @@
 package com.misw4203.vinilos.di
 
 import com.misw4203.vinilos.domain.repository.AlbumRepository
+import com.misw4203.vinilos.domain.repository.BandRepository
 import com.misw4203.vinilos.domain.repository.CollectorRepository
 import com.misw4203.vinilos.domain.repository.MusicianRepository
+import com.misw4203.vinilos.domain.repository.PrizeRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.components.SingletonComponent
@@ -27,4 +29,12 @@ abstract class FakeRepositoryModule {
     @Binds
     @Singleton
     abstract fun bindCollectorRepository(impl: FakeCollectorRepository): CollectorRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBandRepository(impl: FakeBandRepository): BandRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPrizeRepository(impl: FakePrizeRepository): PrizeRepository
 }

@@ -1,19 +1,19 @@
 [versions]
-agp = "8.9.3"
-kotlin = "2.0.21"
-ksp = "2.0.21-1.0.28"
+agp = "9.2.1"
+kotlin = "2.2.10"
+ksp = "2.3.2"
 
 # AndroidX
-coreKtx = "1.16.0"
-activityCompose = "1.10.1"
+coreKtx = "1.18.0"
+activityCompose = "1.13.0"
 lifecycleRuntimeKtx = "2.10.0"
 
 # Compose
-composeBom = "2025.05.01"
+composeBom = "2026.05.00"
 navigationCompose = "2.9.8"
 
 # DI
-hilt = "2.54"
+hilt = "2.59.2"
 hiltNavigationCompose = "1.3.0"
 
 # Networking
@@ -21,10 +21,10 @@ retrofit = "2.11.0"
 okhttp = "4.12.0"
 
 # Persistence
-room = "2.7.1"
+room = "2.8.4"
 
 # Async
-coroutines = "1.9.0"
+coroutines = "1.11.0"
 
 # Image
 coil = "2.7.0"
@@ -33,8 +33,8 @@ coil = "2.7.0"
 junit = "4.13.2"
 junitExt = "1.3.0"
 espresso = "3.7.0"
-mockk = "1.13.12"
-turbine = "1.1.0"
+mockk = "1.14.9"
+turbine = "1.2.1"
 
 [libraries]
 # Core

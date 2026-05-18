@@ -35,18 +35,15 @@ class AddCommentViewModel @Inject constructor(
     }
 
     fun onRatingChange(value: Int) {
-        _form.update { it.copy(rating = value.coerceIn(0, 5), ratingError = null) }
+        _form.update { it.copy(rating = value.coerceIn(0, 5)) }
     }
 
     fun submit() {
         val current = _form.value
         val descriptionError = if (current.description.isBlank()) FormError.EmptyDescription else null
-        val ratingError = if (current.rating < 1) FormError.InvalidRating else null
 
-        if (descriptionError != null || ratingError != null) {
-            _form.update {
-                it.copy(descriptionError = descriptionError, ratingError = ratingError)
-            }
+        if (descriptionError != null) {
+            _form.update { it.copy(descriptionError = descriptionError) }
             return
         }
 

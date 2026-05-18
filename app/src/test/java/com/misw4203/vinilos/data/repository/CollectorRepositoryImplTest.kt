@@ -1,12 +1,18 @@
 package com.misw4203.vinilos.data.repository
 
 import com.misw4203.vinilos.data.local.dao.CollectorDao
+import com.misw4203.vinilos.data.local.entity.CollectorDetailEntity
 import com.misw4203.vinilos.data.local.entity.CollectorEntity
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.CollectorDto
+import com.misw4203.vinilos.domain.model.Album
+import com.misw4203.vinilos.domain.model.CollectorAlbum
+import com.misw4203.vinilos.domain.model.Performer
+import com.misw4203.vinilos.domain.model.PerformerKind
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -79,6 +85,68 @@ class CollectorRepositoryImplTest {
 
         repository.getCollectors()
     }
+
+    // -- removal operations (Fase 1) -----------------------------------------
+
+    @Test
+    fun `removeFavoriteMusician delegates to API and prunes cache`() = runTest {
+        coEvery { api.removeMusicianFromCollector(100, 7) } returns Unit
+        coEvery { dao.getDetailById(100) } returns detailEntity(
+            performers = listOf(
+                Performer(7L, "Músico", "", PerformerKind.MUSICIAN),
+                Performer(9L, "Otro", "", PerformerKind.MUSICIAN),
+            ),
+        )
+        val captured = slot<CollectorDetailEntity>()
+        coEvery { dao.upsertDetail(capture(captured)) } returns Unit
+
+        repository.removeFavoriteMusician(100, 7)
+
+        coVerify(exactly = 1) { api.removeMusicianFromCollector(100, 7) }
+        assertEquals(listOf(9L), captured.captured.favoritePerformers.map { it.id })
+    }
+
+    @Test
+    fun `removeFavoriteBand delegates to API`() = runTest {
+        coEvery { api.removeBandFromCollector(100, 3) } returns Unit
+        coEvery { dao.getDetailById(any()) } returns null
+
+        repository.removeFavoriteBand(100, 3)
+
+        coVerify(exactly = 1) { api.removeBandFromCollector(100, 3) }
+    }
+
+    @Test
+    fun `removeAlbumFromCollector delegates to API and prunes cached album`() = runTest {
+        coEvery { api.removeAlbumFromCollector(100, 8) } returns Unit
+        coEvery { dao.getDetailById(100) } returns detailEntity(
+            albums = listOf(
+                CollectorAlbum(1, 10.0, "Active", Album(5L, "Keep", "", "", "", "")),
+                CollectorAlbum(2, 20.0, "Active", Album(8L, "Drop", "", "", "", "")),
+            ),
+        )
+        val captured = slot<CollectorDetailEntity>()
+        coEvery { dao.upsertDetail(capture(captured)) } returns Unit
+
+        repository.removeAlbumFromCollector(100, 8)
+
+        coVerify(exactly = 1) { api.removeAlbumFromCollector(100, 8) }
+        assertEquals(listOf(5L), captured.captured.collectorAlbums.mapNotNull { it.album?.id })
+    }
+
+    private fun detailEntity(
+        performers: List<Performer> = emptyList(),
+        albums: List<CollectorAlbum> = emptyList(),
+    ) = CollectorDetailEntity(
+        id = 100,
+        name = "Manolo",
+        telephone = "300",
+        email = "m@test.com",
+        description = "",
+        collectorAlbums = albums,
+        favoritePerformers = performers,
+        comments = emptyList(),
+    )
 
     private fun collectorDto(
         id: Int,

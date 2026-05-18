@@ -272,6 +272,71 @@ class AlbumRepositoryImplTest {
         coVerify(exactly = 0) { dao.upsertDetail(any()) }
     }
 
+    // -- removal operations (Fase 2) -----------------------------------------
+
+    @Test
+    fun `removeTrack delegates to API and prunes cached track`() = runTest {
+        val albumId = 50L
+        coEvery { api.removeTrack(albumId, 1L) } returns Unit
+        coEvery { dao.getDetailById(albumId) } returns AlbumDetailEntity(
+            id = albumId,
+            name = "OK Computer",
+            coverUrl = "",
+            artistName = "Radiohead",
+            releaseDate = "1997-05-21",
+            genre = "Rock",
+            recordLabel = "Parlophone",
+            description = "",
+            tracks = listOf(Track(1L, "Airbag", "4:44"), Track(2L, "Karma Police", "4:21")),
+            performers = emptyList(),
+            comments = emptyList(),
+        )
+        val captured = slot<AlbumDetailEntity>()
+        coEvery { dao.upsertDetail(capture(captured)) } returns Unit
+
+        repository.removeTrack(albumId, 1L)
+
+        coVerify(exactly = 1) { api.removeTrack(albumId, 1L) }
+        assertEquals(listOf(2L), captured.captured.tracks.map { it.id })
+    }
+
+    @Test
+    fun `removeComment delegates to API and prunes cached comment`() = runTest {
+        val albumId = 50L
+        coEvery { api.removeComment(albumId, 9L) } returns Unit
+        coEvery { dao.getDetailById(albumId) } returns AlbumDetailEntity(
+            id = albumId,
+            name = "OK Computer",
+            coverUrl = "",
+            artistName = "Radiohead",
+            releaseDate = "1997-05-21",
+            genre = "Rock",
+            recordLabel = "Parlophone",
+            description = "",
+            tracks = emptyList(),
+            performers = emptyList(),
+            comments = listOf(Comment(9L, "drop", 1), Comment(10L, "keep", 5)),
+        )
+        val captured = slot<AlbumDetailEntity>()
+        coEvery { dao.upsertDetail(capture(captured)) } returns Unit
+
+        repository.removeComment(albumId, 9L)
+
+        coVerify(exactly = 1) { api.removeComment(albumId, 9L) }
+        assertEquals(listOf(10L), captured.captured.comments.map { it.id })
+    }
+
+    @Test
+    fun `removeTrack still calls API when no cached detail`() = runTest {
+        coEvery { api.removeTrack(5L, 1L) } returns Unit
+        coEvery { dao.getDetailById(5L) } returns null
+
+        repository.removeTrack(5L, 1L)
+
+        coVerify(exactly = 1) { api.removeTrack(5L, 1L) }
+        coVerify(exactly = 0) { dao.upsertDetail(any()) }
+    }
+
     private fun albumDto(
         id: Long,
         name: String = "name",

@@ -10,6 +10,8 @@ import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.Track
 import com.misw4203.vinilos.domain.repository.AlbumRepository
 import com.misw4203.vinilos.domain.usecase.GetAlbumDetailUseCase
+import com.misw4203.vinilos.domain.usecase.RemoveCommentUseCase
+import com.misw4203.vinilos.domain.usecase.RemoveTrackUseCase
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -32,6 +34,9 @@ class AlbumDetailViewModelTest {
 
     private class FakeAlbumRepository : AlbumRepository {
         var detailResult: Result<AlbumDetail> = Result.success(sampleDetail())
+        var removeError: Throwable? = null
+        val removedTracks = mutableListOf<Pair<Long, Long>>()
+        val removedComments = mutableListOf<Pair<Long, Long>>()
         override suspend fun getAlbums(): List<Album> = emptyList()
         override suspend fun getAlbumById(id: Long): AlbumDetail = detailResult.getOrThrow()
         override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.data.remote.dto.CreateTrackRequest) =
@@ -43,6 +48,16 @@ class AlbumDetailViewModelTest {
             rating: Int,
             collectorId: Int,
         ): Comment = Comment(0L, description, rating)
+
+        override suspend fun removeTrack(albumId: Long, trackId: Long) {
+            removeError?.let { throw it }
+            removedTracks += albumId to trackId
+        }
+
+        override suspend fun removeComment(albumId: Long, commentId: Long) {
+            removeError?.let { throw it }
+            removedComments += albumId to commentId
+        }
     }
 
     private fun buildViewModel(
@@ -50,7 +65,12 @@ class AlbumDetailViewModelTest {
         albumId: Long = 1L,
     ): AlbumDetailViewModel {
         val handle = SavedStateHandle(mapOf(Destinations.AlbumDetailArg to albumId))
-        return AlbumDetailViewModel(GetAlbumDetailUseCase(repo), handle)
+        return AlbumDetailViewModel(
+            GetAlbumDetailUseCase(repo),
+            RemoveTrackUseCase(repo),
+            RemoveCommentUseCase(repo),
+            handle,
+        )
     }
 
     @Test
@@ -150,6 +170,62 @@ class AlbumDetailViewModelTest {
             assertEquals("Decisiones", state.album.tracks[0].name)
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    @Test
+    fun `removeTrack calls repository and removes optimistically`() = runTest {
+        val repo = FakeAlbumRepository()
+        val viewModel = buildViewModel(repo)
+        advanceUntilIdle()
+        val track = (viewModel.uiState.value as AlbumDetailUiState.Success).album.tracks[0]
+
+        viewModel.events.test {
+            viewModel.removeTrack(track)
+            advanceUntilIdle()
+            assertEquals(AlbumDetailEvent.Removed("Decisiones"), awaitItem())
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        assertEquals(listOf(1L to 1L), repo.removedTracks)
+        val state = viewModel.uiState.value as AlbumDetailUiState.Success
+        assertEquals(1, state.album.tracks.size)
+        assertTrue(state.album.tracks.none { it.id == 1L })
+    }
+
+    @Test
+    fun `removeComment calls repository and removes optimistically`() = runTest {
+        val repo = FakeAlbumRepository()
+        val viewModel = buildViewModel(repo)
+        advanceUntilIdle()
+        val comment = (viewModel.uiState.value as AlbumDetailUiState.Success).album.comments[0]
+
+        viewModel.removeComment(comment)
+        advanceUntilIdle()
+
+        assertEquals(listOf(1L to 1L), repo.removedComments)
+        val state = viewModel.uiState.value as AlbumDetailUiState.Success
+        assertTrue(state.album.comments.isEmpty())
+    }
+
+    @Test
+    fun `failed track removal restores state and emits network failure`() = runTest {
+        val repo = FakeAlbumRepository().apply { removeError = IOException("offline") }
+        val viewModel = buildViewModel(repo)
+        advanceUntilIdle()
+        val track = (viewModel.uiState.value as AlbumDetailUiState.Success).album.tracks[0]
+
+        viewModel.events.test {
+            viewModel.removeTrack(track)
+            advanceUntilIdle()
+            assertEquals(
+                AlbumDetailEvent.RemoveFailed(isNetworkError = true),
+                awaitItem(),
+            )
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        val state = viewModel.uiState.value as AlbumDetailUiState.Success
+        assertEquals(2, state.album.tracks.size)
     }
 }
 

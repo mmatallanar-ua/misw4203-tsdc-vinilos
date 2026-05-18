@@ -11,6 +11,7 @@ import com.misw4203.vinilos.data.remote.dto.CreateCommentRequest
 import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
+import com.misw4203.vinilos.domain.model.CollectorSummary
 import com.misw4203.vinilos.domain.model.Comment
 import com.misw4203.vinilos.domain.model.CreateAlbumInput
 import com.misw4203.vinilos.domain.model.Performer
@@ -83,6 +84,7 @@ class AlbumRepositoryImpl @Inject constructor(
             id = response.id,
             description = response.description.orEmpty(),
             rating = response.rating ?: rating,
+            commenter = response.collector?.toSummary(),
         )
         // Write-through cache: ver nota en addTrack.
         dao.getDetailById(albumId)?.let { cached ->
@@ -90,6 +92,52 @@ class AlbumRepositoryImpl @Inject constructor(
             dao.upsertDetail(AlbumDetailEntity.fromDomain(updated))
         }
         comment
+    }
+
+    override suspend fun removeTrack(albumId: Long, trackId: Long) = withContext(Dispatchers.IO) {
+        api.removeTrack(albumId, trackId)
+        // Write-through cache prune: ver nota en addTrack.
+        dao.getDetailById(albumId)?.let { cached ->
+            val updated = cached.toDomain()
+                .copy(tracks = cached.tracks.filterNot { it.id == trackId })
+            dao.upsertDetail(AlbumDetailEntity.fromDomain(updated))
+        }
+        Unit
+    }
+
+    override suspend fun removeComment(albumId: Long, commentId: Long) = withContext(Dispatchers.IO) {
+        api.removeComment(albumId, commentId)
+        dao.getDetailById(albumId)?.let { cached ->
+            val updated = cached.toDomain()
+                .copy(comments = cached.comments.filterNot { it.id == commentId })
+            dao.upsertDetail(AlbumDetailEntity.fromDomain(updated))
+        }
+        Unit
+    }
+
+    override suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) =
+        withContext(Dispatchers.IO) {
+            api.addMusicianToAlbum(albumId, musicianId)
+            invalidateDetailCache(albumId)
+        }
+
+    override suspend fun addBandToAlbum(albumId: Long, bandId: Int) =
+        withContext(Dispatchers.IO) {
+            api.addBandToAlbum(albumId, bandId)
+            invalidateDetailCache(albumId)
+        }
+
+    // The performer payload returned by these association POSTs is partial, so
+    // instead of patching the cached detail we refetch authoritative data; on
+    // failure the stale entry is dropped so the next read goes to the network.
+    private suspend fun invalidateDetailCache(albumId: Long) {
+        try {
+            val fresh = api.getAlbum(albumId).toAlbumDetail()
+            dao.upsertDetail(AlbumDetailEntity.fromDomain(fresh))
+        } catch (e: IOException) {
+            // offline: leave the cache; next online getAlbumById reconciles it
+        }
+        Unit
     }
 
     override suspend fun createAlbum(input: CreateAlbumInput): Album = withContext(Dispatchers.IO) {
@@ -147,7 +195,11 @@ class AlbumRepositoryImpl @Inject constructor(
                 id = c.id,
                 description = c.description.orEmpty(),
                 rating = c.rating ?: 0,
+                commenter = c.collector?.toSummary(),
             )
         }.orEmpty(),
     )
+
+    private fun com.misw4203.vinilos.data.remote.dto.CollectorDto.toSummary(): CollectorSummary =
+        CollectorSummary(id = id, name = name, telephone = telephone, email = email)
 }

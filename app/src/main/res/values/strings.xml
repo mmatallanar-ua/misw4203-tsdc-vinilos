@@ -22,9 +22,28 @@
     <string name="detail_label_record_label">Sello discográfico</string>
     <string name="detail_section_description">Descripción</string>
     <string name="detail_section_performers">Artistas</string>
+    <string name="album_performers_empty">Este álbum aún no tiene artistas asociados. Toca + para agregar.</string>
+    <string name="add_performer_album_title">Agregar artista al álbum</string>
+    <string name="add_performer_album_current_musicians">Músicos del álbum</string>
+    <string name="add_performer_album_current_bands">Bandas del álbum</string>
+    <string name="add_performer_album_success">«%s» fue asociado al álbum</string>
+    <string name="add_performer_album_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="add_performer_album_error_server">No pudimos asociar el artista. Inténtalo de nuevo.</string>
+    <string name="cd_add_performer_to_album">Asociar %s al álbum</string>
+    <string name="cd_adding_performer_album">Asociando artista al álbum</string>
+    <string name="cd_add_performer_to_album_action">Agregar artista al álbum</string>
     <string name="detail_section_tracks">Canciones</string>
     <string name="detail_tracks_total">%d en total</string>
     <string name="detail_section_comments">Comentarios</string>
+    <string name="album_remove_track_cd">Eliminar canción %s</string>
+    <string name="album_remove_comment_cd">Eliminar comentario</string>
+    <string name="album_remove_confirm_title">¿Eliminar?</string>
+    <string name="album_remove_track_confirm_body">¿Eliminar la canción «%s» del álbum?</string>
+    <string name="album_remove_comment_confirm_body">¿Eliminar este comentario del álbum?</string>
+    <string name="album_remove_action">Eliminar</string>
+    <string name="album_remove_success">Eliminado</string>
+    <string name="album_remove_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="album_remove_error_server">No pudimos eliminar. Inténtalo de nuevo.</string>
     <string name="detail_not_found_title">Álbum no encontrado</string>
     <string name="detail_not_found_body">El álbum solicitado no existe en el catálogo.</string>
 
@@ -84,13 +103,20 @@
 
     <!-- Content descriptions -->
     <string name="cd_album_cover">Portada del álbum</string>
+    <string name="cd_album_cover_of">Carátula del álbum %s</string>
     <string name="cd_menu">Menú</string>
     <string name="cd_profile">Perfil</string>
-    <string name="cd_open_album">Abrir álbum</string>
-    <string name="cd_artist_image">Foto del artista</string>
-    <string name="cd_open_artist">Abrir artista</string>
+    <string name="cd_artist_photo_of">Foto del artista %s</string>
     <string name="cd_collector_avatar">Avatar del coleccionista</string>
-    <string name="cd_open_collector">Abrir coleccionista</string>
+    <string name="cd_collector_email">Correo: %s</string>
+    <string name="cd_collector_phone">Teléfono: %s</string>
+    <string name="cd_track_with_duration">Pista %1$d, %2$s, duración %3$s</string>
+    <string name="cd_track_no_duration">Pista %1$d, %2$s</string>
+    <string name="cd_rating_summary">Calificación %1$d de 5</string>
+    <string name="cd_rate_with_stars">Calificar con %1$d de 5 estrellas</string>
+    <string name="cd_state_selected">Seleccionada</string>
+    <string name="cd_state_not_selected">No seleccionada</string>
+    <string name="cd_search_field">Campo de búsqueda: %s</string>
 
     <!-- List counters -->
     <plurals name="albums_record_count">
@@ -119,7 +145,203 @@
     <string name="add_comment_submit">Publicar comentario</string>
     <string name="add_comment_action_cta">+ Comentar</string>
     <string name="add_comment_error_description">El comentario no puede estar vacío</string>
-    <string name="add_comment_error_rating">Selecciona una calificación de 1 a 5</string>
     <string name="add_comment_error_network">Sin conexión. Intenta de nuevo.</string>
     <string name="add_comment_error_server">No pudimos publicar tu comentario. Inténtalo de nuevo.</string>
+
+    <!-- HU012 - Bandas -->
+    <string name="artists_tab_musicians">Músicos</string>
+    <string name="artists_tab_bands">Bandas</string>
+    <string name="band_badge">BANDA</string>
+    <string name="band_detail_title">Detalle de la banda</string>
+    <string name="band_not_found_title">Banda no encontrada</string>
+    <string name="band_not_found_body">La banda solicitada no existe en el catálogo.</string>
+    <string name="band_members_section_title">Integrantes</string>
+    <string name="band_members_empty_title">Aún no hay integrantes</string>
+    <string name="band_members_empty_body">Esta banda todavía no tiene integrantes registrados.</string>
+    <string name="add_first_member_cta">Agregar primer integrante</string>
+    <string name="add_musicians_cta">Agregar músicos</string>
+    <string name="band_albums_section_title">Álbumes</string>
+    <string name="band_albums_empty">Esta banda aún no tiene álbumes asociados.</string>
+    <string name="band_add_album_cta">Agregar álbum</string>
+    <string name="band_prizes_section_title">Premios</string>
+    <string name="band_prizes_empty">Esta banda aún no tiene premios.</string>
+    <string name="band_award_prize_cta">Premiar banda</string>
+    <string name="add_prize_band_title">Premiar a la banda</string>
+    <string name="add_prize_band_search_section">Buscar premio</string>
+    <string name="add_prize_band_search_placeholder">Buscar por nombre u organización…</string>
+    <string name="add_prize_band_available_empty">No se encontraron premios con ese nombre</string>
+    <string name="add_prize_band_current_section">Premios de la banda</string>
+    <string name="add_prize_band_empty_prizes">La banda aún no tiene premios</string>
+    <string name="add_prize_band_details_section">Detalles de la premiación</string>
+    <string name="add_prize_band_date_label">Fecha de premiación</string>
+    <string name="add_prize_band_date_placeholder">Selecciona una fecha</string>
+    <string name="add_prize_band_date_error_future">La fecha no puede ser futura</string>
+    <string name="add_prize_band_date_error_duplicate">Esta banda ya tiene ese premio en esa fecha</string>
+    <string name="add_prize_band_submit">Premiar banda</string>
+    <string name="add_prize_band_submitting">Premiando…</string>
+    <string name="add_prize_band_success">«%s» fue otorgado a la banda</string>
+    <string name="add_prize_band_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="add_prize_band_error_server">No pudimos otorgar el premio. Inténtalo de nuevo.</string>
+    <string name="cd_add_prize_to_band">Otorgar %s a la banda</string>
+    <string name="add_album_band_title">Agregar álbum a la banda</string>
+    <string name="add_album_band_search_section">Buscar álbum</string>
+    <string name="add_album_band_search_placeholder">Buscar por título o artista…</string>
+    <string name="add_album_band_empty_filter">No se encontraron álbumes con ese nombre</string>
+    <string name="add_album_band_current_section">Álbumes de la banda</string>
+    <string name="add_album_band_empty_collection">La banda aún no tiene álbumes asociados</string>
+    <string name="add_album_band_success">«%s» fue asociado a la banda</string>
+    <string name="add_album_band_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="add_album_band_error_server">No pudimos asociar el álbum. Inténtalo de nuevo.</string>
+    <string name="cd_add_album_to_band">Asociar %s a la banda</string>
+    <plurals name="band_albums_count">
+        <item quantity="one">%d álbum asociado</item>
+        <item quantity="other">%d álbumes asociados</item>
+    </plurals>
+    <plurals name="members_record_count">
+        <item quantity="one">%d integrante</item>
+        <item quantity="other">%d integrantes</item>
+    </plurals>
+    <plurals name="bands_record_count">
+        <item quantity="one">%d banda · orden alfa</item>
+        <item quantity="other">%d bandas · orden alfa</item>
+    </plurals>
+    <string name="search_placeholder_bands">¿Qué banda buscas?</string>
+
+    <!-- HU012 - Agregar músicos -->
+    <string name="add_musicians_title">Agregar músicos</string>
+    <string name="add_musicians_available_section">Músicos disponibles</string>
+    <string name="add_musicians_current_section">Integrantes actuales</string>
+    <string name="add_musicians_empty_filter">No se encontraron músicos con ese nombre</string>
+    <string name="search_musicians_placeholder">Buscar por nombre</string>
+    <string name="add_musician_success">«%s» fue agregado a la banda</string>
+    <string name="add_musician_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="add_musician_error_server">No pudimos agregar el músico. Inténtalo de nuevo.</string>
+
+    <!-- HU011 - Agregar álbum a coleccionista -->
+    <string name="add_album_collector_title">Agregar álbum a colección</string>
+    <string name="add_album_collector_search_section">Buscar álbum</string>
+    <string name="add_album_collector_search_placeholder">Buscar por título o artista…</string>
+    <string name="add_album_collector_available_empty">No se encontraron álbumes con ese nombre</string>
+    <string name="add_album_collector_form_section">Condiciones de venta o intercambio</string>
+    <string name="add_album_collector_field_status">Estado del álbum</string>
+    <string name="add_album_collector_field_price">Precio estimado</string>
+    <string name="add_album_collector_price_error">Ingresa un precio mayor a cero</string>
+    <string name="add_album_collector_submit">Agregar a mi colección</string>
+    <string name="add_album_collector_submitting">Agregando…</string>
+    <string name="add_album_collector_current_section">Mi colección actual</string>
+    <string name="add_album_collector_empty_collection">Aún no tienes álbumes en tu colección</string>
+    <string name="add_album_collector_cta">Agregar álbum</string>
+    <string name="add_album_collector_success">«%s» fue agregado a tu colección</string>
+    <string name="add_album_collector_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="add_album_collector_error_server">No pudimos agregar el álbum. Inténtalo de nuevo.</string>
+    <string name="cd_add_album_to_collector">Agregar %s a tu colección</string>
+    <string name="cd_adding_album">Agregando álbum</string>
+    <string name="status_active">Activo</string>
+    <string name="status_inactive">Inactivo</string>
+    <plurals name="collector_albums_count">
+        <item quantity="one">%d álbum en tu colección</item>
+        <item quantity="other">%d álbumes en tu colección</item>
+    </plurals>
+
+    <!-- HU012 - Content descriptions -->
+    <string name="cd_band_image_of">Imagen de la banda %s</string>
+    <string name="cd_add_musician_to_band">Agregar %s a la banda</string>
+    <string name="cd_adding_musician">Agregando músico</string>
+
+    <!-- HU15 - Agregar álbum a músico -->
+    <string name="add_album_musician_title">Añadir álbum al artista</string>
+    <string name="add_album_musician_cta">Agregar álbum</string>
+    <string name="add_album_musician_search_section">Buscar álbum</string>
+    <string name="add_album_musician_search_placeholder">Buscar por título…</string>
+    <string name="add_album_musician_empty_filter">No se encontraron álbumes con ese nombre</string>
+    <string name="add_album_musician_current_section">Álbumes del artista</string>
+    <string name="add_album_musician_empty_collection">Aún no hay álbumes asociados a este artista</string>
+    <string name="add_album_musician_success">«%s» fue añadido a la discografía</string>
+    <string name="add_album_musician_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="add_album_musician_error_server">No pudimos agregar el álbum. Inténtalo de nuevo.</string>
+    <string name="cd_add_album_to_musician">Agregar %s a la discografía</string>
+    <plurals name="musician_albums_count">
+        <item quantity="one">%d álbum en la discografía</item>
+        <item quantity="other">%d álbumes en la discografía</item>
+    </plurals>
+
+    <!-- HU014 - Agregar premio a artista -->
+    <string name="add_prize_musician_title">Agregar Premio</string>
+    <string name="add_prize_musician_search_section">Seleccionar Premio</string>
+    <string name="add_prize_musician_search_placeholder">Buscar por nombre u organización…</string>
+    <string name="add_prize_musician_available_empty">No se encontraron premios con esa búsqueda</string>
+    <string name="add_prize_musician_details_section">Detalles de la asociación</string>
+    <string name="add_prize_musician_date_label">Fecha en que fue otorgado</string>
+    <string name="add_prize_musician_date_placeholder">Seleccionar fecha</string>
+    <string name="add_prize_musician_date_error_future">La fecha no puede ser futura</string>
+    <string name="add_prize_musician_date_error_duplicate">Este premio ya fue otorgado en esa fecha</string>
+    <string name="add_prize_musician_submit">Agregar Premio al Artista</string>
+    <string name="add_prize_musician_submitting">Agregando…</string>
+    <string name="add_prize_musician_current_section">Premios del Artista</string>
+    <string name="add_prize_musician_empty_prizes">Aún no tiene premios registrados</string>
+    <string name="add_prize_musician_success">«%s» fue asociado al artista</string>
+    <string name="add_prize_musician_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="add_prize_musician_error_server">No pudimos agregar el premio. Inténtalo de nuevo.</string>
+    <string name="add_prize_musician_cta">Agregar premio</string>
+    <string name="cd_add_prize_to_musician">Agregar %s al artista</string>
+
+    <!-- HU010 - Agregar artistas favoritos -->
+    <string name="add_favorite_performer_title">Agregar artista favorito</string>
+    <string name="add_favorite_performer_context_label">Coleccionista</string>
+    <string name="add_favorite_performer_search_placeholder">Buscar por nombre</string>
+    <string name="add_favorite_performer_empty_filter">No se encontraron artistas con ese nombre</string>
+    <string name="add_favorite_performer_success">«%s» fue agregado a tus favoritos</string>
+    <string name="add_favorite_performer_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="add_favorite_performer_error_server">No pudimos agregar el artista. Inténtalo de nuevo.</string>
+    <string name="add_favorite_performer_tab_musicians">Músicos</string>
+    <string name="add_favorite_performer_tab_bands">Bandas</string>
+    <string name="add_favorite_performer_available_musicians">Músicos disponibles</string>
+    <string name="add_favorite_performer_available_bands">Bandas disponibles</string>
+    <string name="add_favorite_performer_current_musicians">Mis músicos favoritos</string>
+    <string name="add_favorite_performer_current_bands">Mis bandas favoritas</string>
+    <string name="collector_no_favorite_performers">Aún no tienes artistas favoritos. Toca + para agregar.</string>
+    <string name="collector_remove_favorite_cd">Quitar a %s de favoritos</string>
+    <string name="collector_remove_album_cd">Quitar %s de la colección</string>
+    <string name="collector_remove_confirm_title">¿Quitar?</string>
+    <string name="collector_remove_favorite_confirm_body">¿Quitar a «%s» de tus artistas favoritos?</string>
+    <string name="collector_remove_album_confirm_body">¿Quitar «%s» de tu colección?</string>
+    <string name="collector_remove_action">Quitar</string>
+    <string name="collector_remove_success">«%s» fue eliminado</string>
+    <string name="collector_remove_error_network">Sin conexión. Intenta de nuevo.</string>
+    <string name="collector_remove_error_server">No pudimos eliminar. Inténtalo de nuevo.</string>
+    <string name="cd_add_favorite_performer">Agregar artista favorito</string>
+    <string name="cd_add_musician_to_favorites">Agregar %s a favoritos</string>
+    <string name="cd_add_band_to_favorites">Agregar banda %s a favoritos</string>
+    <string name="cd_adding_favorite_performer">Agregando artista favorito</string>
+    <plurals name="favorite_musicians_count">
+        <item quantity="one">%d músico favorito</item>
+        <item quantity="other">%d músicos favoritos</item>
+    </plurals>
+    <plurals name="favorite_bands_count">
+        <item quantity="one">%d banda favorita</item>
+        <item quantity="other">%d bandas favoritas</item>
+    </plurals>
+
+    <!-- HU013 - Premios -->
+    <string name="nav_prizes">Prizes</string>
+    <string name="prizes_title">Premios</string>
+    <string name="cd_create_prize">Crear premio</string>
+    <string name="create_prize_title">Crear Premio</string>
+    <string name="create_prize_section_title">Nuevo Premio</string>
+    <string name="create_prize_section_subtitle">Completa la información para registrar un nuevo premio en el catálogo.</string>
+    <string name="create_prize_field_name">Nombre del premio</string>
+    <string name="create_prize_field_organization">Organización que otorga</string>
+    <string name="create_prize_field_description">Descripción</string>
+    <string name="create_prize_save">Guardar Premio</string>
+    <string name="create_prize_saving">Guardando…</string>
+    <string name="create_prize_success">Premio creado correctamente</string>
+    <string name="create_prize_error_duplicate">Ya existe un premio con ese nombre y organización</string>
+    <string name="create_prize_registered">Premios registrados</string>
+    <string name="create_prize_cancel_confirm_title">¿Descartar cambios?</string>
+    <string name="create_prize_cancel_confirm_body">Los datos ingresados se perderán.</string>
+    <string name="prize_create_cta">Crear Premio</string>
+    <plurals name="prizes_record_count">
+        <item quantity="one">%d premio</item>
+        <item quantity="other">%d premios</item>
+    </plurals>
 </resources>

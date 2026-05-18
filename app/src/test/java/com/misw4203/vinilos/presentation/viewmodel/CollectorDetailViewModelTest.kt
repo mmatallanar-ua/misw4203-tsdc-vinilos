@@ -9,8 +9,12 @@ import com.misw4203.vinilos.domain.model.CollectorComment
 import com.misw4203.vinilos.domain.model.CollectorDetail
 import com.misw4203.vinilos.domain.model.CollectorSummary
 import com.misw4203.vinilos.domain.model.Performer
+import com.misw4203.vinilos.domain.model.PerformerKind
 import com.misw4203.vinilos.domain.repository.CollectorRepository
 import com.misw4203.vinilos.domain.usecase.GetCollectorDetailUseCase
+import com.misw4203.vinilos.domain.usecase.RemoveAlbumFromCollectorUseCase
+import com.misw4203.vinilos.domain.usecase.RemoveFavoriteBandUseCase
+import com.misw4203.vinilos.domain.usecase.RemoveFavoriteMusicianUseCase
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -32,8 +36,31 @@ class CollectorDetailViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private class FakeRepo(var result: Result<CollectorDetail>) : CollectorRepository {
+        var removeError: Throwable? = null
+        val removedMusicians = mutableListOf<Pair<Int, Int>>()
+        val removedBands = mutableListOf<Pair<Int, Int>>()
+        val removedAlbums = mutableListOf<Pair<Int, Int>>()
+
         override suspend fun getCollectors(): List<CollectorSummary> = emptyList()
         override suspend fun getCollectorDetail(id: Int): CollectorDetail = result.getOrThrow()
+        override suspend fun addAlbumToCollector(collectorId: Int, albumId: Int, price: Double, status: String) = Unit
+        override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) = Unit
+        override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) = Unit
+
+        override suspend fun removeFavoriteMusician(collectorId: Int, musicianId: Int) {
+            removeError?.let { throw it }
+            removedMusicians += collectorId to musicianId
+        }
+
+        override suspend fun removeFavoriteBand(collectorId: Int, bandId: Int) {
+            removeError?.let { throw it }
+            removedBands += collectorId to bandId
+        }
+
+        override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Int) {
+            removeError?.let { throw it }
+            removedAlbums += collectorId to albumId
+        }
     }
 
     private fun buildViewModel(
@@ -41,6 +68,9 @@ class CollectorDetailViewModelTest {
         collectorId: Int = 100,
     ) = CollectorDetailViewModel(
         GetCollectorDetailUseCase(repo),
+        RemoveFavoriteMusicianUseCase(repo),
+        RemoveFavoriteBandUseCase(repo),
+        RemoveAlbumFromCollectorUseCase(repo),
         SavedStateHandle(mapOf(Destinations.CollectorDetailArg to collectorId)),
     )
 
@@ -135,13 +165,110 @@ class CollectorDetailViewModelTest {
                 assertEquals("Buscando América", collectorAlbums[0].album?.name)
                 assertEquals(35.0, collectorAlbums[0].price, 0.0)
                 assertEquals("Active", collectorAlbums[0].status)
-                assertEquals(1, favoritePerformers.size)
+                assertEquals(2, favoritePerformers.size)
                 assertEquals("Rubén Blades Bellido de Luna", favoritePerformers[0].name)
+                assertEquals(PerformerKind.MUSICIAN, favoritePerformers[0].kind)
+                assertEquals(PerformerKind.BAND, favoritePerformers[1].kind)
                 assertEquals(1, comments.size)
                 assertEquals(5, comments[0].rating)
             }
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    @Test
+    fun `removeFavorite musician calls musician endpoint and removes optimistically`() = runTest {
+        val repo = FakeRepo(Result.success(sampleDetailWithSections()))
+        val viewModel = buildViewModel(repo)
+        advanceUntilIdle()
+        val performer = Performer(100L, "Rubén Blades Bellido de Luna", "", PerformerKind.MUSICIAN)
+
+        viewModel.events.test {
+            viewModel.removeFavorite(performer)
+            advanceUntilIdle()
+            assertEquals(CollectorDetailEvent.Removed("Rubén Blades Bellido de Luna"), awaitItem())
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        assertEquals(listOf(100 to 100), repo.removedMusicians)
+        assertTrue(repo.removedBands.isEmpty())
+        val state = viewModel.uiState.value as CollectorDetailUiState.Success
+        assertTrue(state.collector.favoritePerformers.none { it.id == 100L })
+    }
+
+    @Test
+    fun `removeFavorite band calls band endpoint`() = runTest {
+        val repo = FakeRepo(Result.success(sampleDetailWithSections()))
+        val viewModel = buildViewModel(repo)
+        advanceUntilIdle()
+        val band = Performer(200L, "Guayacán Orquesta", "", PerformerKind.BAND)
+
+        viewModel.removeFavorite(band)
+        advanceUntilIdle()
+
+        assertEquals(listOf(100 to 200), repo.removedBands)
+        assertTrue(repo.removedMusicians.isEmpty())
+    }
+
+    @Test
+    fun `removeFavorite with UNKNOWN kind refuses and emits failure`() = runTest {
+        val repo = FakeRepo(Result.success(sampleDetailWithSections()))
+        val viewModel = buildViewModel(repo)
+        advanceUntilIdle()
+        val unknown = Performer(100L, "Rubén Blades Bellido de Luna", "", PerformerKind.UNKNOWN)
+
+        viewModel.events.test {
+            viewModel.removeFavorite(unknown)
+            advanceUntilIdle()
+            assertEquals(
+                CollectorDetailEvent.RemoveFailed(isNetworkError = false),
+                awaitItem(),
+            )
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        assertTrue(repo.removedMusicians.isEmpty())
+        assertTrue(repo.removedBands.isEmpty())
+        val state = viewModel.uiState.value as CollectorDetailUiState.Success
+        assertEquals(2, state.collector.favoritePerformers.size)
+    }
+
+    @Test
+    fun `removeAlbum calls endpoint and removes optimistically`() = runTest {
+        val repo = FakeRepo(Result.success(sampleDetailWithSections()))
+        val viewModel = buildViewModel(repo)
+        advanceUntilIdle()
+        val collectorAlbum = (viewModel.uiState.value as CollectorDetailUiState.Success)
+            .collector.collectorAlbums.first()
+
+        viewModel.removeAlbum(collectorAlbum)
+        advanceUntilIdle()
+
+        assertEquals(listOf(100 to 100), repo.removedAlbums)
+        val state = viewModel.uiState.value as CollectorDetailUiState.Success
+        assertTrue(state.collector.collectorAlbums.isEmpty())
+    }
+
+    @Test
+    fun `failed removal restores state and emits network failure`() = runTest {
+        val repo = FakeRepo(Result.success(sampleDetailWithSections()))
+        repo.removeError = IOException("offline")
+        val viewModel = buildViewModel(repo)
+        advanceUntilIdle()
+        val performer = Performer(100L, "Rubén Blades Bellido de Luna", "", PerformerKind.MUSICIAN)
+
+        viewModel.events.test {
+            viewModel.removeFavorite(performer)
+            advanceUntilIdle()
+            assertEquals(
+                CollectorDetailEvent.RemoveFailed(isNetworkError = true),
+                awaitItem(),
+            )
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        val state = viewModel.uiState.value as CollectorDetailUiState.Success
+        assertEquals(2, state.collector.favoritePerformers.size)
     }
 }
 
@@ -171,7 +298,8 @@ private fun sampleDetailWithSections() = CollectorDetail(
         ),
     ),
     favoritePerformers = listOf(
-        Performer(100L, "Rubén Blades Bellido de Luna", "https://image.jpg"),
+        Performer(100L, "Rubén Blades Bellido de Luna", "https://image.jpg", PerformerKind.MUSICIAN),
+        Performer(200L, "Guayacán Orquesta", "https://band.jpg", PerformerKind.BAND),
     ),
     comments = listOf(
         CollectorComment(100L, "The most relevant album of Ruben Blades", 5, "Buscando América"),

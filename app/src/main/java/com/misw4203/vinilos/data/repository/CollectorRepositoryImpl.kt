@@ -4,6 +4,7 @@ import com.misw4203.vinilos.data.local.dao.CollectorDao
 import com.misw4203.vinilos.data.local.entity.CollectorDetailEntity
 import com.misw4203.vinilos.data.local.entity.CollectorEntity
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
+import com.misw4203.vinilos.data.remote.dto.AddCollectorAlbumRequest
 import com.misw4203.vinilos.data.remote.dto.AlbumDto
 import com.misw4203.vinilos.data.remote.dto.CollectorAlbumDto
 import com.misw4203.vinilos.data.remote.dto.CollectorCommentDto
@@ -16,7 +17,9 @@ import com.misw4203.vinilos.domain.model.CollectorComment
 import com.misw4203.vinilos.domain.model.CollectorDetail
 import com.misw4203.vinilos.domain.model.CollectorSummary
 import com.misw4203.vinilos.domain.model.Performer
+import com.misw4203.vinilos.domain.model.PerformerKind
 import com.misw4203.vinilos.domain.repository.CollectorRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -41,17 +44,72 @@ class CollectorRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) = withContext(Dispatchers.IO) {
+        api.addMusicianToCollector(collectorId, musicianId)
+        try {
+            val cached = dao.getDetailById(collectorId)
+            val musicianIdLong = musicianId.toLong()
+            if (cached != null && cached.favoritePerformers.none { it.id == musicianIdLong }) {
+                val musicianDto = api.getMusicianDetail(musicianId)
+                val newFavorite = Performer(
+                    id = musicianDto.id.toLong(),
+                    name = musicianDto.name,
+                    imageUrl = musicianDto.image,
+                    kind = PerformerKind.MUSICIAN,
+                )
+                val updated = cached.copy(favoritePerformers = cached.favoritePerformers + newFavorite)
+                dao.upsertDetail(updated)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // best-effort
+        }
+        Unit
+    }
+
+    override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) = withContext(Dispatchers.IO) {
+        api.addBandToCollector(collectorId, bandId)
+        try {
+            val cached = dao.getDetailById(collectorId)
+            val bandIdLong = bandId.toLong()
+            if (cached != null && cached.favoritePerformers.none { it.id == bandIdLong }) {
+                val bandDto = api.getBandDetail(bandId)
+                val newFavorite = Performer(
+                    id = bandDto.id.toLong(),
+                    name = bandDto.name.orEmpty(),
+                    imageUrl = bandDto.image.orEmpty(),
+                    kind = PerformerKind.BAND,
+                )
+                val updated = cached.copy(favoritePerformers = cached.favoritePerformers + newFavorite)
+                dao.upsertDetail(updated)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // best-effort
+        }
+        Unit
+    }
+
     override suspend fun getCollectorDetail(id: Int): CollectorDetail = withContext(Dispatchers.IO) {
         try {
             val dto = api.getCollectorDetail(id)
-            // Fetch full album data in parallel to get name + artistName
             val enrichedAlbums = coroutineScope {
+                // GET /collectors/{id}/albums always returns album objects with the real album ID,
+                // so we use it as the authoritative source when album is null in the detail DTO.
+                val albumIdLookupAsync = async {
+                    runCatching { api.getCollectorAlbums(id) }
+                        .getOrElse { emptyList() }
+                        .mapNotNull { ca -> ca.album?.id?.let { ca.id to it } }
+                        .toMap()
+                }
+                val albumIdByAssocId = albumIdLookupAsync.await()
                 dto.collectorAlbums.map { collAlbumDto ->
                     async {
-                        // The /collectors/{id} endpoint doesn't nest the album object, so we
-                        // fall back to fetching /albums/{collectorAlbum.id} — the backend's
-                        // seed data uses matching IDs for the association and the album itself.
-                        val albumId = collAlbumDto.album?.id ?: collAlbumDto.id.toLong()
+                        val albumId = collAlbumDto.album?.id
+                            ?: albumIdByAssocId[collAlbumDto.id]
+                            ?: return@async collAlbumDto
                         val fullAlbum = runCatching { api.getAlbum(albumId) }
                             .getOrElse { collAlbumDto.album }
                         collAlbumDto.copy(album = fullAlbum)
@@ -104,7 +162,77 @@ class CollectorRepositoryImpl @Inject constructor(
         id = id,
         name = name.orEmpty(),
         imageUrl = image.orEmpty(),
+        // `creationDate` is required for bands and absent for musicians, so it
+        // is a reliable discriminator; `birthDate` is only a positive hint.
+        kind = when {
+            creationDate != null -> PerformerKind.BAND
+            birthDate != null -> PerformerKind.MUSICIAN
+            else -> PerformerKind.UNKNOWN
+        },
     )
+
+    override suspend fun addAlbumToCollector(
+        collectorId: Int,
+        albumId: Int,
+        price: Double,
+        status: String,
+    ) = withContext(Dispatchers.IO) {
+        api.addAlbumToCollector(collectorId, albumId, AddCollectorAlbumRequest(price, status))
+        // La caché se reconciliará en el siguiente getCollectorDetail (sin invalidación explícita
+        // porque CollectorDao no expone deleteDetail — misma estrategia que BandRepositoryImpl).
+        Unit
+    }
+
+    override suspend fun removeFavoriteMusician(collectorId: Int, musicianId: Int) =
+        withContext(Dispatchers.IO) {
+            api.removeMusicianFromCollector(collectorId, musicianId)
+            removeFavoriteFromCache(collectorId, musicianId.toLong())
+        }
+
+    override suspend fun removeFavoriteBand(collectorId: Int, bandId: Int) =
+        withContext(Dispatchers.IO) {
+            api.removeBandFromCollector(collectorId, bandId)
+            removeFavoriteFromCache(collectorId, bandId.toLong())
+        }
+
+    override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Int) =
+        withContext(Dispatchers.IO) {
+            api.removeAlbumFromCollector(collectorId, albumId)
+            try {
+                val cached = dao.getDetailById(collectorId)
+                if (cached != null) {
+                    val updated = cached.copy(
+                        collectorAlbums = cached.collectorAlbums.filterNot {
+                            it.album?.id == albumId.toLong()
+                        },
+                    )
+                    dao.upsertDetail(updated)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // best-effort; the next getCollectorDetail reconciles the cache
+            }
+            Unit
+        }
+
+    private suspend fun removeFavoriteFromCache(collectorId: Int, performerId: Long) {
+        try {
+            val cached = dao.getDetailById(collectorId)
+            if (cached != null) {
+                val updated = cached.copy(
+                    favoritePerformers = cached.favoritePerformers.filterNot {
+                        it.id == performerId
+                    },
+                )
+                dao.upsertDetail(updated)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            // best-effort
+        }
+    }
 
     private fun CollectorCommentDto.toDomain() = CollectorComment(
         id = id,

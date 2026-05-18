@@ -22,8 +22,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,12 +51,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.misw4203.vinilos.R
@@ -70,9 +77,19 @@ import com.misw4203.vinilos.presentation.viewmodel.MusicianDetailViewModel
 fun MusicianDetailScreen(
     musicianId: Int,
     onBack: () -> Unit,
+    onAddAlbum: () -> Unit = {},
+    onAddPrize: () -> Unit = {},
+    refreshKey: Boolean = false,
+    onRefreshHandled: () -> Unit = {},
     viewModel: MusicianDetailViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(musicianId) { viewModel.loadMusician(musicianId) }
+    LaunchedEffect(refreshKey) {
+        if (refreshKey) {
+            viewModel.loadMusician(musicianId)
+            onRefreshHandled()
+        }
+    }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -82,6 +99,7 @@ fun MusicianDetailScreen(
                     Text(
                         text = stringResource(R.string.artist_detail_title),
                         fontWeight = FontWeight.Bold,
+                        modifier = Modifier.semantics { heading() },
                     )
                 },
                 navigationIcon = {
@@ -103,7 +121,7 @@ fun MusicianDetailScreen(
                     onRetry = viewModel::retry,
                     isNetworkError = state.isNetworkError,
                 )
-                is MusicianDetailUiState.Success -> MusicianBody(state.musician)
+                is MusicianDetailUiState.Success -> MusicianBody(state.musician, onAddAlbum, onAddPrize)
             }
         }
     }
@@ -134,7 +152,7 @@ private fun NotFoundContent() {
 }
 
 @Composable
-private fun MusicianBody(musician: Musician) {
+private fun MusicianBody(musician: Musician, onAddAlbum: () -> Unit, onAddPrize: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -145,9 +163,9 @@ private fun MusicianBody(musician: Musician) {
         Spacer(Modifier.height(24.dp))
         DescriptionSection(musician.description)
         Spacer(Modifier.height(24.dp))
-        AlbumsSection(musician.albums)
+        AlbumsSection(musician.albums, onAddAlbum)
         Spacer(Modifier.height(24.dp))
-        PrizesSection(musician.prizes)
+        PrizesSection(musician.prizes, onAddPrize)
         Spacer(Modifier.height(24.dp))
     }
 }
@@ -162,7 +180,7 @@ private fun ArtistHeader(musician: Musician) {
     ) {
         AsyncImage(
             model = musician.image,
-            contentDescription = musician.name,
+            contentDescription = stringResource(R.string.cd_artist_photo_of, musician.name),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(120.dp)
@@ -175,6 +193,7 @@ private fun ArtistHeader(musician: Musician) {
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { heading() },
         )
         Spacer(Modifier.height(8.dp))
         Surface(
@@ -210,6 +229,7 @@ private fun SectionHeader(title: String) {
             text = title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
+            modifier = Modifier.semantics { heading() },
         )
         Spacer(Modifier.width(12.dp))
         HorizontalDivider(
@@ -233,28 +253,86 @@ private fun DescriptionSection(description: String) {
 }
 
 @Composable
-private fun AlbumsSection(albums: List<Album>) {
-    SectionHeader(stringResource(R.string.artist_section_albums))
-    Spacer(Modifier.height(8.dp))
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+private fun AlbumsSection(albums: List<Album>, onAddAlbum: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        items(albums) { album ->
-            AlbumCard(album)
+        Text(
+            text = stringResource(R.string.artist_section_albums),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.semantics { heading() },
+        )
+        Spacer(Modifier.width(12.dp))
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+        )
+        Spacer(Modifier.width(12.dp))
+        Button(
+            onClick = onAddAlbum,
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(50),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.onSurface,
+                contentColor = MaterialTheme.colorScheme.surface,
+            ),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                horizontal = 14.dp,
+                vertical = 6.dp,
+            ),
+            modifier = Modifier.testTag("musician_add_album_cta"),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                text = stringResource(R.string.add_album_musician_cta),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+    }
+    Spacer(Modifier.height(8.dp))
+    if (albums.isEmpty()) {
+        Text(
+            text = stringResource(R.string.add_album_musician_empty_collection),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+        )
+    } else {
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+        ) {
+            items(albums) { album ->
+                AlbumCard(album)
+            }
         }
     }
 }
 
 @Composable
 private fun AlbumCard(album: Album) {
-    Column(modifier = Modifier.width(120.dp)) {
+    Column(
+        modifier = Modifier
+            .width(96.dp)
+            .semantics(mergeDescendants = true) {},
+    ) {
         AsyncImage(
             model = album.coverUrl,
-            contentDescription = album.name,
+            contentDescription = stringResource(R.string.cd_album_cover_of, album.name),
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(120.dp)
+                .size(96.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         )
@@ -275,17 +353,69 @@ private fun AlbumCard(album: Album) {
 }
 
 @Composable
-private fun PrizesSection(prizes: List<MusicianPrize>) {
+private fun PrizesSection(prizes: List<MusicianPrize>, onAddPrize: () -> Unit) {
     var selectedPrize by remember { mutableStateOf<MusicianPrize?>(null) }
 
-    SectionHeader(stringResource(R.string.artist_section_prizes))
-    Spacer(Modifier.height(8.dp))
-    Column(
-        modifier = Modifier.padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        prizes.forEach { prize ->
-            PrizeItem(prize, onClick = { selectedPrize = prize })
+        Text(
+            text = stringResource(R.string.artist_section_prizes),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.semantics { heading() },
+        )
+        Spacer(Modifier.width(12.dp))
+        HorizontalDivider(
+            modifier = Modifier.weight(1f),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+        )
+        Spacer(Modifier.width(12.dp))
+        Button(
+            onClick = onAddPrize,
+            shape = RoundedCornerShape(50),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.onSurface,
+                contentColor = MaterialTheme.colorScheme.surface,
+            ),
+            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+            modifier = Modifier.testTag("artist_add_prize_button"),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                text = stringResource(R.string.add_prize_musician_cta),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+    }
+    Spacer(Modifier.height(8.dp))
+    if (prizes.isEmpty()) {
+        Text(
+            text = stringResource(R.string.add_prize_musician_empty_prizes),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .padding(horizontal = 24.dp, vertical = 4.dp)
+                .testTag("artist_prizes_empty"),
+        )
+    } else {
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            prizes.forEach { prize ->
+                PrizeItem(prize, onClick = { selectedPrize = prize })
+            }
         }
     }
 
@@ -319,6 +449,7 @@ private fun PrizeItem(prize: MusicianPrize, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
+            .semantics(mergeDescendants = true) { role = Role.Button }
             .testTag("prize_${prize.id}"),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,

@@ -29,6 +29,8 @@ class MusicianDetailViewModelTest {
         var detailResult: Result<Musician> = Result.success(sampleMusician())
         override suspend fun getMusicians(): List<MusicianSummary> = emptyList()
         override suspend fun getMusicianDetail(id: Int): Musician = detailResult.getOrThrow()
+        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+        override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) = Unit
     }
 
     private fun buildViewModel(repo: FakeMusicianRepository) =

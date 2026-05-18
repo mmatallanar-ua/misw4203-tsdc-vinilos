@@ -3,8 +3,9 @@ package com.misw4203.vinilos.data.repository
 import com.misw4203.vinilos.data.local.dao.MusicianDao
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.MusicianDetailDto
+import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDetailDto
 import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDto
-import com.misw4203.vinilos.data.remote.dto.PrizeDetailDto
+import com.misw4203.vinilos.data.remote.dto.PrizeInAssociationDto
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -70,12 +71,17 @@ class MusicianRepositoryImplTest {
             albums = emptyList(),
             performerPrizes = listOf(PerformerPrizeDto(id = 10, premiationDate = "1985-01-01")),
         )
-        coEvery { api.getPrizeDetail(10) } returns PrizeDetailDto(
-            id = 10,
-            organization = "Recording Academy",
-            name = "Grammy",
-            description = "Best Latin Album",
-            performerPrizes = emptyList(),
+        coEvery { api.getPerformerPrizes() } returns listOf(
+            PerformerPrizeDetailDto(
+                id = 10,
+                premiationDate = "1985-01-01",
+                prize = PrizeInAssociationDto(
+                    id = 10,
+                    name = "Grammy",
+                    description = "Best Latin Album",
+                    organization = "Recording Academy",
+                ),
+            ),
         )
 
         val result = repository.getMusicianDetail(2)
@@ -90,6 +96,7 @@ class MusicianRepositoryImplTest {
     @Test(expected = IOException::class)
     fun `getMusicianDetail propagates IOException when cache is empty`() = runTest {
         coEvery { api.getMusicianDetail(2) } throws IOException("offline")
+        coEvery { api.getPerformerPrizes() } returns emptyList()
         coEvery { dao.getDetailById(2) } returns null
         repository.getMusicianDetail(2)
     }
