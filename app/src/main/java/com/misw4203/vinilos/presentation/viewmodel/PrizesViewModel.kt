@@ -35,6 +35,7 @@ class PrizesViewModel @Inject constructor(
                 is DomainResult.Ok ->
                     if (r.value.isEmpty()) PrizesUiState.Empty else PrizesUiState.Success(r.value)
                 DomainResult.Network -> PrizesUiState.Error(isNetworkError = true)
+                // Una lista no devuelve 404; un Http inesperado = error de servidor.
                 DomainResult.NotFound -> PrizesUiState.Error(isNetworkError = false)
                 DomainResult.Server -> PrizesUiState.Error(isNetworkError = false)
             }

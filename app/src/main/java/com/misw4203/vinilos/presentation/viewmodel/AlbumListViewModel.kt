@@ -39,6 +39,7 @@ class AlbumListViewModel @Inject constructor(
                 is DomainResult.Ok ->
                     if (r.value.isEmpty()) AlbumListUiState.Empty else AlbumListUiState.Success(r.value)
                 DomainResult.Network -> AlbumListUiState.Error(isNetworkError = true)
+                // Una lista no devuelve 404; un Http inesperado = error de servidor.
                 DomainResult.NotFound -> AlbumListUiState.Error(isNetworkError = false)
                 DomainResult.Server -> AlbumListUiState.Error(isNetworkError = false)
             }

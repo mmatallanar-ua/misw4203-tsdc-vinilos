@@ -35,6 +35,7 @@ class MusicianListViewModel @Inject constructor(
                 is DomainResult.Ok ->
                     if (r.value.isEmpty()) MusicianListUiState.Empty else MusicianListUiState.Success(r.value)
                 DomainResult.Network -> MusicianListUiState.Error(isNetworkError = true)
+                // Una lista no devuelve 404; un Http inesperado = error de servidor.
                 DomainResult.NotFound -> MusicianListUiState.Error(isNetworkError = false)
                 DomainResult.Server -> MusicianListUiState.Error(isNetworkError = false)
             }

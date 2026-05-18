@@ -31,6 +31,7 @@ class BandListViewModel @Inject constructor(
                 is DomainResult.Ok ->
                     if (r.value.isEmpty()) BandListUiState.Empty else BandListUiState.Success(r.value)
                 DomainResult.Network -> BandListUiState.Error(isNetworkError = true)
+                // Una lista no devuelve 404; un Http inesperado = error de servidor.
                 DomainResult.NotFound -> BandListUiState.Error(isNetworkError = false)
                 DomainResult.Server -> BandListUiState.Error(isNetworkError = false)
             }

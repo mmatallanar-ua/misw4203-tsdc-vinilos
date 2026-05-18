@@ -35,6 +35,7 @@ class CollectorListViewModel @Inject constructor(
                 is DomainResult.Ok ->
                     if (r.value.isEmpty()) CollectorListUiState.Empty else CollectorListUiState.Success(r.value)
                 DomainResult.Network -> CollectorListUiState.Error(isNetworkError = true)
+                // Una lista no devuelve 404; un Http inesperado = error de servidor.
                 DomainResult.NotFound -> CollectorListUiState.Error(isNetworkError = false)
                 DomainResult.Server -> CollectorListUiState.Error(isNetworkError = false)
             }
