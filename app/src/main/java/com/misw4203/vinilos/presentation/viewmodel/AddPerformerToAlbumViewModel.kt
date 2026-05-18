@@ -158,9 +158,12 @@ class AddPerformerToAlbumViewModel @Inject constructor(
                 }
             }) {
                 is DomainResult.Ok -> Unit
-                DomainResult.Network -> _uiState.value = AddPerformerToAlbumUiState.Error(true, null, null)
-                DomainResult.NotFound -> _uiState.value = AddPerformerToAlbumUiState.Error(false, null, null)
-                DomainResult.Server -> _uiState.value = AddPerformerToAlbumUiState.Error(false, null, null)
+                DomainResult.Network -> _uiState.value =
+                    AddPerformerToAlbumUiState.Error(isNetworkError = true, type = null, performerId = null)
+                DomainResult.NotFound -> _uiState.value =
+                    AddPerformerToAlbumUiState.Error(isNetworkError = false, type = null, performerId = null)
+                DomainResult.Server -> _uiState.value =
+                    AddPerformerToAlbumUiState.Error(isNetworkError = false, type = null, performerId = null)
             }
         }
     }
