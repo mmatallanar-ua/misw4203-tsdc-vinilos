@@ -186,12 +186,12 @@ fun VinilosNavHost() {
                 }
                 composable(Destinations.ArtistList) {
                     ArtistsHubScreen(
-                        onMusicianClick = { id -> navController.navigate("artist/$id") },
+                        onMusicianClick = { id -> navController.navigate(Destinations.artistDetail(id)) },
                         onBandClick = { id -> navController.navigate(Destinations.bandDetail(id)) },
                     )
                 }
                 composable(
-                    route = "artist/{id}",
+                    route = Destinations.ArtistDetail,
                     arguments = listOf(navArgument(Destinations.ArtistDetailArg) { type = NavType.IntType }),
                 ) { backStackEntry ->
                     val id = backStackEntry.arguments?.getInt(Destinations.ArtistDetailArg) ?: return@composable
@@ -286,7 +286,7 @@ fun VinilosNavHost() {
                     BandDetailScreen(
                         bandId = bandId,
                         onBack = { navController.popBackStack() },
-                        onMusicianClick = { id -> navController.navigate("artist/$id") },
+                        onMusicianClick = { id -> navController.navigate(Destinations.artistDetail(id)) },
                         onAddMusicians = {
                             navController.navigate(Destinations.addMusiciansToBand(bandId))
                         },

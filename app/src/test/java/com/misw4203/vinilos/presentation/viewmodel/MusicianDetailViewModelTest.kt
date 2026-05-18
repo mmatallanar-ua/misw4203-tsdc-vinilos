@@ -127,6 +127,28 @@ class MusicianDetailViewModelTest {
         }
     }
 
+    @Test
+    fun `refresh reloads the musician`() = runTest {
+        val repo = FakeMusicianRepository().apply {
+            detailResult = Result.failure(IOException("offline"))
+        }
+        val viewModel = buildViewModel(repo)
+
+        viewModel.uiState.test {
+            assertEquals(MusicianDetailUiState.Loading, awaitItem())
+            advanceUntilIdle()
+            assertEquals(MusicianDetailUiState.Error(isNetworkError = true), awaitItem())
+
+            repo.detailResult = Result.success(sampleMusician())
+            viewModel.refresh()
+
+            assertEquals(MusicianDetailUiState.Loading, awaitItem())
+            advanceUntilIdle()
+            assertTrue(awaitItem() is MusicianDetailUiState.Success)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
     // NOTE: The "different id cancels previous job" test is not applicable under the
     // SavedStateHandle pattern. A different musician id means a new navigation entry,
     // which creates a new ViewModel instance — there is no in-place reload with a

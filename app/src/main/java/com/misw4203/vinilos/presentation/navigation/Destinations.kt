@@ -7,6 +7,7 @@ object Destinations {
     const val CreateAlbum = "create_album"
 
     const val ArtistList = "artists"
+    const val ArtistDetail = "artist/{id}"
     const val ArtistDetailArg = "id"
 
     const val Collectors = "collectors"
@@ -60,6 +61,7 @@ object Destinations {
     const val AddFavoritePerformerCollectorArg = "collectorId"
 
     fun albumDetail(albumId: Long) = "album_detail/$albumId"
+    fun artistDetail(id: Int) = "artist/$id"
     fun collectorDetail(collectorId: Int) = "collector/$collectorId"
     fun addTrack(albumId: Long) = "album/$albumId/track/add"
     fun addPerformerToAlbum(albumId: Long) = "album/$albumId/performers/add"
