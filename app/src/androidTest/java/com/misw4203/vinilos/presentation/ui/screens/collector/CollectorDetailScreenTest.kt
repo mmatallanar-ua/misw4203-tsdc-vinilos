@@ -40,12 +40,12 @@ class CollectorDetailScreenTest {
     private class FakeRepo(val result: Result<CollectorDetail>) : CollectorRepository {
         override suspend fun getCollectors(): List<CollectorSummary> = error("unused")
         override suspend fun getCollectorDetail(id: Int): CollectorDetail = result.getOrThrow()
-        override suspend fun addAlbumToCollector(collectorId: Int, albumId: Int, price: Double, status: String) = Unit
+        override suspend fun addAlbumToCollector(collectorId: Int, albumId: Long, price: Double, status: String) = Unit
         override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) = Unit
         override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) = Unit
         override suspend fun removeFavoriteMusician(collectorId: Int, musicianId: Int) {}
         override suspend fun removeFavoriteBand(collectorId: Int, bandId: Int) {}
-        override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Int) {}
+        override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Long) {}
     }
 
     private fun vm(result: Result<CollectorDetail>): CollectorDetailViewModel {

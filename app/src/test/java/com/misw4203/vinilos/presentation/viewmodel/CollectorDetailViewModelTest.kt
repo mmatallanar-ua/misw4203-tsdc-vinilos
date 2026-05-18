@@ -39,11 +39,11 @@ class CollectorDetailViewModelTest {
         var removeError: Throwable? = null
         val removedMusicians = mutableListOf<Pair<Int, Int>>()
         val removedBands = mutableListOf<Pair<Int, Int>>()
-        val removedAlbums = mutableListOf<Pair<Int, Int>>()
+        val removedAlbums = mutableListOf<Pair<Int, Long>>()
 
         override suspend fun getCollectors(): List<CollectorSummary> = emptyList()
         override suspend fun getCollectorDetail(id: Int): CollectorDetail = result.getOrThrow()
-        override suspend fun addAlbumToCollector(collectorId: Int, albumId: Int, price: Double, status: String) = Unit
+        override suspend fun addAlbumToCollector(collectorId: Int, albumId: Long, price: Double, status: String) = Unit
         override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) = Unit
         override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) = Unit
 
@@ -57,7 +57,7 @@ class CollectorDetailViewModelTest {
             removedBands += collectorId to bandId
         }
 
-        override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Int) {
+        override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Long) {
             removeError?.let { throw it }
             removedAlbums += collectorId to albumId
         }
@@ -244,7 +244,7 @@ class CollectorDetailViewModelTest {
         viewModel.removeAlbum(collectorAlbum)
         advanceUntilIdle()
 
-        assertEquals(listOf(100 to 100), repo.removedAlbums)
+        assertEquals(listOf(100 to 100L), repo.removedAlbums)
         val state = viewModel.uiState.value as CollectorDetailUiState.Success
         assertTrue(state.collector.collectorAlbums.isEmpty())
     }

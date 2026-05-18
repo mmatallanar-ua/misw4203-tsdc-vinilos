@@ -63,7 +63,7 @@ class AddPerformerToAlbumViewModelTest {
         var all: List<MusicianSummary> = emptyList()
         override suspend fun getMusicians(): List<MusicianSummary> = all
         override suspend fun getMusicianDetail(id: Int) = error("unused")
-        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Long) = Unit
         override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) = Unit
     }
 

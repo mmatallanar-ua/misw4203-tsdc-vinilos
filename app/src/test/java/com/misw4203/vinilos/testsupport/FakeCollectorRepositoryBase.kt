@@ -22,7 +22,7 @@ open class FakeCollectorRepositoryBase : CollectorRepository {
 
     override suspend fun addAlbumToCollector(
         collectorId: Int,
-        albumId: Int,
+        albumId: Long,
         price: Double,
         status: String,
     ) = error("override in test: addAlbumToCollector")
@@ -40,5 +40,5 @@ open class FakeCollectorRepositoryBase : CollectorRepository {
     override suspend fun removeFavoriteBand(collectorId: Int, bandId: Int) {}
 
     // no-op de test; sobrescribir si se ejercita
-    override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Int) {}
+    override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Long) {}
 }

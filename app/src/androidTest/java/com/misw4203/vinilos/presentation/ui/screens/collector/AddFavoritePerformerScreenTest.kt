@@ -38,7 +38,7 @@ class AddFavoritePerformerScreenTest {
     private class FakeMusicianRepo(val list: List<MusicianSummary>) : MusicianRepository {
         override suspend fun getMusicians() = list
         override suspend fun getMusicianDetail(id: Int) = error("not used")
-        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = error("not used")
+        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Long) = error("not used")
         override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) = error("not used")
     }
 
@@ -57,7 +57,7 @@ class AddFavoritePerformerScreenTest {
         override suspend fun getCollectorDetail(id: Int): CollectorDetail = detail
         override suspend fun addAlbumToCollector(
             collectorId: Int,
-            albumId: Int,
+            albumId: Long,
             price: Double,
             status: String
         ) = error("not used")
@@ -70,7 +70,7 @@ class AddFavoritePerformerScreenTest {
         }
         override suspend fun removeFavoriteMusician(collectorId: Int, musicianId: Int) {}
         override suspend fun removeFavoriteBand(collectorId: Int, bandId: Int) {}
-        override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Int) {}
+        override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Long) {}
     }
 
     private fun buildVm(

@@ -106,7 +106,7 @@ class CollectorDetailViewModel @Inject constructor(
             ),
         )
         viewModelScope.launch {
-            when (runCatchingDomain { removeAlbumFromCollector(collectorId, albumId.toInt()) }) {
+            when (runCatchingDomain { removeAlbumFromCollector(collectorId, albumId) }) {
                 is DomainResult.Ok   -> _events.tryEmit(
                     CollectorDetailEvent.Removed(collectorAlbum.album?.name.orEmpty()),
                 )

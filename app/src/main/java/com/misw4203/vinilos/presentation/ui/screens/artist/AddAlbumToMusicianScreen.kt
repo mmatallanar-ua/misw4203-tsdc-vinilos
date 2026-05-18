@@ -147,9 +147,9 @@ fun AddAlbumToMusicianScreen(
 @Composable
 private fun ScreenContent(
     form: AddAlbumToMusicianFormState,
-    addingId: Int?,
+    addingId: Long?,
     onQueryChange: (String) -> Unit,
-    onAdd: (Int) -> Unit,
+    onAdd: (Long) -> Unit,
 ) {
     val currentAlbums = form.allAlbums.filter { it.id in form.currentAlbumIds }
 
@@ -202,8 +202,8 @@ private fun ScreenContent(
             items(form.filteredAvailable, key = { it.id }) { album ->
                 AlbumRow(
                     album = album,
-                    isAdding = addingId == album.id.toInt(),
-                    onAdd = { onAdd(album.id.toInt()) },
+                    isAdding = addingId == album.id,
+                    onAdd = { onAdd(album.id) },
                     modifier = Modifier.testTag("available_album_musician_${album.id}"),
                 )
                 HorizontalDivider(

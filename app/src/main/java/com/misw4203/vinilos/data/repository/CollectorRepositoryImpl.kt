@@ -177,7 +177,7 @@ class CollectorRepositoryImpl @Inject constructor(
 
     override suspend fun addAlbumToCollector(
         collectorId: Int,
-        albumId: Int,
+        albumId: Long,
         price: Double,
         status: String,
     ) = withContext(ioDispatcher) {
@@ -199,7 +199,7 @@ class CollectorRepositoryImpl @Inject constructor(
             removeFavoriteFromCache(collectorId, bandId.toLong())
         }
 
-    override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Int) =
+    override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Long) =
         withContext(ioDispatcher) {
             api.removeAlbumFromCollector(collectorId, albumId)
             try {
@@ -207,7 +207,7 @@ class CollectorRepositoryImpl @Inject constructor(
                 if (cached != null) {
                     val updated = cached.copy(
                         collectorAlbums = cached.collectorAlbums.filterNot {
-                            it.album?.id == albumId.toLong()
+                            it.album?.id == albumId
                         },
                     )
                     dao.upsertDetail(updated)

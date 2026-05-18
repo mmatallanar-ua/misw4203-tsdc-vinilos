@@ -92,8 +92,8 @@ class AddAlbumToBandViewModelTest {
         advanceUntilIdle()
 
         vm.events.test {
-            vm.onAddAlbum(2)
-            assertEquals(AddAlbumToBandUiState.Adding(2), vm.uiState.value)
+            vm.onAddAlbum(2L)
+            assertEquals(AddAlbumToBandUiState.Adding(2L), vm.uiState.value)
             advanceUntilIdle()
             assertEquals(AddAlbumToBandEvent.AddedSuccessfully("Siembra"), awaitItem())
             cancelAndIgnoreRemainingEvents()
@@ -111,13 +111,13 @@ class AddAlbumToBandViewModelTest {
         advanceUntilIdle()
 
         vm.events.test {
-            vm.onAddAlbum(2)
+            vm.onAddAlbum(2L)
             advanceUntilIdle()
             assertEquals(AddAlbumToBandEvent.AddFailed(isNetworkError = true), awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
         assertEquals(
-            AddAlbumToBandUiState.Error(isNetworkError = true, albumId = 2),
+            AddAlbumToBandUiState.Error(isNetworkError = true, albumId = 2L),
             vm.uiState.value,
         )
     }

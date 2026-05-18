@@ -122,7 +122,7 @@ class CollectorRepositoryImplTest {
 
     @Test
     fun `removeAlbumFromCollector delegates to API and prunes cached album`() = runTest {
-        coEvery { api.removeAlbumFromCollector(100, 8) } returns Unit
+        coEvery { api.removeAlbumFromCollector(100, 8L) } returns Unit
         coEvery { dao.getDetailById(100) } returns detailEntity(
             albums = listOf(
                 CollectorAlbum(1, 10.0, "Active", Album(5L, "Keep", "", "", "", "")),
@@ -132,9 +132,9 @@ class CollectorRepositoryImplTest {
         val captured = slot<CollectorDetailEntity>()
         coEvery { dao.upsertDetail(capture(captured)) } returns Unit
 
-        repository.removeAlbumFromCollector(100, 8)
+        repository.removeAlbumFromCollector(100, 8L)
 
-        coVerify(exactly = 1) { api.removeAlbumFromCollector(100, 8) }
+        coVerify(exactly = 1) { api.removeAlbumFromCollector(100, 8L) }
         assertEquals(listOf(5L), captured.captured.collectorAlbums.mapNotNull { it.album?.id })
     }
 

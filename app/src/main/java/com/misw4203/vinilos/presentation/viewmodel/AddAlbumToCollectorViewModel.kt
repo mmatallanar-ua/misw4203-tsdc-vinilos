@@ -75,9 +75,9 @@ class AddAlbumToCollectorViewModel @Inject constructor(
         val f = _form.value
         if (!f.isFormReady || _uiState.value is AddAlbumToCollectorUiState.Adding) return
         val album = f.selectedAlbum ?: return
-        _uiState.value = AddAlbumToCollectorUiState.Adding(album.id.toInt())
+        _uiState.value = AddAlbumToCollectorUiState.Adding(album.id)
         viewModelScope.launch {
-            when (runCatchingDomain { addAlbumToCollector(collectorId, album.id.toInt(), f.price.toDouble(), f.status) }) {
+            when (runCatchingDomain { addAlbumToCollector(collectorId, album.id, f.price.toDouble(), f.status) }) {
                 is DomainResult.Ok -> {
                     val newIds = f.currentAlbumIds + album.id
                     _form.value = f.copy(
@@ -91,15 +91,15 @@ class AddAlbumToCollectorViewModel @Inject constructor(
                     _events.tryEmit(AddAlbumToCollectorEvent.AddedSuccessfully(album.name))
                 }
                 DomainResult.Network -> {
-                    _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = true, albumId = album.id.toInt())
+                    _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = true, albumId = album.id)
                     _events.tryEmit(AddAlbumToCollectorEvent.AddFailed(isNetworkError = true))
                 }
                 DomainResult.NotFound -> {
-                    _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = false, albumId = album.id.toInt())
+                    _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = false, albumId = album.id)
                     _events.tryEmit(AddAlbumToCollectorEvent.AddFailed(isNetworkError = false))
                 }
                 DomainResult.Server -> {
-                    _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = false, albumId = album.id.toInt())
+                    _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = false, albumId = album.id)
                     _events.tryEmit(AddAlbumToCollectorEvent.AddFailed(isNetworkError = false))
                 }
             }

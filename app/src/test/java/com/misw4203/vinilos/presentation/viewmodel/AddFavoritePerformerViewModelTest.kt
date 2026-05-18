@@ -42,7 +42,7 @@ class AddFavoritePerformerViewModelTest {
         var allMusicians: List<MusicianSummary> = emptyList()
         override suspend fun getMusicians(): List<MusicianSummary> = allMusicians
         override suspend fun getMusicianDetail(id: Int): Musician = error("not used")
-        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Long) = Unit
         override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) = Unit
     }
 
@@ -64,7 +64,7 @@ class AddFavoritePerformerViewModelTest {
         var lastCollectorId: Int? = null
         var lastPerformerId: Int? = null
         override suspend fun getCollectors(): List<CollectorSummary> = error("not used")
-        override suspend fun addAlbumToCollector(collectorId: Int, albumId: Int, price: Double, status: String) = Unit
+        override suspend fun addAlbumToCollector(collectorId: Int, albumId: Long, price: Double, status: String) = Unit
         override suspend fun getCollectorDetail(id: Int): CollectorDetail = collectorResult.getOrThrow()
         override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) {
             addMusicianCallCount++
@@ -80,7 +80,7 @@ class AddFavoritePerformerViewModelTest {
         }
         override suspend fun removeFavoriteMusician(collectorId: Int, musicianId: Int) {}
         override suspend fun removeFavoriteBand(collectorId: Int, bandId: Int) {}
-        override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Int) {}
+        override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Long) {}
     }
 
     companion object {

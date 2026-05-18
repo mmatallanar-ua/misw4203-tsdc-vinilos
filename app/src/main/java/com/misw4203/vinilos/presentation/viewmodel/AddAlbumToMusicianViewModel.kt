@@ -55,14 +55,14 @@ class AddAlbumToMusicianViewModel @Inject constructor(
         )
     }
 
-    fun onAddAlbum(albumId: Int) {
+    fun onAddAlbum(albumId: Long) {
         if (_uiState.value is AddAlbumToMusicianUiState.Adding) return
         _uiState.value = AddAlbumToMusicianUiState.Adding(albumId)
         viewModelScope.launch {
             when (runCatchingDomain { addAlbumToMusician(musicianId, albumId) }) {
                 is DomainResult.Ok -> {
-                    val album = _form.value.allAlbums.firstOrNull { it.id == albumId.toLong() }
-                    val newIds = _form.value.currentAlbumIds + albumId.toLong()
+                    val album = _form.value.allAlbums.firstOrNull { it.id == albumId }
+                    val newIds = _form.value.currentAlbumIds + albumId
                     _form.value = _form.value.copy(
                         currentAlbumIds = newIds,
                         filteredAvailable = computeFiltered(_form.value.allAlbums, newIds, _form.value.query),

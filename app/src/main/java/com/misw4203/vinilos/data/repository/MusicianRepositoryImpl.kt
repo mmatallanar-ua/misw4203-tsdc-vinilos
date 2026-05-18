@@ -86,12 +86,12 @@ class MusicianRepositoryImpl @Inject constructor(
         prizes = prizes,
     )
 
-    override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = withContext(ioDispatcher) {
+    override suspend fun addAlbumToMusician(musicianId: Int, albumId: Long) = withContext(ioDispatcher) {
         api.addAlbumToMusician(musicianId, albumId)
         try {
             val cached = dao.getDetailById(musicianId)
             if (cached != null) {
-                val newAlbum = api.getAlbum(albumId.toLong()).toDomain()
+                val newAlbum = api.getAlbum(albumId).toDomain()
                 dao.upsertDetail(cached.copy(albums = cached.albums + newAlbum))
             }
         } catch (e: CancellationException) {
