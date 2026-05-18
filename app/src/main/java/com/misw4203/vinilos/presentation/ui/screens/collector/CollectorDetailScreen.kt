@@ -80,10 +80,10 @@ private val CardRadius = 24.dp
 fun CollectorDetailScreen(
     collectorId: Int,
     onBack: () -> Unit,
+    modifier: Modifier = Modifier,
     onAddAlbum: () -> Unit = {},
     refreshKey: Boolean = false,
     onRefreshHandled: () -> Unit = {},
-    modifier: Modifier = Modifier,
     onAddFavoritePerformer: () -> Unit = {},
     viewModel: CollectorDetailViewModel = hiltViewModel(),
 ) {

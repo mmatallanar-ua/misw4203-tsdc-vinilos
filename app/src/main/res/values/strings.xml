@@ -240,9 +240,6 @@
     <string name="add_album_collector_error_network">Sin conexión. Intenta de nuevo.</string>
     <string name="add_album_collector_error_server">No pudimos agregar el álbum. Inténtalo de nuevo.</string>
     <string name="cd_add_album_to_collector">Agregar %s a tu colección</string>
-    <string name="cd_adding_album">Agregando álbum</string>
-    <string name="status_active">Activo</string>
-    <string name="status_inactive">Inactivo</string>
     <plurals name="collector_albums_count">
         <item quantity="one">%d álbum en tu colección</item>
         <item quantity="other">%d álbumes en tu colección</item>
@@ -347,7 +344,6 @@
     <string name="create_prize_registered">Premios registrados</string>
     <string name="create_prize_cancel_confirm_title">¿Descartar cambios?</string>
     <string name="create_prize_cancel_confirm_body">Los datos ingresados se perderán.</string>
-    <string name="prize_create_cta">Crear Premio</string>
     <plurals name="prizes_record_count">
         <item quantity="one">%d premio</item>
         <item quantity="other">%d premios</item>
