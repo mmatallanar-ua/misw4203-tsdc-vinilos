@@ -33,11 +33,9 @@ class CreatePrizeViewModelTest {
             Prize(99, "Grammy", "A music award", "NARAS")
         ),
     ) : PrizeRepository {
-        var createCallCount = 0
         var createCalled: Boolean = false
         override suspend fun getPrizes() = prizesResult.getOrThrow()
         override suspend fun createPrize(name: String, description: String, organization: String): Prize {
-            createCallCount++
             createCalled = true
             return createResult.getOrThrow()
         }
