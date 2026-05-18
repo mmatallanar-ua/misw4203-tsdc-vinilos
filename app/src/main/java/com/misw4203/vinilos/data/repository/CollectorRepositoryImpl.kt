@@ -18,9 +18,10 @@ import com.misw4203.vinilos.domain.model.CollectorDetail
 import com.misw4203.vinilos.domain.model.CollectorSummary
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.PerformerKind
+import com.misw4203.vinilos.di.IoDispatcher
 import com.misw4203.vinilos.domain.repository.CollectorRepository
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -31,9 +32,10 @@ import javax.inject.Inject
 class CollectorRepositoryImpl @Inject constructor(
     private val api: VinilosApiService,
     private val dao: CollectorDao,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : CollectorRepository {
 
-    override suspend fun getCollectors(): List<CollectorSummary> = withContext(Dispatchers.IO) {
+    override suspend fun getCollectors(): List<CollectorSummary> = withContext(ioDispatcher) {
         try {
             val summaries = api.getCollectors().map { it.toSummary() }
             dao.replaceCollectors(summaries.map { CollectorEntity.fromDomain(it) })
@@ -44,7 +46,7 @@ class CollectorRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) = withContext(Dispatchers.IO) {
+    override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) = withContext(ioDispatcher) {
         api.addMusicianToCollector(collectorId, musicianId)
         try {
             val cached = dao.getDetailById(collectorId)
@@ -68,7 +70,7 @@ class CollectorRepositoryImpl @Inject constructor(
         Unit
     }
 
-    override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) = withContext(Dispatchers.IO) {
+    override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) = withContext(ioDispatcher) {
         api.addBandToCollector(collectorId, bandId)
         try {
             val cached = dao.getDetailById(collectorId)
@@ -92,7 +94,7 @@ class CollectorRepositoryImpl @Inject constructor(
         Unit
     }
 
-    override suspend fun getCollectorDetail(id: Int): CollectorDetail = withContext(Dispatchers.IO) {
+    override suspend fun getCollectorDetail(id: Int): CollectorDetail = withContext(ioDispatcher) {
         try {
             val dto = api.getCollectorDetail(id)
             val enrichedAlbums = coroutineScope {
@@ -176,7 +178,7 @@ class CollectorRepositoryImpl @Inject constructor(
         albumId: Int,
         price: Double,
         status: String,
-    ) = withContext(Dispatchers.IO) {
+    ) = withContext(ioDispatcher) {
         api.addAlbumToCollector(collectorId, albumId, AddCollectorAlbumRequest(price, status))
         // La caché se reconciliará en el siguiente getCollectorDetail (sin invalidación explícita
         // porque CollectorDao no expone deleteDetail — misma estrategia que BandRepositoryImpl).
@@ -184,19 +186,19 @@ class CollectorRepositoryImpl @Inject constructor(
     }
 
     override suspend fun removeFavoriteMusician(collectorId: Int, musicianId: Int) =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             api.removeMusicianFromCollector(collectorId, musicianId)
             removeFavoriteFromCache(collectorId, musicianId.toLong())
         }
 
     override suspend fun removeFavoriteBand(collectorId: Int, bandId: Int) =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             api.removeBandFromCollector(collectorId, bandId)
             removeFavoriteFromCache(collectorId, bandId.toLong())
         }
 
     override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Int) =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             api.removeAlbumFromCollector(collectorId, albumId)
             try {
                 val cached = dao.getDetailById(collectorId)

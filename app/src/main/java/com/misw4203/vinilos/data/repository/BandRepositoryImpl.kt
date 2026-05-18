@@ -14,9 +14,10 @@ import com.misw4203.vinilos.domain.model.Band
 import com.misw4203.vinilos.domain.model.BandSummary
 import com.misw4203.vinilos.domain.model.MusicianPrize
 import com.misw4203.vinilos.domain.model.MusicianSummary
+import com.misw4203.vinilos.di.IoDispatcher
 import com.misw4203.vinilos.domain.repository.BandRepository
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
@@ -26,9 +27,10 @@ import javax.inject.Inject
 class BandRepositoryImpl @Inject constructor(
     private val api: VinilosApiService,
     private val dao: BandDao,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : BandRepository {
 
-    override suspend fun getBands(): List<BandSummary> = withContext(Dispatchers.IO) {
+    override suspend fun getBands(): List<BandSummary> = withContext(ioDispatcher) {
         try {
             val summaries = api.getBands().map { it.toSummary() }
             dao.replaceBands(summaries.map { BandListEntity.fromDomain(it) })
@@ -39,7 +41,7 @@ class BandRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getBandDetail(id: Int): Band = withContext(Dispatchers.IO) {
+    override suspend fun getBandDetail(id: Int): Band = withContext(ioDispatcher) {
         try {
             coroutineScope {
                 val bandAsync = async { api.getBandDetail(id) }
@@ -67,7 +69,7 @@ class BandRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun addMusicianToBand(bandId: Int, musicianId: Int) = withContext(Dispatchers.IO) {
+    override suspend fun addMusicianToBand(bandId: Int, musicianId: Int) = withContext(ioDispatcher) {
         api.addMusicianToBand(bandId, musicianId)
         // Write-through best-effort: si el detalle esta cacheado, intentamos
         // refrescar members. Un fallo aqui no debe propagarse: la cache se
@@ -93,7 +95,7 @@ class BandRepositoryImpl @Inject constructor(
         Unit
     }
 
-    override suspend fun addAlbumToBand(bandId: Int, albumId: Long) = withContext(Dispatchers.IO) {
+    override suspend fun addAlbumToBand(bandId: Int, albumId: Long) = withContext(ioDispatcher) {
         api.addAlbumToBand(bandId, albumId)
         // Write-through best-effort: ver nota en addMusicianToBand.
         try {
@@ -112,7 +114,7 @@ class BandRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addPrizeToBand(bandId: Int, prizeId: Int, premiationDate: String) =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             api.addPrizeToBand(prizeId, bandId, AddPrizeToMusicianRequest(premiationDate))
             Unit
         }

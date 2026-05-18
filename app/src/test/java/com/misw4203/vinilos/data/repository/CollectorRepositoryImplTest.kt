@@ -13,6 +13,8 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.slot
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -23,6 +25,7 @@ import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class CollectorRepositoryImplTest {
 
     private lateinit var api: VinilosApiService
@@ -33,7 +36,7 @@ class CollectorRepositoryImplTest {
     fun setUp() {
         api = mockk()
         dao = mockk(relaxed = true)
-        repository = CollectorRepositoryImpl(api, dao)
+        repository = CollectorRepositoryImpl(api, dao, UnconfinedTestDispatcher())
     }
 
     // -- getCollectors (HU05) ------------------------------------------------
