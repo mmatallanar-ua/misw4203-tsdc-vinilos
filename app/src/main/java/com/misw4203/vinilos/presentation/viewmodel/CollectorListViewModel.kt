@@ -3,14 +3,13 @@ package com.misw4203.vinilos.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.misw4203.vinilos.domain.usecase.GetCollectorsUseCase
+import com.misw4203.vinilos.presentation.common.DomainResult
+import com.misw4203.vinilos.presentation.common.runCatchingDomain
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,18 +31,12 @@ class CollectorListViewModel @Inject constructor(
     private fun load() {
         _uiState.value = CollectorListUiState.Loading
         viewModelScope.launch {
-            _uiState.value = try {
-                val collectors = getCollectors()
-                if (collectors.isEmpty()) CollectorListUiState.Empty
-                else CollectorListUiState.Success(collectors)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IOException) {
-                CollectorListUiState.Error(isNetworkError = true)
-            } catch (e: HttpException) {
-                CollectorListUiState.Error(isNetworkError = false)
-            } catch (e: Exception) {
-                CollectorListUiState.Error(isNetworkError = false)
+            _uiState.value = when (val r = runCatchingDomain { getCollectors() }) {
+                is DomainResult.Ok ->
+                    if (r.value.isEmpty()) CollectorListUiState.Empty else CollectorListUiState.Success(r.value)
+                DomainResult.Network -> CollectorListUiState.Error(isNetworkError = true)
+                DomainResult.NotFound -> CollectorListUiState.Error(isNetworkError = false)
+                DomainResult.Server -> CollectorListUiState.Error(isNetworkError = false)
             }
         }
     }

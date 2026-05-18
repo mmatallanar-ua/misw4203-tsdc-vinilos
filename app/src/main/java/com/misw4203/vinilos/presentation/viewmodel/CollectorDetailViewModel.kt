@@ -11,6 +11,8 @@ import com.misw4203.vinilos.domain.usecase.GetCollectorDetailUseCase
 import com.misw4203.vinilos.domain.usecase.RemoveAlbumFromCollectorUseCase
 import com.misw4203.vinilos.domain.usecase.RemoveFavoriteBandUseCase
 import com.misw4203.vinilos.domain.usecase.RemoveFavoriteMusicianUseCase
+import com.misw4203.vinilos.presentation.common.DomainResult
+import com.misw4203.vinilos.presentation.common.runCatchingDomain
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -134,17 +136,11 @@ class CollectorDetailViewModel @Inject constructor(
     private fun load() {
         _uiState.value = CollectorDetailUiState.Loading
         viewModelScope.launch {
-            _uiState.value = try {
-                CollectorDetailUiState.Success(getCollectorDetail(collectorId))
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: HttpException) {
-                if (e.code() == 404) CollectorDetailUiState.NotFound
-                else CollectorDetailUiState.Error(isNetworkError = false)
-            } catch (e: IOException) {
-                CollectorDetailUiState.Error(isNetworkError = true)
-            } catch (e: Exception) {
-                CollectorDetailUiState.Error(isNetworkError = false)
+            _uiState.value = when (val r = runCatchingDomain { getCollectorDetail(collectorId) }) {
+                is DomainResult.Ok -> CollectorDetailUiState.Success(r.value)
+                DomainResult.Network -> CollectorDetailUiState.Error(isNetworkError = true)
+                DomainResult.NotFound -> CollectorDetailUiState.NotFound
+                DomainResult.Server -> CollectorDetailUiState.Error(isNetworkError = false)
             }
         }
     }
