@@ -12,7 +12,6 @@ import com.misw4203.vinilos.presentation.common.DomainResult
 import com.misw4203.vinilos.presentation.common.runCatchingDomain
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -21,8 +20,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 sealed interface AlbumDetailEvent {
@@ -73,17 +70,11 @@ class AlbumDetailViewModel @Inject constructor(
         }
         if (!removed) return
         viewModelScope.launch {
-            try {
-                removeTrackUseCase(albumId, track.id)
-                _events.tryEmit(AlbumDetailEvent.Removed(track.name))
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: HttpException) {
-                restoreTrack(track, isNetworkError = false)
-            } catch (e: IOException) {
-                restoreTrack(track, isNetworkError = true)
-            } catch (e: Exception) {
-                restoreTrack(track, isNetworkError = false)
+            when (runCatchingDomain { removeTrackUseCase(albumId, track.id) }) {
+                is DomainResult.Ok   -> _events.tryEmit(AlbumDetailEvent.Removed(track.name))
+                DomainResult.Network -> restoreTrack(track, isNetworkError = true)
+                DomainResult.NotFound -> restoreTrack(track, isNetworkError = false)
+                DomainResult.Server  -> restoreTrack(track, isNetworkError = false)
             }
         }
     }
@@ -102,17 +93,11 @@ class AlbumDetailViewModel @Inject constructor(
         }
         if (!removed) return
         viewModelScope.launch {
-            try {
-                removeCommentUseCase(albumId, comment.id)
-                _events.tryEmit(AlbumDetailEvent.Removed(comment.description))
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: HttpException) {
-                restoreComment(comment, isNetworkError = false)
-            } catch (e: IOException) {
-                restoreComment(comment, isNetworkError = true)
-            } catch (e: Exception) {
-                restoreComment(comment, isNetworkError = false)
+            when (runCatchingDomain { removeCommentUseCase(albumId, comment.id) }) {
+                is DomainResult.Ok   -> _events.tryEmit(AlbumDetailEvent.Removed(comment.description))
+                DomainResult.Network -> restoreComment(comment, isNetworkError = true)
+                DomainResult.NotFound -> restoreComment(comment, isNetworkError = false)
+                DomainResult.Server  -> restoreComment(comment, isNetworkError = false)
             }
         }
     }

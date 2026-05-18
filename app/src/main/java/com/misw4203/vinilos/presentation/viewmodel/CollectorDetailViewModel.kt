@@ -15,7 +15,6 @@ import com.misw4203.vinilos.presentation.common.DomainResult
 import com.misw4203.vinilos.presentation.common.runCatchingDomain
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -23,8 +22,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 sealed interface CollectorDetailUiState {
@@ -75,29 +72,26 @@ class CollectorDetailViewModel @Inject constructor(
                 },
             ),
         )
+        // Type undetermined: refuse rather than hit the wrong endpoint.
+        if (performer.kind == PerformerKind.UNKNOWN) {
+            _uiState.value = CollectorDetailUiState.Success(current)
+            _events.tryEmit(CollectorDetailEvent.RemoveFailed(isNetworkError = false))
+            return
+        }
         viewModelScope.launch {
-            try {
+            when (runCatchingDomain {
                 when (performer.kind) {
                     PerformerKind.BAND ->
                         removeFavoriteBand(collectorId, performer.id.toInt())
                     PerformerKind.MUSICIAN ->
                         removeFavoriteMusician(collectorId, performer.id.toInt())
-                    PerformerKind.UNKNOWN -> {
-                        // Type undetermined: refuse rather than hit the wrong endpoint.
-                        _uiState.value = CollectorDetailUiState.Success(current)
-                        _events.tryEmit(CollectorDetailEvent.RemoveFailed(isNetworkError = false))
-                        return@launch
-                    }
+                    PerformerKind.UNKNOWN -> Unit // unreachable; guard above handles this
                 }
-                _events.tryEmit(CollectorDetailEvent.Removed(performer.name))
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: HttpException) {
-                restore(current, isNetworkError = false)
-            } catch (e: IOException) {
-                restore(current, isNetworkError = true)
-            } catch (e: Exception) {
-                restore(current, isNetworkError = false)
+            }) {
+                is DomainResult.Ok   -> _events.tryEmit(CollectorDetailEvent.Removed(performer.name))
+                DomainResult.Network -> restore(current, isNetworkError = true)
+                DomainResult.NotFound -> restore(current, isNetworkError = false)
+                DomainResult.Server  -> restore(current, isNetworkError = false)
             }
         }
     }
@@ -111,19 +105,13 @@ class CollectorDetailViewModel @Inject constructor(
             ),
         )
         viewModelScope.launch {
-            try {
-                removeAlbumFromCollector(collectorId, albumId.toInt())
-                _events.tryEmit(
+            when (runCatchingDomain { removeAlbumFromCollector(collectorId, albumId.toInt()) }) {
+                is DomainResult.Ok   -> _events.tryEmit(
                     CollectorDetailEvent.Removed(collectorAlbum.album?.name.orEmpty()),
                 )
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: HttpException) {
-                restore(current, isNetworkError = false)
-            } catch (e: IOException) {
-                restore(current, isNetworkError = true)
-            } catch (e: Exception) {
-                restore(current, isNetworkError = false)
+                DomainResult.Network -> restore(current, isNetworkError = true)
+                DomainResult.NotFound -> restore(current, isNetworkError = false)
+                DomainResult.Server  -> restore(current, isNetworkError = false)
             }
         }
     }
