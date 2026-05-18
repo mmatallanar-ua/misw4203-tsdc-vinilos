@@ -1,7 +1,7 @@
 # ADR 0002 — Estabilidad Compose con strong skipping: sin migración a colecciones inmutables
 
 - **Estado:** Aceptada (medición + decisión basada en evidencia)
-- **Fecha:** 2026-05-17
+- **Fecha:** 2026-05-18
 - **Contexto del curso:** MISW4203 (TSDC) — Vinilos
 
 ## Contexto
