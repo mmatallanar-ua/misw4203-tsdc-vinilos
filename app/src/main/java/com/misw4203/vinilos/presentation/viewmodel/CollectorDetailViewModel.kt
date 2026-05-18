@@ -64,6 +64,12 @@ class CollectorDetailViewModel @Inject constructor(
 
     fun removeFavorite(performer: Performer) {
         val current = (_uiState.value as? CollectorDetailUiState.Success)?.collector ?: return
+        // Type undetermined: refuse rather than hit the wrong endpoint (no optimistic
+        // mutation — nothing to roll back).
+        if (performer.kind == PerformerKind.UNKNOWN) {
+            _events.tryEmit(CollectorDetailEvent.RemoveFailed(isNetworkError = false))
+            return
+        }
         // Optimistic removal; restore from network if the call fails.
         _uiState.value = CollectorDetailUiState.Success(
             current.copy(
@@ -72,12 +78,6 @@ class CollectorDetailViewModel @Inject constructor(
                 },
             ),
         )
-        // Type undetermined: refuse rather than hit the wrong endpoint.
-        if (performer.kind == PerformerKind.UNKNOWN) {
-            _uiState.value = CollectorDetailUiState.Success(current)
-            _events.tryEmit(CollectorDetailEvent.RemoveFailed(isNetworkError = false))
-            return
-        }
         viewModelScope.launch {
             when (runCatchingDomain {
                 when (performer.kind) {
@@ -85,7 +85,8 @@ class CollectorDetailViewModel @Inject constructor(
                         removeFavoriteBand(collectorId, performer.id.toInt())
                     PerformerKind.MUSICIAN ->
                         removeFavoriteMusician(collectorId, performer.id.toInt())
-                    PerformerKind.UNKNOWN -> Unit // unreachable; guard above handles this
+                    PerformerKind.UNKNOWN ->
+                        error("unreachable: UNKNOWN refused by the guard above")
                 }
             }) {
                 is DomainResult.Ok   -> _events.tryEmit(CollectorDetailEvent.Removed(performer.name))
