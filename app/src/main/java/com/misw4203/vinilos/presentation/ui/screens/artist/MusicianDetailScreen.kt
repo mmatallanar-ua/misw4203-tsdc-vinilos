@@ -75,7 +75,6 @@ import com.misw4203.vinilos.presentation.viewmodel.MusicianDetailViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MusicianDetailScreen(
-    musicianId: Int,
     onBack: () -> Unit,
     onAddAlbum: () -> Unit = {},
     onAddPrize: () -> Unit = {},
@@ -83,10 +82,9 @@ fun MusicianDetailScreen(
     onRefreshHandled: () -> Unit = {},
     viewModel: MusicianDetailViewModel = hiltViewModel(),
 ) {
-    LaunchedEffect(musicianId) { viewModel.loadMusician(musicianId) }
     LaunchedEffect(refreshKey) {
         if (refreshKey) {
-            viewModel.loadMusician(musicianId)
+            viewModel.refresh()
             onRefreshHandled()
         }
     }

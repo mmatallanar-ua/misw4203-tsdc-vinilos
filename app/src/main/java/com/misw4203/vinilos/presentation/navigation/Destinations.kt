@@ -7,6 +7,7 @@ object Destinations {
     const val CreateAlbum = "create_album"
 
     const val ArtistList = "artists"
+    const val ArtistDetailArg = "id"
 
     const val Collectors = "collectors"
     const val CollectorDetail = "collector/{collectorId}"

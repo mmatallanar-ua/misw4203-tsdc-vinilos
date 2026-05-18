@@ -192,14 +192,13 @@ fun VinilosNavHost() {
                 }
                 composable(
                     route = "artist/{id}",
-                    arguments = listOf(navArgument("id") { type = NavType.IntType }),
+                    arguments = listOf(navArgument(Destinations.ArtistDetailArg) { type = NavType.IntType }),
                 ) { backStackEntry ->
-                    val id = backStackEntry.arguments?.getInt("id") ?: return@composable
+                    val id = backStackEntry.arguments?.getInt(Destinations.ArtistDetailArg) ?: return@composable
                     val refreshFlag by backStackEntry.savedStateHandle
                         .getStateFlow(Destinations.RefreshMusicianDetailKey, false)
                         .collectAsStateWithLifecycle()
                     MusicianDetailScreen(
-                        musicianId = id,
                         onBack = { navController.navigateUp() },
                         onAddAlbum = { navController.navigate(Destinations.addAlbumToMusician(id)) },
                         onAddPrize = { navController.navigate(Destinations.addPrizeToMusician(id)) },
