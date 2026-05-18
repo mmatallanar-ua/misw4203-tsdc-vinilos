@@ -39,7 +39,7 @@ class AlbumDetailViewModelTest {
         val removedComments = mutableListOf<Pair<Long, Long>>()
         override suspend fun getAlbums(): List<Album> = emptyList()
         override suspend fun getAlbumById(id: Long): AlbumDetail = detailResult.getOrThrow()
-        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.data.remote.dto.CreateTrackRequest) =
+        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.domain.model.NewTrack) =
             com.misw4203.vinilos.domain.model.Track(1L, request.name, request.duration)
         override suspend fun createAlbum(input: com.misw4203.vinilos.domain.model.CreateAlbumInput): Album = error("not used")
         override suspend fun addComment(
@@ -58,6 +58,8 @@ class AlbumDetailViewModelTest {
             removeError?.let { throw it }
             removedComments += albumId to commentId
         }
+        override suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) {}
+        override suspend fun addBandToAlbum(albumId: Long, bandId: Int) {}
     }
 
     private fun buildViewModel(
@@ -226,6 +228,25 @@ class AlbumDetailViewModelTest {
 
         val state = viewModel.uiState.value as AlbumDetailUiState.Success
         assertEquals(2, state.album.tracks.size)
+    }
+
+    @Test
+    fun `two failing removals each restore their own track at original position`() = runTest {
+        val repo = FakeAlbumRepository().apply { removeError = IOException("offline") }
+        val viewModel = buildViewModel(repo)
+        advanceUntilIdle()
+        val album = (viewModel.uiState.value as AlbumDetailUiState.Success).album
+        val track1 = album.tracks[0]
+        val track2 = album.tracks[1]
+
+        viewModel.removeTrack(track1)
+        viewModel.removeTrack(track2)
+        advanceUntilIdle()
+
+        val restored = (viewModel.uiState.value as AlbumDetailUiState.Success).album.tracks
+        assertEquals(2, restored.size)
+        assertEquals(track1.id, restored[0].id)
+        assertEquals(track2.id, restored[1].id)
     }
 }
 

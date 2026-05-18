@@ -8,6 +8,7 @@ import com.misw4203.vinilos.domain.model.AlbumDetail
 import com.misw4203.vinilos.domain.model.Comment
 import com.misw4203.vinilos.domain.repository.AlbumRepository
 import com.misw4203.vinilos.domain.usecase.AddCommentUseCase
+import com.misw4203.vinilos.presentation.common.DomainFailure
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -16,7 +17,6 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import retrofit2.HttpException
@@ -38,9 +38,13 @@ class AddCommentViewModelTest {
 
         override suspend fun getAlbums(): List<Album> = emptyList()
         override suspend fun getAlbumById(id: Long): AlbumDetail = error("not used")
-        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.data.remote.dto.CreateTrackRequest) =
+        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.domain.model.NewTrack) =
             error("not used")
         override suspend fun createAlbum(input: com.misw4203.vinilos.domain.model.CreateAlbumInput): Album = error("not used")
+        override suspend fun removeTrack(albumId: Long, trackId: Long) {}
+        override suspend fun removeComment(albumId: Long, commentId: Long) {}
+        override suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) {}
+        override suspend fun addBandToAlbum(albumId: Long, bandId: Int) {}
         override suspend fun addComment(
             albumId: Long,
             description: String,
@@ -75,7 +79,7 @@ class AddCommentViewModelTest {
     }
 
     @Test
-    fun `submit with valid form posts and emits Success`() = runTest {
+    fun `submit with valid form posts and emits Submitted event`() = runTest {
         val repo = FakeAlbumRepository().apply {
             addCommentResult = Result.success(
                 Comment(id = 9L, description = "Excelente", rating = 5),
@@ -85,14 +89,10 @@ class AddCommentViewModelTest {
         viewModel.onDescriptionChange("Excelente")
         viewModel.onRatingChange(5)
 
-        viewModel.uiState.test {
-            assertEquals(AddCommentUiState.Idle, awaitItem())
+        viewModel.events.test {
             viewModel.submit()
-            assertEquals(AddCommentUiState.Loading, awaitItem())
             advanceUntilIdle()
-            val state = awaitItem()
-            assertTrue(state is AddCommentUiState.Success)
-            assertEquals(9L, (state as AddCommentUiState.Success).comment.id)
+            assertEquals(AddCommentEvent.Submitted, awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
         assertEquals(1, repo.callCount)
@@ -119,7 +119,7 @@ class AddCommentViewModelTest {
     }
 
     @Test
-    fun `submit with rating zero is accepted and reaches repo`() = runTest {
+    fun `submit with rating zero is accepted and emits Submitted event`() = runTest {
         val repo = FakeAlbumRepository().apply {
             addCommentResult = Result.success(
                 Comment(id = 7L, description = "Buen álbum", rating = 0),
@@ -129,13 +129,10 @@ class AddCommentViewModelTest {
         viewModel.onDescriptionChange("Buen álbum")
         // rating left at 0 — backend permite 0..5
 
-        viewModel.uiState.test {
-            assertEquals(AddCommentUiState.Idle, awaitItem())
+        viewModel.events.test {
             viewModel.submit()
-            assertEquals(AddCommentUiState.Loading, awaitItem())
             advanceUntilIdle()
-            val state = awaitItem()
-            assertTrue(state is AddCommentUiState.Success)
+            assertEquals(AddCommentEvent.Submitted, awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
         assertEquals(1, repo.callCount)
@@ -157,9 +154,9 @@ class AddCommentViewModelTest {
         viewModel.uiState.test {
             assertEquals(AddCommentUiState.Idle, awaitItem())
             viewModel.submit()
-            assertEquals(AddCommentUiState.Loading, awaitItem())
+            assertEquals(AddCommentUiState.Submitting, awaitItem())
             advanceUntilIdle()
-            assertEquals(AddCommentUiState.Error(isNetworkError = true), awaitItem())
+            assertEquals(AddCommentUiState.Error(DomainFailure.NETWORK), awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -178,9 +175,9 @@ class AddCommentViewModelTest {
         viewModel.uiState.test {
             assertEquals(AddCommentUiState.Idle, awaitItem())
             viewModel.submit()
-            assertEquals(AddCommentUiState.Loading, awaitItem())
+            assertEquals(AddCommentUiState.Submitting, awaitItem())
             advanceUntilIdle()
-            assertEquals(AddCommentUiState.Error(isNetworkError = false), awaitItem())
+            assertEquals(AddCommentUiState.Error(DomainFailure.SERVER), awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -222,7 +219,7 @@ class AddCommentViewModelTest {
         viewModel.submit()
         advanceUntilIdle()
 
-        assertEquals(AddCommentUiState.Error(isNetworkError = true), viewModel.uiState.value)
+        assertEquals(AddCommentUiState.Error(DomainFailure.NETWORK), viewModel.uiState.value)
 
         viewModel.resetError()
         assertEquals(AddCommentUiState.Idle, viewModel.uiState.value)

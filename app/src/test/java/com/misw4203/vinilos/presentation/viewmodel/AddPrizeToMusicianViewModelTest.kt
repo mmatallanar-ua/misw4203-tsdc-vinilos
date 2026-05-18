@@ -64,7 +64,7 @@ class AddPrizeToMusicianViewModelTest {
         val musicianRepo = object : MusicianRepository {
             override suspend fun getMusicians(): List<MusicianSummary> = error("not used")
             override suspend fun getMusicianDetail(id: Int): Musician = musician
-            override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+            override suspend fun addAlbumToMusician(musicianId: Int, albumId: Long) = Unit
             override suspend fun addPrizeToMusician(mId: Int, prizeId: Int, date: String) {
                 addResult?.invoke() ?: Unit
             }
@@ -102,7 +102,7 @@ class AddPrizeToMusicianViewModelTest {
         val brokenRepo = object : MusicianRepository {
             override suspend fun getMusicians(): List<MusicianSummary> = error("not used")
             override suspend fun getMusicianDetail(id: Int): Musician = throw IOException("offline")
-            override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+            override suspend fun addAlbumToMusician(musicianId: Int, albumId: Long) = Unit
             override suspend fun addPrizeToMusician(mId: Int, prizeId: Int, date: String) = Unit
         }
         val prizeRepo = object : PrizeRepository {
@@ -211,7 +211,7 @@ class AddPrizeToMusicianViewModelTest {
         val failingRepo = object : MusicianRepository {
             override suspend fun getMusicians(): List<MusicianSummary> = error("not used")
             override suspend fun getMusicianDetail(id: Int): Musician = sampleMusician
-            override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+            override suspend fun addAlbumToMusician(musicianId: Int, albumId: Long) = Unit
             override suspend fun addPrizeToMusician(mId: Int, prizeId: Int, date: String) =
                 throw IOException("offline")
         }
@@ -252,7 +252,7 @@ class AddPrizeToMusicianViewModelTest {
             override suspend fun getMusicians(): List<MusicianSummary> = error("not used")
             override suspend fun getMusicianDetail(id: Int): Musician =
                 if (fail) throw IOException("offline") else sampleMusician
-            override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+            override suspend fun addAlbumToMusician(musicianId: Int, albumId: Long) = Unit
             override suspend fun addPrizeToMusician(mId: Int, prizeId: Int, date: String) = Unit
         }
         val prizeRepo = object : PrizeRepository {

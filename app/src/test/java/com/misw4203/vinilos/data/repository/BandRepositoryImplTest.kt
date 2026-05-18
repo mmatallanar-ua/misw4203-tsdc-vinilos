@@ -11,9 +11,12 @@ import com.misw4203.vinilos.data.remote.dto.MusicianDetailDto
 import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDetailDto
 import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDto
 import com.misw4203.vinilos.data.remote.dto.PrizeInAssociationDto
+import com.misw4203.vinilos.testsupport.RecordingAppLogger
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -25,11 +28,13 @@ import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class BandRepositoryImplTest {
 
     private val api: VinilosApiService = mockk()
     private val dao: BandDao = mockk(relaxed = true)
-    private val repo = BandRepositoryImpl(api, dao)
+    private val logger = RecordingAppLogger()
+    private val repo = BandRepositoryImpl(api, dao, UnconfinedTestDispatcher(), logger)
 
     @Test
     fun `getBands network success caches and returns mapped list`() = runTest {
@@ -209,5 +214,21 @@ class BandRepositoryImplTest {
         }
         assertTrue("Expected HttpException", threw)
         coVerify(exactly = 0) { dao.upsertDetail(any()) }
+    }
+
+    @Test
+    fun `addMusicianToBand write-through failure is logged and swallowed`() = runTest {
+        coEvery { api.addMusicianToBand(1, 10) } returns Unit
+        coEvery { dao.getDetailById(1) } returns BandDetailEntity(
+            id = 1, name = "Queen", image = "", description = "", creationDate = "",
+            members = emptyList(), albums = emptyList(),
+        )
+        // The write-through refetch fails: must be best-effort (no rethrow) and logged.
+        coEvery { api.getMusicianDetail(10) } throws RuntimeException("boom")
+
+        repo.addMusicianToBand(1, 10) // does not throw
+
+        assertEquals(1, logger.entries.size)
+        assertEquals("BandRepositoryImpl", logger.entries[0].tag)
     }
 }

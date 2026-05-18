@@ -7,9 +7,10 @@ import com.misw4203.vinilos.domain.model.MusicianSummary
 import com.misw4203.vinilos.domain.usecase.AddMusicianToBandUseCase
 import com.misw4203.vinilos.domain.usecase.GetBandDetailUseCase
 import com.misw4203.vinilos.domain.usecase.GetMusiciansUseCase
+import com.misw4203.vinilos.presentation.common.DomainResult
+import com.misw4203.vinilos.presentation.common.runCatchingDomain
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,8 +20,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import java.text.Normalizer
 import javax.inject.Inject
 
@@ -60,32 +59,34 @@ class AddMusiciansToBandViewModel @Inject constructor(
         if (_uiState.value is AddMusiciansUiState.Adding) return
         _uiState.value = AddMusiciansUiState.Adding(musicianId)
         viewModelScope.launch {
-            try {
-                addMusicianToBand(bandId, musicianId)
-                val musician = _form.value.allMusicians.firstOrNull { it.id == musicianId }
-                _form.value = _form.value.copy(
-                    currentMemberIds = _form.value.currentMemberIds + musicianId,
-                    filteredAvailable = computeFiltered(
-                        _form.value.allMusicians,
-                        _form.value.currentMemberIds + musicianId,
-                        _form.value.query,
-                    ),
-                )
-                _uiState.value = AddMusiciansUiState.Ready
-                if (musician != null) {
-                    _events.tryEmit(AddMusiciansEvent.AddedSuccessfully(musician.name))
+            when (runCatchingDomain { addMusicianToBand(bandId, musicianId) }) {
+                is DomainResult.Ok -> {
+                    val musician = _form.value.allMusicians.firstOrNull { it.id == musicianId }
+                    _form.value = _form.value.copy(
+                        currentMemberIds = _form.value.currentMemberIds + musicianId,
+                        filteredAvailable = computeFiltered(
+                            _form.value.allMusicians,
+                            _form.value.currentMemberIds + musicianId,
+                            _form.value.query,
+                        ),
+                    )
+                    _uiState.value = AddMusiciansUiState.Ready
+                    if (musician != null) {
+                        _events.tryEmit(AddMusiciansEvent.AddedSuccessfully(musician.name))
+                    }
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IOException) {
-                _uiState.value = AddMusiciansUiState.Error(isNetworkError = true, musicianId = musicianId)
-                _events.tryEmit(AddMusiciansEvent.AddFailed(isNetworkError = true))
-            } catch (e: HttpException) {
-                _uiState.value = AddMusiciansUiState.Error(isNetworkError = false, musicianId = musicianId)
-                _events.tryEmit(AddMusiciansEvent.AddFailed(isNetworkError = false))
-            } catch (e: Exception) {
-                _uiState.value = AddMusiciansUiState.Error(isNetworkError = false, musicianId = musicianId)
-                _events.tryEmit(AddMusiciansEvent.AddFailed(isNetworkError = false))
+                DomainResult.Network -> {
+                    _uiState.value = AddMusiciansUiState.Error(isNetworkError = true, musicianId = musicianId)
+                    _events.tryEmit(AddMusiciansEvent.AddFailed(isNetworkError = true))
+                }
+                DomainResult.NotFound -> {
+                    _uiState.value = AddMusiciansUiState.Error(isNetworkError = false, musicianId = musicianId)
+                    _events.tryEmit(AddMusiciansEvent.AddFailed(isNetworkError = false))
+                }
+                DomainResult.Server -> {
+                    _uiState.value = AddMusiciansUiState.Error(isNetworkError = false, musicianId = musicianId)
+                    _events.tryEmit(AddMusiciansEvent.AddFailed(isNetworkError = false))
+                }
             }
         }
     }
@@ -93,7 +94,7 @@ class AddMusiciansToBandViewModel @Inject constructor(
     private fun loadInitial() {
         _uiState.value = AddMusiciansUiState.Loading
         viewModelScope.launch {
-            try {
+            when (runCatchingDomain {
                 coroutineScope {
                     val musiciansAsync = async { getMusicians() }
                     val bandAsync = async { getBandDetail(bandId) }
@@ -108,14 +109,11 @@ class AddMusiciansToBandViewModel @Inject constructor(
                     )
                     _uiState.value = AddMusiciansUiState.Ready
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IOException) {
-                _uiState.value = AddMusiciansUiState.Error(isNetworkError = true, musicianId = null)
-            } catch (e: HttpException) {
-                _uiState.value = AddMusiciansUiState.Error(isNetworkError = false, musicianId = null)
-            } catch (e: Exception) {
-                _uiState.value = AddMusiciansUiState.Error(isNetworkError = false, musicianId = null)
+            }) {
+                is DomainResult.Ok -> Unit
+                DomainResult.Network -> _uiState.value = AddMusiciansUiState.Error(isNetworkError = true, musicianId = null)
+                DomainResult.NotFound -> _uiState.value = AddMusiciansUiState.Error(isNetworkError = false, musicianId = null)
+                DomainResult.Server -> _uiState.value = AddMusiciansUiState.Error(isNetworkError = false, musicianId = null)
             }
         }
     }

@@ -180,7 +180,7 @@ fun AddAlbumToCollectorScreen(
 @Composable
 private fun ScreenContent(
     form: AddAlbumToCollectorFormState,
-    addingId: Int?,
+    addingId: Long?,
     onQueryChange: (String) -> Unit,
     onAlbumSelected: (Album) -> Unit,
     onAlbumDeselected: () -> Unit,
@@ -240,7 +240,7 @@ private fun ScreenContent(
                 AlbumRow(
                     album = album,
                     isSelected = form.selectedAlbum?.id == album.id,
-                    isAdding = addingId == album.id.toInt(),
+                    isAdding = addingId == album.id,
                     onSelect = { onAlbumSelected(album) },
                     modifier = Modifier.testTag("available_album_${album.id}"),
                 )

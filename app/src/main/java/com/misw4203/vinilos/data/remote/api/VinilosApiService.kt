@@ -103,14 +103,14 @@ interface VinilosApiService {
     @POST("collectors/{collectorId}/albums/{albumId}")
     suspend fun addAlbumToCollector(
         @Path("collectorId") collectorId: Int,
-        @Path("albumId") albumId: Int,
+        @Path("albumId") albumId: Long,
         @Body request: AddCollectorAlbumRequest,
     ): CollectorAlbumDto
 
     @POST("musicians/{musicianId}/albums/{albumId}")
     suspend fun addAlbumToMusician(
         @Path("musicianId") musicianId: Int,
-        @Path("albumId") albumId: Int,
+        @Path("albumId") albumId: Long,
     )
 
     @POST("prizes/{prizeId}/musicians/{musicianId}")
@@ -172,6 +172,6 @@ interface VinilosApiService {
     @DELETE("collectors/{collectorId}/albums/{albumId}")
     suspend fun removeAlbumFromCollector(
         @Path("collectorId") collectorId: Int,
-        @Path("albumId") albumId: Int,
+        @Path("albumId") albumId: Long,
     )
 }

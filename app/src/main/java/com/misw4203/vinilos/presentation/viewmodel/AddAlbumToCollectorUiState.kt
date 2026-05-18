@@ -3,8 +3,8 @@ package com.misw4203.vinilos.presentation.viewmodel
 sealed interface AddAlbumToCollectorUiState {
     object Loading : AddAlbumToCollectorUiState
     object Ready : AddAlbumToCollectorUiState
-    data class Adding(val albumId: Int) : AddAlbumToCollectorUiState
-    data class Error(val isNetworkError: Boolean, val albumId: Int?) : AddAlbumToCollectorUiState
+    data class Adding(val albumId: Long) : AddAlbumToCollectorUiState
+    data class Error(val isNetworkError: Boolean, val albumId: Long?) : AddAlbumToCollectorUiState
 }
 
 sealed interface AddAlbumToCollectorEvent {

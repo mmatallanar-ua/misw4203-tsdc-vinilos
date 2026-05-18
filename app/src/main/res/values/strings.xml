@@ -74,6 +74,9 @@
     <string name="add_track_label_name">Nombre del track</string>
     <string name="add_track_label_duration">Duración (MM:SS)</string>
     <string name="add_track_success">Track agregado correctamente</string>
+    <string name="add_track_error_not_found">Álbum no encontrado</string>
+    <string name="add_track_error_network">Sin conexión. Intenta de nuevo</string>
+    <string name="add_track_error_server">Error al agregar track</string>
     <string name="add_track_button">Agregar Track</string>
     <string name="add_track_button_album_detail">Agregar canción</string>
 
@@ -94,6 +97,8 @@
     <string name="create_album_save">Guardar Álbum</string>
     <string name="create_album_saving">Guardando…</string>
     <string name="create_album_error_required">Campo obligatorio</string>
+    <string name="create_album_error_network">Sin conexión a internet. Intenta de nuevo.</string>
+    <string name="create_album_error_server">Error del servidor. Verifica los datos.</string>
     <string name="cd_create_album">Crear álbum</string>
 
     <!-- Navigation -->
@@ -235,9 +240,6 @@
     <string name="add_album_collector_error_network">Sin conexión. Intenta de nuevo.</string>
     <string name="add_album_collector_error_server">No pudimos agregar el álbum. Inténtalo de nuevo.</string>
     <string name="cd_add_album_to_collector">Agregar %s a tu colección</string>
-    <string name="cd_adding_album">Agregando álbum</string>
-    <string name="status_active">Activo</string>
-    <string name="status_inactive">Inactivo</string>
     <plurals name="collector_albums_count">
         <item quantity="one">%d álbum en tu colección</item>
         <item quantity="other">%d álbumes en tu colección</item>
@@ -334,12 +336,14 @@
     <string name="create_prize_field_description">Descripción</string>
     <string name="create_prize_save">Guardar Premio</string>
     <string name="create_prize_saving">Guardando…</string>
-    <string name="create_prize_success">Premio creado correctamente</string>
+    <string name="create_prize_error_required_all">Todos los campos son obligatorios.</string>
+    <string name="create_prize_error_network">Sin conexión a internet. Inténtalo de nuevo.</string>
+    <string name="create_prize_error_server">Error del servidor. Verifica los datos.</string>
+    <string name="create_prize_retry">Reintentar</string>
     <string name="create_prize_error_duplicate">Ya existe un premio con ese nombre y organización</string>
     <string name="create_prize_registered">Premios registrados</string>
     <string name="create_prize_cancel_confirm_title">¿Descartar cambios?</string>
     <string name="create_prize_cancel_confirm_body">Los datos ingresados se perderán.</string>
-    <string name="prize_create_cta">Crear Premio</string>
     <plurals name="prizes_record_count">
         <item quantity="one">%d premio</item>
         <item quantity="other">%d premios</item>

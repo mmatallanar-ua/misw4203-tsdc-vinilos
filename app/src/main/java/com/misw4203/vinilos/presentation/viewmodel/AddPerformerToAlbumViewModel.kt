@@ -10,9 +10,10 @@ import com.misw4203.vinilos.domain.usecase.AddMusicianToAlbumUseCase
 import com.misw4203.vinilos.domain.usecase.GetAlbumDetailUseCase
 import com.misw4203.vinilos.domain.usecase.GetBandsUseCase
 import com.misw4203.vinilos.domain.usecase.GetMusiciansUseCase
+import com.misw4203.vinilos.presentation.common.DomainResult
+import com.misw4203.vinilos.presentation.common.runCatchingDomain
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,8 +23,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import java.text.Normalizer
 import javax.inject.Inject
 
@@ -71,26 +70,22 @@ class AddPerformerToAlbumViewModel @Inject constructor(
         if (_uiState.value is AddPerformerToAlbumUiState.Adding) return
         _uiState.value = AddPerformerToAlbumUiState.Adding(PerformerType.MUSICIAN, musicianId)
         viewModelScope.launch {
-            try {
-                addMusicianToAlbum(albumId, musicianId)
-                val musician = _form.value.allMusicians.firstOrNull { it.id == musicianId }
-                val newIds = _form.value.currentMusicianIds + musicianId
-                _form.value = _form.value.copy(
-                    currentMusicianIds = newIds,
-                    filteredMusicians = filterMusicians(_form.value.allMusicians, newIds, _form.value.query),
-                )
-                _uiState.value = AddPerformerToAlbumUiState.Ready
-                if (musician != null) {
-                    _events.tryEmit(AddPerformerToAlbumEvent.AddedSuccessfully(musician.name))
+            when (runCatchingDomain { addMusicianToAlbum(albumId, musicianId) }) {
+                is DomainResult.Ok -> {
+                    val musician = _form.value.allMusicians.firstOrNull { it.id == musicianId }
+                    val newIds = _form.value.currentMusicianIds + musicianId
+                    _form.value = _form.value.copy(
+                        currentMusicianIds = newIds,
+                        filteredMusicians = filterMusicians(_form.value.allMusicians, newIds, _form.value.query),
+                    )
+                    _uiState.value = AddPerformerToAlbumUiState.Ready
+                    if (musician != null) {
+                        _events.tryEmit(AddPerformerToAlbumEvent.AddedSuccessfully(musician.name))
+                    }
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IOException) {
-                emitAddError(PerformerType.MUSICIAN, musicianId, isNetwork = true)
-            } catch (e: HttpException) {
-                emitAddError(PerformerType.MUSICIAN, musicianId, isNetwork = false)
-            } catch (e: Exception) {
-                emitAddError(PerformerType.MUSICIAN, musicianId, isNetwork = false)
+                DomainResult.Network -> emitAddError(PerformerType.MUSICIAN, musicianId, isNetwork = true)
+                DomainResult.NotFound -> emitAddError(PerformerType.MUSICIAN, musicianId, isNetwork = false)
+                DomainResult.Server -> emitAddError(PerformerType.MUSICIAN, musicianId, isNetwork = false)
             }
         }
     }
@@ -99,26 +94,22 @@ class AddPerformerToAlbumViewModel @Inject constructor(
         if (_uiState.value is AddPerformerToAlbumUiState.Adding) return
         _uiState.value = AddPerformerToAlbumUiState.Adding(PerformerType.BAND, bandId)
         viewModelScope.launch {
-            try {
-                addBandToAlbum(albumId, bandId)
-                val band = _form.value.allBands.firstOrNull { it.id == bandId }
-                val newIds = _form.value.currentBandIds + bandId
-                _form.value = _form.value.copy(
-                    currentBandIds = newIds,
-                    filteredBands = filterBands(_form.value.allBands, newIds, _form.value.query),
-                )
-                _uiState.value = AddPerformerToAlbumUiState.Ready
-                if (band != null) {
-                    _events.tryEmit(AddPerformerToAlbumEvent.AddedSuccessfully(band.name))
+            when (runCatchingDomain { addBandToAlbum(albumId, bandId) }) {
+                is DomainResult.Ok -> {
+                    val band = _form.value.allBands.firstOrNull { it.id == bandId }
+                    val newIds = _form.value.currentBandIds + bandId
+                    _form.value = _form.value.copy(
+                        currentBandIds = newIds,
+                        filteredBands = filterBands(_form.value.allBands, newIds, _form.value.query),
+                    )
+                    _uiState.value = AddPerformerToAlbumUiState.Ready
+                    if (band != null) {
+                        _events.tryEmit(AddPerformerToAlbumEvent.AddedSuccessfully(band.name))
+                    }
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IOException) {
-                emitAddError(PerformerType.BAND, bandId, isNetwork = true)
-            } catch (e: HttpException) {
-                emitAddError(PerformerType.BAND, bandId, isNetwork = false)
-            } catch (e: Exception) {
-                emitAddError(PerformerType.BAND, bandId, isNetwork = false)
+                DomainResult.Network -> emitAddError(PerformerType.BAND, bandId, isNetwork = true)
+                DomainResult.NotFound -> emitAddError(PerformerType.BAND, bandId, isNetwork = false)
+                DomainResult.Server -> emitAddError(PerformerType.BAND, bandId, isNetwork = false)
             }
         }
     }
@@ -139,7 +130,7 @@ class AddPerformerToAlbumViewModel @Inject constructor(
     private fun loadInitial() {
         _uiState.value = AddPerformerToAlbumUiState.Loading
         viewModelScope.launch {
-            try {
+            when (runCatchingDomain {
                 coroutineScope {
                     val musiciansAsync = async { getMusicians() }
                     val bandsAsync = async { getBands() }
@@ -165,14 +156,14 @@ class AddPerformerToAlbumViewModel @Inject constructor(
                     )
                     _uiState.value = AddPerformerToAlbumUiState.Ready
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IOException) {
-                _uiState.value = AddPerformerToAlbumUiState.Error(true, null, null)
-            } catch (e: HttpException) {
-                _uiState.value = AddPerformerToAlbumUiState.Error(false, null, null)
-            } catch (e: Exception) {
-                _uiState.value = AddPerformerToAlbumUiState.Error(false, null, null)
+            }) {
+                is DomainResult.Ok -> Unit
+                DomainResult.Network -> _uiState.value =
+                    AddPerformerToAlbumUiState.Error(isNetworkError = true, type = null, performerId = null)
+                DomainResult.NotFound -> _uiState.value =
+                    AddPerformerToAlbumUiState.Error(isNetworkError = false, type = null, performerId = null)
+                DomainResult.Server -> _uiState.value =
+                    AddPerformerToAlbumUiState.Error(isNetworkError = false, type = null, performerId = null)
             }
         }
     }

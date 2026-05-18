@@ -6,6 +6,6 @@ import javax.inject.Inject
 class AddAlbumToMusicianUseCase @Inject constructor(
     private val repository: MusicianRepository,
 ) {
-    suspend operator fun invoke(musicianId: Int, albumId: Int) =
+    suspend operator fun invoke(musicianId: Int, albumId: Long) =
         repository.addAlbumToMusician(musicianId, albumId)
 }

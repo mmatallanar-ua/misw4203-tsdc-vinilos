@@ -6,12 +6,14 @@ import com.misw4203.vinilos.domain.model.Prize
 import com.misw4203.vinilos.domain.repository.PrizeRepository
 import com.misw4203.vinilos.domain.usecase.CreatePrizeUseCase
 import com.misw4203.vinilos.domain.usecase.GetPrizesUseCase
+import com.misw4203.vinilos.presentation.common.DomainFailure
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -31,10 +33,10 @@ class CreatePrizeViewModelTest {
             Prize(99, "Grammy", "A music award", "NARAS")
         ),
     ) : PrizeRepository {
-        var createCallCount = 0
+        var createCalled: Boolean = false
         override suspend fun getPrizes() = prizesResult.getOrThrow()
         override suspend fun createPrize(name: String, description: String, organization: String): Prize {
-            createCallCount++
+            createCalled = true
             return createResult.getOrThrow()
         }
     }
@@ -82,20 +84,33 @@ class CreatePrizeViewModelTest {
     // ── Successful submission ──────────────────────────────────────────────
 
     @Test
-    fun `submit with valid fields emits Submitting then Success`() = runTest {
+    fun `submit with valid fields emits Submitting then Ready and Submitted event`() = runTest {
         val repo = FakePrizeRepository()
         val viewModel = buildViewModel(repo)
 
-        viewModel.uiState.test {
-            assertEquals(CreatePrizeUiState.LoadingPrizes, awaitItem())
+        // Subscribe to events BEFORE submitting so the collector is active when tryEmit fires
+        viewModel.events.test {
+            // Let the initial prize load finish
             advanceUntilIdle()
-            awaitItem() // Ready
+
+            viewModel.uiState.test {
+                // Drain initial LoadingPrizes → Ready
+                advanceUntilIdle()
+                cancelAndIgnoreRemainingEvents()
+            }
 
             viewModel.submit("Grammy", "Top award", "NARAS")
-            assertEquals(CreatePrizeUiState.Submitting, awaitItem())
             advanceUntilIdle()
-            assertEquals(CreatePrizeUiState.Success, awaitItem())
-            assertEquals(1, repo.createCallCount)
+
+            // createCalled verifies the API was actually invoked (no tautology)
+            assertTrue(repo.createCalled)
+
+            // uiState ended up in Ready (not Error, not Submitting)
+            assertTrue(viewModel.uiState.value is CreatePrizeUiState.Ready)
+
+            // The Submitted event was emitted
+            val event = awaitItem()
+            assertEquals(CreatePrizeEvent.Submitted, event)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -103,7 +118,7 @@ class CreatePrizeViewModelTest {
     // ── Required field validation (CA04) ──────────────────────────────────
 
     @Test
-    fun `submit with blank name emits Error without calling API`() = runTest {
+    fun `submit with blank name emits ValidationFailed BLANK_FIELDS without calling API`() = runTest {
         val repo = FakePrizeRepository()
         val viewModel = buildViewModel(repo)
 
@@ -111,17 +126,21 @@ class CreatePrizeViewModelTest {
             assertEquals(CreatePrizeUiState.LoadingPrizes, awaitItem())
             advanceUntilIdle()
             awaitItem() // Ready
+            cancelAndIgnoreRemainingEvents()
+        }
 
+        viewModel.events.test {
             viewModel.submit("", "Desc", "Org")
-            val state = awaitItem()
-            assertTrue(state is CreatePrizeUiState.Error)
-            assertEquals(0, repo.createCallCount)
+            val event = awaitItem()
+            assertTrue(event is CreatePrizeEvent.ValidationFailed)
+            assertEquals(PrizeValidation.BLANK_FIELDS, (event as CreatePrizeEvent.ValidationFailed).reason)
+            assertFalse(repo.createCalled)
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `submit with blank organization emits Error without calling API`() = runTest {
+    fun `submit with blank organization emits ValidationFailed BLANK_FIELDS without calling API`() = runTest {
         val repo = FakePrizeRepository()
         val viewModel = buildViewModel(repo)
 
@@ -129,17 +148,21 @@ class CreatePrizeViewModelTest {
             assertEquals(CreatePrizeUiState.LoadingPrizes, awaitItem())
             advanceUntilIdle()
             awaitItem() // Ready
+            cancelAndIgnoreRemainingEvents()
+        }
 
+        viewModel.events.test {
             viewModel.submit("Grammy", "Desc", "")
-            val state = awaitItem()
-            assertTrue(state is CreatePrizeUiState.Error)
-            assertEquals(0, repo.createCallCount)
+            val event = awaitItem()
+            assertTrue(event is CreatePrizeEvent.ValidationFailed)
+            assertEquals(PrizeValidation.BLANK_FIELDS, (event as CreatePrizeEvent.ValidationFailed).reason)
+            assertFalse(repo.createCalled)
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `submit with blank description emits Error without calling API`() = runTest {
+    fun `submit with blank description emits ValidationFailed BLANK_FIELDS without calling API`() = runTest {
         val repo = FakePrizeRepository()
         val viewModel = buildViewModel(repo)
 
@@ -147,11 +170,15 @@ class CreatePrizeViewModelTest {
             assertEquals(CreatePrizeUiState.LoadingPrizes, awaitItem())
             advanceUntilIdle()
             awaitItem() // Ready
+            cancelAndIgnoreRemainingEvents()
+        }
 
+        viewModel.events.test {
             viewModel.submit("Grammy", "", "NARAS")
-            val state = awaitItem()
-            assertTrue(state is CreatePrizeUiState.Error)
-            assertEquals(0, repo.createCallCount)
+            val event = awaitItem()
+            assertTrue(event is CreatePrizeEvent.ValidationFailed)
+            assertEquals(PrizeValidation.BLANK_FIELDS, (event as CreatePrizeEvent.ValidationFailed).reason)
+            assertFalse(repo.createCalled)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -159,7 +186,7 @@ class CreatePrizeViewModelTest {
     // ── Duplicate detection (CA06) ─────────────────────────────────────────
 
     @Test
-    fun `submit with duplicate name and organization emits Error without calling API`() = runTest {
+    fun `submit with duplicate name and organization emits ValidationFailed DUPLICATE without calling API`() = runTest {
         val existing = listOf(Prize(1, "Grammy", "A music award", "NARAS"))
         val repo = FakePrizeRepository(prizesResult = Result.success(existing))
         val viewModel = buildViewModel(repo)
@@ -168,12 +195,15 @@ class CreatePrizeViewModelTest {
             assertEquals(CreatePrizeUiState.LoadingPrizes, awaitItem())
             advanceUntilIdle()
             awaitItem() // Ready with existing prizes
+            cancelAndIgnoreRemainingEvents()
+        }
 
+        viewModel.events.test {
             viewModel.submit("Grammy", "Any description", "NARAS")
-            val state = awaitItem()
-            assertTrue(state is CreatePrizeUiState.Error)
-            assertTrue((state as CreatePrizeUiState.Error).message.contains("ya existe", ignoreCase = true))
-            assertEquals(0, repo.createCallCount)
+            val event = awaitItem()
+            assertTrue(event is CreatePrizeEvent.ValidationFailed)
+            assertEquals(PrizeValidation.DUPLICATE, (event as CreatePrizeEvent.ValidationFailed).reason)
+            assertFalse(repo.createCalled)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -188,11 +218,15 @@ class CreatePrizeViewModelTest {
             assertEquals(CreatePrizeUiState.LoadingPrizes, awaitItem())
             advanceUntilIdle()
             awaitItem() // Ready
+            cancelAndIgnoreRemainingEvents()
+        }
 
+        viewModel.events.test {
             viewModel.submit("GRAMMY", "Any description", "NARAS")
-            val state = awaitItem()
-            assertTrue(state is CreatePrizeUiState.Error)
-            assertEquals(0, repo.createCallCount)
+            val event = awaitItem()
+            assertTrue(event is CreatePrizeEvent.ValidationFailed)
+            assertEquals(PrizeValidation.DUPLICATE, (event as CreatePrizeEvent.ValidationFailed).reason)
+            assertFalse(repo.createCalled)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -200,7 +234,7 @@ class CreatePrizeViewModelTest {
     // ── Network and server errors (CA07) ──────────────────────────────────
 
     @Test
-    fun `submit with IOException emits Error with network message`() = runTest {
+    fun `submit with IOException emits Error with NETWORK category`() = runTest {
         val repo = FakePrizeRepository(createResult = Result.failure(IOException()))
         val viewModel = buildViewModel(repo)
 
@@ -214,13 +248,13 @@ class CreatePrizeViewModelTest {
             advanceUntilIdle()
             val state = awaitItem()
             assertTrue(state is CreatePrizeUiState.Error)
-            assertTrue((state as CreatePrizeUiState.Error).message.contains("conexión", ignoreCase = true))
+            assertEquals(DomainFailure.NETWORK, (state as CreatePrizeUiState.Error).category)
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `submit with HttpException emits Error with server message`() = runTest {
+    fun `submit with HttpException emits Error with SERVER category`() = runTest {
         val repo = FakePrizeRepository(createResult = Result.failure(httpError(400)))
         val viewModel = buildViewModel(repo)
 
@@ -234,7 +268,7 @@ class CreatePrizeViewModelTest {
             advanceUntilIdle()
             val state = awaitItem()
             assertTrue(state is CreatePrizeUiState.Error)
-            assertTrue((state as CreatePrizeUiState.Error).message.contains("servidor", ignoreCase = true))
+            assertEquals(DomainFailure.SERVER, (state as CreatePrizeUiState.Error).category)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -254,6 +288,7 @@ class CreatePrizeViewModelTest {
             advanceUntilIdle()
             val errorState = awaitItem()
             assertTrue(errorState is CreatePrizeUiState.Error)
+            assertEquals(DomainFailure.NETWORK, (errorState as CreatePrizeUiState.Error).category)
 
             // resetState reloads prizes without clearing form (form lives in the UI)
             viewModel.resetState()

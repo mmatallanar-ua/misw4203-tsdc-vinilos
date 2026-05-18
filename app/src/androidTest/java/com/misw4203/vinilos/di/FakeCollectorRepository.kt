@@ -16,7 +16,7 @@ class FakeCollectorRepository @Inject constructor() : CollectorRepository {
         CollectorSummary(2, "María Alejandra Palacios", "3502889087", "j.palacios@outlook.es"),
     )
 
-    override suspend fun addAlbumToCollector(collectorId: Int, albumId: Int, price: Double, status: String) = Unit
+    override suspend fun addAlbumToCollector(collectorId: Int, albumId: Long, price: Double, status: String) = Unit
 
     override suspend fun getCollectorDetail(id: Int): CollectorDetail = CollectorDetail(
         id = id,
@@ -53,4 +53,8 @@ class FakeCollectorRepository @Inject constructor() : CollectorRepository {
 
     override suspend fun addFavoriteMusician(collectorId: Int, musicianId: Int) = Unit
     override suspend fun addFavoriteBand(collectorId: Int, bandId: Int) = Unit
+
+    override suspend fun removeFavoriteMusician(collectorId: Int, musicianId: Int) {}
+    override suspend fun removeFavoriteBand(collectorId: Int, bandId: Int) {}
+    override suspend fun removeAlbumFromCollector(collectorId: Int, albumId: Long) {}
 }

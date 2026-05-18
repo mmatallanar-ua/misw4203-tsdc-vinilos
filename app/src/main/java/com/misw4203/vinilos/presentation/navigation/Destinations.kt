@@ -1,12 +1,20 @@
 package com.misw4203.vinilos.presentation.navigation
 
 object Destinations {
+    /** Tab-prefix constants: literal prefix shared by every detail/add route of a tab. */
+    const val ArtistRoutePrefix = "artist/"
+    const val BandRoutePrefix = "band/"
+    const val MusicianRoutePrefix = "musician/"
+    const val CollectorRoutePrefix = "collector/"
+
     const val AlbumList = "album_list"
     const val AlbumDetail = "album_detail/{albumId}"
     const val AlbumDetailArg = "albumId"
     const val CreateAlbum = "create_album"
 
     const val ArtistList = "artists"
+    const val ArtistDetail = "artist/{id}"
+    const val ArtistDetailArg = "id"
 
     const val Collectors = "collectors"
     const val CollectorDetail = "collector/{collectorId}"
@@ -23,10 +31,13 @@ object Destinations {
      * The current build does not have a logged-in collector concept; HU09 spec
      * requires the `collector` field in the POST body. We use this default id
      * so the screen has a valid reference. Replace once auth is added.
+     *
+     * @see docs/adr/0001-sin-concepto-de-sesion.md (deuda aceptada)
      */
     const val DefaultCollectorId = 100
 
     const val RefreshAlbumDetailKey = "refresh_album_detail"
+    const val TrackAddedKey = "track_added"
 
     const val AddPerformerToAlbum = "album/{albumId}/performers/add"
     const val AddPerformerAlbumArg = "albumId"
@@ -59,6 +70,7 @@ object Destinations {
     const val AddFavoritePerformerCollectorArg = "collectorId"
 
     fun albumDetail(albumId: Long) = "album_detail/$albumId"
+    fun artistDetail(id: Int) = "artist/$id"
     fun collectorDetail(collectorId: Int) = "collector/$collectorId"
     fun addTrack(albumId: Long) = "album/$albumId/track/add"
     fun addPerformerToAlbum(albumId: Long) = "album/$albumId/performers/add"

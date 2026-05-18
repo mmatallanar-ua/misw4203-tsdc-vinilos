@@ -61,9 +61,12 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.misw4203.vinilos.R
 import com.misw4203.vinilos.domain.model.Prize
+import com.misw4203.vinilos.presentation.common.DomainFailure
 import com.misw4203.vinilos.presentation.ui.components.LoadingState
+import com.misw4203.vinilos.presentation.viewmodel.CreatePrizeEvent
 import com.misw4203.vinilos.presentation.viewmodel.CreatePrizeUiState
 import com.misw4203.vinilos.presentation.viewmodel.CreatePrizeViewModel
+import com.misw4203.vinilos.presentation.viewmodel.PrizeValidation
 
 private const val MAX_NAME_LENGTH = 100
 private const val MAX_ORG_LENGTH = 100
@@ -90,19 +93,43 @@ fun CreatePrizeScreen(
     val isSubmitting = uiState is CreatePrizeUiState.Submitting
     val existingPrizes = (uiState as? CreatePrizeUiState.Ready)?.existingPrizes ?: emptyList()
 
-    val successMessage = stringResource(R.string.create_prize_success)
-    val retryLabel = stringResource(android.R.string.ok)
+    val networkMsg = stringResource(R.string.create_prize_error_network)
+    val serverMsg = stringResource(R.string.create_prize_error_server)
+    val blankFieldsMsg = stringResource(R.string.create_prize_error_required_all)
+    val duplicateMsg = stringResource(R.string.create_prize_error_duplicate)
+    val retryLabel = stringResource(R.string.create_prize_retry)
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                CreatePrizeEvent.Submitted -> {
+                    onSuccess()
+                    viewModel.resetState()
+                }
+                is CreatePrizeEvent.ValidationFailed -> {
+                    val msg = when (event.reason) {
+                        PrizeValidation.BLANK_FIELDS -> blankFieldsMsg
+                        PrizeValidation.DUPLICATE -> duplicateMsg
+                    }
+                    snackbarHostState.showSnackbar(msg)
+                }
+            }
+        }
+    }
 
     LaunchedEffect(uiState) {
         when (val state = uiState) {
-            is CreatePrizeUiState.Success -> {
-                onSuccess()
-                viewModel.resetState()
-            }
             is CreatePrizeUiState.Error -> {
+                val msg = when (state.category) {
+                    DomainFailure.NETWORK -> networkMsg
+                    // Un 404 al crear un premio es un fallo de servidor desde la
+                    // perspectiva del usuario: mismo mensaje que SERVER.
+                    DomainFailure.NOT_FOUND -> serverMsg
+                    DomainFailure.SERVER -> serverMsg
+                }
                 val result = snackbarHostState.showSnackbar(
-                    message = state.message,
-                    actionLabel = "Reintentar",
+                    message = msg,
+                    actionLabel = retryLabel,
                     duration = SnackbarDuration.Long,
                 )
                 if (result == SnackbarResult.ActionPerformed) {
