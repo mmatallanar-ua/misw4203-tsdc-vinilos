@@ -30,3 +30,13 @@ suspend inline fun <T> runCatchingDomain(block: () -> T): DomainResult<T> =
     } catch (e: Exception) {
         DomainResult.Server
     }
+
+/** Categoría de fallo expuesta a la UI (sin filtrar tipos de red). */
+enum class DomainFailure { NETWORK, NOT_FOUND, SERVER }
+
+fun DomainResult<*>.failureOrNull(): DomainFailure? = when (this) {
+    is DomainResult.Ok -> null
+    DomainResult.Network -> DomainFailure.NETWORK
+    DomainResult.NotFound -> DomainFailure.NOT_FOUND
+    DomainResult.Server -> DomainFailure.SERVER
+}

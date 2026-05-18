@@ -5,6 +5,7 @@ import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import retrofit2.HttpException
@@ -39,5 +40,12 @@ class RunCatchingDomainTest {
         assertThrows(CancellationException::class.java) {
             kotlinx.coroutines.runBlocking { runCatchingDomain { throw CancellationException() } }
         }
+    }
+
+    @Test fun `failureOrNull maps each DomainResult`() {
+        assertNull(DomainResult.Ok(1).failureOrNull())
+        assertEquals(DomainFailure.NETWORK, DomainResult.Network.failureOrNull())
+        assertEquals(DomainFailure.NOT_FOUND, DomainResult.NotFound.failureOrNull())
+        assertEquals(DomainFailure.SERVER, DomainResult.Server.failureOrNull())
     }
 }
