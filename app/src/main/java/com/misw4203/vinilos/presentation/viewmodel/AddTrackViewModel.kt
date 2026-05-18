@@ -8,15 +8,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.misw4203.vinilos.domain.model.NewTrack
 import com.misw4203.vinilos.domain.usecase.AddTrackUseCase
+import com.misw4203.vinilos.presentation.common.DomainFailure
+import com.misw4203.vinilos.presentation.common.DomainResult
+import com.misw4203.vinilos.presentation.common.runCatchingDomain
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,27 +39,25 @@ class AddTrackViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<AddTrackUiState>(AddTrackUiState.Idle)
     val uiState: StateFlow<AddTrackUiState> = _uiState.asStateFlow()
 
+    private val _events = MutableSharedFlow<AddTrackEvent>(extraBufferCapacity = 1)
+    val events: SharedFlow<AddTrackEvent> = _events.asSharedFlow()
+
     fun submit() {
         nameError = if (name.isBlank()) "El nombre del track es obligatorio" else null
         durationError = if (!isValidDuration(duration)) "Formato: MM:SS (ej: 03:45)" else null
 
         if (nameError != null || durationError != null) return
 
-        _uiState.value = AddTrackUiState.Loading
+        _uiState.value = AddTrackUiState.Submitting
         viewModelScope.launch {
-            _uiState.value = try {
-                val track = addTrack(albumId, NewTrack(name.trim(), duration.trim()))
-                AddTrackUiState.Success(track)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: HttpException) {
-                val message = if (e.code() == 404) "Álbum no encontrado"
-                              else "Error al agregar track"
-                AddTrackUiState.Error(message, isNetworkError = false)
-            } catch (e: IOException) {
-                AddTrackUiState.Error("Sin conexión. Intenta de nuevo", isNetworkError = true)
-            } catch (e: Exception) {
-                AddTrackUiState.Error("Error al agregar track", isNetworkError = false)
+            when (runCatchingDomain { addTrack(albumId, NewTrack(name.trim(), duration.trim())) }) {
+                is DomainResult.Ok -> {
+                    _uiState.value = AddTrackUiState.Idle
+                    _events.tryEmit(AddTrackEvent.Submitted)
+                }
+                DomainResult.Network -> _uiState.value = AddTrackUiState.Error(DomainFailure.NETWORK)
+                DomainResult.NotFound -> _uiState.value = AddTrackUiState.Error(DomainFailure.NOT_FOUND)
+                DomainResult.Server -> _uiState.value = AddTrackUiState.Error(DomainFailure.SERVER)
             }
         }
     }

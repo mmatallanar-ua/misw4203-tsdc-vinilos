@@ -54,6 +54,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.misw4203.vinilos.R
 import com.misw4203.vinilos.domain.model.AlbumDetail
+import com.misw4203.vinilos.presentation.common.DomainFailure
+import com.misw4203.vinilos.presentation.viewmodel.AddTrackEvent
 import com.misw4203.vinilos.presentation.viewmodel.AddTrackUiState
 import com.misw4203.vinilos.presentation.viewmodel.AddTrackViewModel
 import com.misw4203.vinilos.presentation.viewmodel.AlbumDetailUiState
@@ -73,10 +75,28 @@ fun AddTrackScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var durationFieldValue by remember { mutableStateOf(TextFieldValue("")) }
 
+    val notFoundMessage = stringResource(R.string.add_track_error_not_found)
+    val networkMessage = stringResource(R.string.add_track_error_network)
+    val serverMessage = stringResource(R.string.add_track_error_server)
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                AddTrackEvent.Submitted -> onSuccess()
+            }
+        }
+    }
+
     LaunchedEffect(uiState) {
         when (val state = uiState) {
-            is AddTrackUiState.Success -> onSuccess()
-            is AddTrackUiState.Error -> snackbarHostState.showSnackbar(state.message)
+            is AddTrackUiState.Error -> {
+                val message = when (state.category) {
+                    DomainFailure.NOT_FOUND -> notFoundMessage
+                    DomainFailure.NETWORK -> networkMessage
+                    DomainFailure.SERVER -> serverMessage
+                }
+                snackbarHostState.showSnackbar(message)
+            }
             else -> Unit
         }
     }
@@ -168,13 +188,13 @@ fun AddTrackScreen(
 
             Button(
                 onClick = viewModel::submit,
-                enabled = uiState !is AddTrackUiState.Loading,
+                enabled = uiState !is AddTrackUiState.Submitting,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
                     .testTag("add_track_submit"),
             ) {
-                if (uiState is AddTrackUiState.Loading) {
+                if (uiState is AddTrackUiState.Submitting) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
                         strokeWidth = 2.dp,

@@ -74,6 +74,9 @@
     <string name="add_track_label_name">Nombre del track</string>
     <string name="add_track_label_duration">Duración (MM:SS)</string>
     <string name="add_track_success">Track agregado correctamente</string>
+    <string name="add_track_error_not_found">Álbum no encontrado</string>
+    <string name="add_track_error_network">Sin conexión. Intenta de nuevo</string>
+    <string name="add_track_error_server">Error al agregar track</string>
     <string name="add_track_button">Agregar Track</string>
     <string name="add_track_button_album_detail">Agregar canción</string>
 
