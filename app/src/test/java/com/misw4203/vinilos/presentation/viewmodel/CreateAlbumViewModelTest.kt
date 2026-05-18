@@ -7,6 +7,7 @@ import com.misw4203.vinilos.domain.model.AlbumDetail
 import com.misw4203.vinilos.domain.model.CreateAlbumInput
 import com.misw4203.vinilos.domain.repository.AlbumRepository
 import com.misw4203.vinilos.domain.usecase.CreateAlbumUseCase
+import com.misw4203.vinilos.presentation.common.DomainFailure
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -60,22 +61,21 @@ class CreateAlbumViewModelTest {
     }
 
     @Test
-    fun `submit transitions through Submitting then emits Success`() = runTest {
+    fun `submit transitions through Submitting then emits Submitted event and returns to Idle`() = runTest {
         val repo = FakeAlbumRepository()
         val viewModel = buildViewModel(repo)
 
-        viewModel.uiState.test {
-            assertEquals(CreateAlbumUiState.Idle, awaitItem())
+        viewModel.events.test {
             viewModel.submit(sampleInput())
-            assertEquals(CreateAlbumUiState.Submitting, awaitItem())
             advanceUntilIdle()
-            assertEquals(CreateAlbumUiState.Success, awaitItem())
+            assertEquals(CreateAlbumEvent.Submitted, awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
+        assertEquals(CreateAlbumUiState.Idle, viewModel.uiState.value)
     }
 
     @Test
-    fun `submit emits Error with network message on IOException`() = runTest {
+    fun `submit emits Error with network category on IOException`() = runTest {
         val repo = FakeAlbumRepository().apply {
             createResult = Result.failure(IOException("no connection"))
         }
@@ -87,14 +87,13 @@ class CreateAlbumViewModelTest {
             assertEquals(CreateAlbumUiState.Submitting, awaitItem())
             advanceUntilIdle()
             val state = awaitItem()
-            assertTrue(state is CreateAlbumUiState.Error)
-            assertTrue((state as CreateAlbumUiState.Error).message.contains("conexión"))
+            assertEquals(CreateAlbumUiState.Error(DomainFailure.NETWORK), state)
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `submit emits Error with server code on HttpException`() = runTest {
+    fun `submit emits Error with server category on HttpException`() = runTest {
         val httpError = HttpException(
             Response.error<Any>(422, "".toResponseBody("text/plain".toMediaType()))
         )
@@ -107,14 +106,13 @@ class CreateAlbumViewModelTest {
             assertEquals(CreateAlbumUiState.Submitting, awaitItem())
             advanceUntilIdle()
             val state = awaitItem()
-            assertTrue(state is CreateAlbumUiState.Error)
-            assertTrue((state as CreateAlbumUiState.Error).message.contains("422"))
+            assertEquals(CreateAlbumUiState.Error(DomainFailure.SERVER), state)
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `submit emits generic Error on unexpected exception`() = runTest {
+    fun `submit emits Error with server category on unexpected exception`() = runTest {
         val repo = FakeAlbumRepository().apply {
             createResult = Result.failure(RuntimeException("unexpected"))
         }
@@ -126,14 +124,13 @@ class CreateAlbumViewModelTest {
             assertEquals(CreateAlbumUiState.Submitting, awaitItem())
             advanceUntilIdle()
             val state = awaitItem()
-            assertTrue(state is CreateAlbumUiState.Error)
-            assertTrue((state as CreateAlbumUiState.Error).message.isNotBlank())
+            assertEquals(CreateAlbumUiState.Error(DomainFailure.SERVER), state)
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `resetState returns to Idle after Success`() = runTest {
+    fun `uiState is Idle after successful submit`() = runTest {
         val repo = FakeAlbumRepository()
         val viewModel = buildViewModel(repo)
 
@@ -142,16 +139,13 @@ class CreateAlbumViewModelTest {
             viewModel.submit(sampleInput())
             assertEquals(CreateAlbumUiState.Submitting, awaitItem())
             advanceUntilIdle()
-            assertEquals(CreateAlbumUiState.Success, awaitItem())
-
-            viewModel.resetState()
             assertEquals(CreateAlbumUiState.Idle, awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `resetState returns to Idle after Error`() = runTest {
+    fun `resetError returns to Idle after Error`() = runTest {
         val repo = FakeAlbumRepository().apply {
             createResult = Result.failure(IOException("offline"))
         }
@@ -164,7 +158,7 @@ class CreateAlbumViewModelTest {
             advanceUntilIdle()
             assertTrue(awaitItem() is CreateAlbumUiState.Error)
 
-            viewModel.resetState()
+            viewModel.resetError()
             assertEquals(CreateAlbumUiState.Idle, awaitItem())
             cancelAndIgnoreRemainingEvents()
         }

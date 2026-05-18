@@ -97,6 +97,8 @@
     <string name="create_album_save">Guardar Álbum</string>
     <string name="create_album_saving">Guardando…</string>
     <string name="create_album_error_required">Campo obligatorio</string>
+    <string name="create_album_error_network">Sin conexión a internet. Intenta de nuevo.</string>
+    <string name="create_album_error_server">Error del servidor. Verifica los datos.</string>
     <string name="cd_create_album">Crear álbum</string>
 
     <!-- Navigation -->
