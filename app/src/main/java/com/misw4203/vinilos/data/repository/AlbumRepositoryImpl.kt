@@ -17,6 +17,7 @@ import com.misw4203.vinilos.domain.model.Comment
 import com.misw4203.vinilos.domain.model.CreateAlbumInput
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.Track
+import com.misw4203.vinilos.core.logging.AppLogger
 import com.misw4203.vinilos.di.IoDispatcher
 import com.misw4203.vinilos.domain.repository.AlbumRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -28,6 +29,7 @@ class AlbumRepositoryImpl @Inject constructor(
     private val api: VinilosApiService,
     private val dao: AlbumDao,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val logger: AppLogger,
 ) : AlbumRepository {
 
     override suspend fun getAlbums(): List<Album> = withContext(ioDispatcher) {
@@ -138,6 +140,7 @@ class AlbumRepositoryImpl @Inject constructor(
             val fresh = api.getAlbum(albumId).toAlbumDetail()
             dao.upsertDetail(AlbumDetailEntity.fromDomain(fresh))
         } catch (e: IOException) {
+            logger.w("AlbumRepositoryImpl", "invalidateDetailCache offline; se reconcilia en el próximo getAlbumById", e)
             // offline: leave the cache; next online getAlbumById reconciles it
         }
         Unit

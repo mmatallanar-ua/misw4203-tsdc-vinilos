@@ -14,6 +14,7 @@ import com.misw4203.vinilos.domain.model.Band
 import com.misw4203.vinilos.domain.model.BandSummary
 import com.misw4203.vinilos.domain.model.MusicianPrize
 import com.misw4203.vinilos.domain.model.MusicianSummary
+import com.misw4203.vinilos.core.logging.AppLogger
 import com.misw4203.vinilos.di.IoDispatcher
 import com.misw4203.vinilos.domain.repository.BandRepository
 import kotlinx.coroutines.CancellationException
@@ -28,6 +29,7 @@ class BandRepositoryImpl @Inject constructor(
     private val api: VinilosApiService,
     private val dao: BandDao,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val logger: AppLogger,
 ) : BandRepository {
 
     override suspend fun getBands(): List<BandSummary> = withContext(ioDispatcher) {
@@ -89,7 +91,8 @@ class BandRepositoryImpl @Inject constructor(
             }
         } catch (e: CancellationException) {
             throw e
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            logger.w("BandRepositoryImpl", "write-through cache de addMusicianToBand falló", e)
             // best-effort
         }
         Unit
@@ -107,7 +110,8 @@ class BandRepositoryImpl @Inject constructor(
             }
         } catch (e: CancellationException) {
             throw e
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            logger.w("BandRepositoryImpl", "write-through cache de addAlbumToBand falló", e)
             // best-effort
         }
         Unit

@@ -9,6 +9,7 @@ import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.CollectorAlbum
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.PerformerKind
+import com.misw4203.vinilos.testsupport.RecordingAppLogger
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -36,7 +37,7 @@ class CollectorRepositoryImplTest {
     fun setUp() {
         api = mockk()
         dao = mockk(relaxed = true)
-        repository = CollectorRepositoryImpl(api, dao, UnconfinedTestDispatcher())
+        repository = CollectorRepositoryImpl(api, dao, UnconfinedTestDispatcher(), RecordingAppLogger())
     }
 
     // -- getCollectors (HU05) ------------------------------------------------

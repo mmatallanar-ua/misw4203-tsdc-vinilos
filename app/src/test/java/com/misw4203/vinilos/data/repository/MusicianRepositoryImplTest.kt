@@ -6,6 +6,7 @@ import com.misw4203.vinilos.data.remote.dto.MusicianDetailDto
 import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDetailDto
 import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDto
 import com.misw4203.vinilos.data.remote.dto.PrizeInAssociationDto
+import com.misw4203.vinilos.testsupport.RecordingAppLogger
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,7 +32,7 @@ class MusicianRepositoryImplTest {
     fun setUp() {
         api = mockk()
         dao = mockk(relaxed = true)
-        repository = MusicianRepositoryImpl(api, dao, UnconfinedTestDispatcher())
+        repository = MusicianRepositoryImpl(api, dao, UnconfinedTestDispatcher(), RecordingAppLogger())
     }
 
     @Test

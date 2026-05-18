@@ -4,6 +4,7 @@ import com.misw4203.vinilos.data.local.dao.AlbumDao
 import com.misw4203.vinilos.data.remote.api.VinilosApiService
 import com.misw4203.vinilos.data.remote.dto.CommentDto
 import com.misw4203.vinilos.data.remote.dto.CreateCommentRequest
+import com.misw4203.vinilos.testsupport.RecordingAppLogger
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -31,7 +32,7 @@ class AlbumRepositoryAddCommentTest {
     fun setUp() {
         api = mockk()
         dao = mockk(relaxed = true)
-        repository = AlbumRepositoryImpl(api, dao, UnconfinedTestDispatcher())
+        repository = AlbumRepositoryImpl(api, dao, UnconfinedTestDispatcher(), RecordingAppLogger())
     }
 
     @Test

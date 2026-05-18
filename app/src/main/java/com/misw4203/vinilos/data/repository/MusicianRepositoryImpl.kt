@@ -12,6 +12,7 @@ import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.Musician
 import com.misw4203.vinilos.domain.model.MusicianPrize
 import com.misw4203.vinilos.domain.model.MusicianSummary
+import com.misw4203.vinilos.core.logging.AppLogger
 import com.misw4203.vinilos.di.IoDispatcher
 import com.misw4203.vinilos.domain.repository.MusicianRepository
 import kotlinx.coroutines.CancellationException
@@ -26,6 +27,7 @@ class MusicianRepositoryImpl @Inject constructor(
     private val api: VinilosApiService,
     private val dao: MusicianDao,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val logger: AppLogger,
 ) : MusicianRepository {
 
     override suspend fun getMusicians(): List<MusicianSummary> = withContext(ioDispatcher) {
@@ -94,7 +96,10 @@ class MusicianRepositoryImpl @Inject constructor(
             }
         } catch (e: CancellationException) {
             throw e
-        } catch (_: Exception) { /* best-effort */ }
+        } catch (e: Exception) {
+            logger.w("MusicianRepositoryImpl", "write-through cache de addAlbumToMusician falló", e)
+            /* best-effort */
+        }
         Unit
     }
 

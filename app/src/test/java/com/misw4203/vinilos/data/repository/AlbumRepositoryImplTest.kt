@@ -13,6 +13,7 @@ import com.misw4203.vinilos.domain.model.Comment
 import com.misw4203.vinilos.domain.model.CreateAlbumInput
 import com.misw4203.vinilos.domain.model.NewTrack
 import com.misw4203.vinilos.domain.model.Track
+import com.misw4203.vinilos.testsupport.RecordingAppLogger
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -40,7 +41,7 @@ class AlbumRepositoryImplTest {
     fun setUp() {
         api = mockk()
         dao = mockk(relaxed = true)
-        repository = AlbumRepositoryImpl(api, dao, UnconfinedTestDispatcher())
+        repository = AlbumRepositoryImpl(api, dao, UnconfinedTestDispatcher(), RecordingAppLogger())
     }
 
     @Test

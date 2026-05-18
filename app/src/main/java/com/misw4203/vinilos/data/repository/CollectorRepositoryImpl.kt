@@ -18,6 +18,7 @@ import com.misw4203.vinilos.domain.model.CollectorDetail
 import com.misw4203.vinilos.domain.model.CollectorSummary
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.PerformerKind
+import com.misw4203.vinilos.core.logging.AppLogger
 import com.misw4203.vinilos.di.IoDispatcher
 import com.misw4203.vinilos.domain.repository.CollectorRepository
 import kotlinx.coroutines.CancellationException
@@ -33,6 +34,7 @@ class CollectorRepositoryImpl @Inject constructor(
     private val api: VinilosApiService,
     private val dao: CollectorDao,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val logger: AppLogger,
 ) : CollectorRepository {
 
     override suspend fun getCollectors(): List<CollectorSummary> = withContext(ioDispatcher) {
@@ -64,7 +66,8 @@ class CollectorRepositoryImpl @Inject constructor(
             }
         } catch (e: CancellationException) {
             throw e
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            logger.w("CollectorRepositoryImpl", "write-through cache de addFavoriteMusician falló", e)
             // best-effort
         }
         Unit
@@ -88,7 +91,8 @@ class CollectorRepositoryImpl @Inject constructor(
             }
         } catch (e: CancellationException) {
             throw e
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            logger.w("CollectorRepositoryImpl", "write-through cache de addFavoriteBand falló", e)
             // best-effort
         }
         Unit
@@ -212,7 +216,8 @@ class CollectorRepositoryImpl @Inject constructor(
                 }
             } catch (e: CancellationException) {
                 throw e
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                logger.w("CollectorRepositoryImpl", "write-through cache de removeAlbumFromCollector falló", e)
                 // best-effort; the next getCollectorDetail reconciles the cache
             }
             Unit
@@ -231,7 +236,8 @@ class CollectorRepositoryImpl @Inject constructor(
             }
         } catch (e: CancellationException) {
             throw e
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            logger.w("CollectorRepositoryImpl", "write-through cache de removeFavoriteFromCache falló", e)
             // best-effort
         }
     }

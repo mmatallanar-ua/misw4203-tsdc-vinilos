@@ -11,6 +11,7 @@ import com.misw4203.vinilos.data.remote.dto.MusicianDetailDto
 import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDetailDto
 import com.misw4203.vinilos.data.remote.dto.PerformerPrizeDto
 import com.misw4203.vinilos.data.remote.dto.PrizeInAssociationDto
+import com.misw4203.vinilos.testsupport.RecordingAppLogger
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -32,7 +33,7 @@ class BandRepositoryImplTest {
 
     private val api: VinilosApiService = mockk()
     private val dao: BandDao = mockk(relaxed = true)
-    private val repo = BandRepositoryImpl(api, dao, UnconfinedTestDispatcher())
+    private val repo = BandRepositoryImpl(api, dao, UnconfinedTestDispatcher(), RecordingAppLogger())
 
     @Test
     fun `getBands network success caches and returns mapped list`() = runTest {
