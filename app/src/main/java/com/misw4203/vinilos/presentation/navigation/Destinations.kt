@@ -25,6 +25,8 @@ object Destinations {
      * The current build does not have a logged-in collector concept; HU09 spec
      * requires the `collector` field in the POST body. We use this default id
      * so the screen has a valid reference. Replace once auth is added.
+     *
+     * @see docs/adr/0001-sin-concepto-de-sesion.md (deuda aceptada)
      */
     const val DefaultCollectorId = 100
 
