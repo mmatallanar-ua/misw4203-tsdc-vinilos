@@ -51,6 +51,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.misw4203.vinilos.R
 import com.misw4203.vinilos.presentation.ui.components.RatingBar
+import com.misw4203.vinilos.presentation.common.DomainFailure
+import com.misw4203.vinilos.presentation.viewmodel.AddCommentEvent
 import com.misw4203.vinilos.presentation.viewmodel.AddCommentFormState
 import com.misw4203.vinilos.presentation.viewmodel.AddCommentUiState
 import com.misw4203.vinilos.presentation.viewmodel.AddCommentViewModel
@@ -73,11 +75,22 @@ fun AddCommentScreen(
     val networkErrorMessage = stringResource(R.string.add_comment_error_network)
     val serverErrorMessage = stringResource(R.string.add_comment_error_server)
 
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                AddCommentEvent.Submitted -> onSuccess()
+            }
+        }
+    }
+
     LaunchedEffect(uiState) {
         when (val state = uiState) {
-            is AddCommentUiState.Success -> onSuccess()
             is AddCommentUiState.Error -> {
-                val message = if (state.isNetworkError) networkErrorMessage else serverErrorMessage
+                val message = when (state.category) {
+                    DomainFailure.NETWORK -> networkErrorMessage
+                    DomainFailure.NOT_FOUND -> serverErrorMessage
+                    DomainFailure.SERVER -> serverErrorMessage
+                }
                 snackbarHostState.showSnackbar(message)
                 viewModel.resetError()
             }
@@ -144,7 +157,7 @@ private fun AddCommentContent(
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val isLoading = uiState is AddCommentUiState.Loading
+    val isLoading = uiState is AddCommentUiState.Submitting
 
     Column(
         modifier = modifier
