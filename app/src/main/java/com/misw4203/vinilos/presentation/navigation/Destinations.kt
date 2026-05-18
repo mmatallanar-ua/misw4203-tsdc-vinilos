@@ -1,6 +1,12 @@
 package com.misw4203.vinilos.presentation.navigation
 
 object Destinations {
+    /** Tab-prefix constants: literal prefix shared by every detail/add route of a tab. */
+    const val ArtistRoutePrefix = "artist/"
+    const val BandRoutePrefix = "band/"
+    const val MusicianRoutePrefix = "musician/"
+    const val CollectorRoutePrefix = "collector/"
+
     const val AlbumList = "album_list"
     const val AlbumDetail = "album_detail/{albumId}"
     const val AlbumDetailArg = "albumId"
@@ -31,6 +37,7 @@ object Destinations {
     const val DefaultCollectorId = 100
 
     const val RefreshAlbumDetailKey = "refresh_album_detail"
+    const val TrackAddedKey = "track_added"
 
     const val AddPerformerToAlbum = "album/{albumId}/performers/add"
     const val AddPerformerAlbumArg = "albumId"

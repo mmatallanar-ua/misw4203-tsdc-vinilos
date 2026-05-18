@@ -54,10 +54,11 @@ fun VinilosNavHost() {
 
     val selectedDestination = when {
         currentRoute == Destinations.ArtistList ||
-            currentRoute?.startsWith("artist/") == true ||
-            currentRoute?.startsWith("band/") == true ||
-            currentRoute?.startsWith("musician/") == true -> VinilosDestination.Artists
-        currentRoute == Destinations.Collectors || currentRoute?.startsWith("collector/") == true -> VinilosDestination.Collectors
+            currentRoute?.startsWith(Destinations.ArtistRoutePrefix) == true ||
+            currentRoute?.startsWith(Destinations.BandRoutePrefix) == true ||
+            currentRoute?.startsWith(Destinations.MusicianRoutePrefix) == true -> VinilosDestination.Artists
+        currentRoute == Destinations.Collectors ||
+            currentRoute?.startsWith(Destinations.CollectorRoutePrefix) == true -> VinilosDestination.Collectors
         currentRoute == Destinations.Prizes || currentRoute == Destinations.CreatePrize -> VinilosDestination.Prizes
         else -> VinilosDestination.Albums
     }
@@ -108,14 +109,16 @@ fun VinilosNavHost() {
                     route = Destinations.AlbumDetail,
                     arguments = listOf(navArgument(Destinations.AlbumDetailArg) { type = NavType.LongType }),
                 ) { entry ->
-                    val albumId = entry.arguments?.getLong(Destinations.AlbumDetailArg) ?: 0L
+                    val albumId = checkNotNull(entry.arguments?.getLong(Destinations.AlbumDetailArg)) {
+                        "Falta argumento ${Destinations.AlbumDetailArg} en ${Destinations.AlbumDetail}"
+                    }
                     val viewModel = hiltViewModel<AlbumDetailViewModel>()
                     val trackAddedMessage = stringResource(R.string.add_track_success)
                     // Track addition: show snackbar + refresh
                     LaunchedEffect(entry) {
-                        entry.savedStateHandle.getStateFlow("track_added", false).collect { added ->
+                        entry.savedStateHandle.getStateFlow(Destinations.TrackAddedKey, false).collect { added ->
                             if (added) {
-                                entry.savedStateHandle["track_added"] = false
+                                entry.savedStateHandle[Destinations.TrackAddedKey] = false
                                 viewModel.retry()
                                 snackbarHostState.showSnackbar(trackAddedMessage)
                             }
@@ -162,7 +165,7 @@ fun VinilosNavHost() {
                         onSuccess = {
                             navController.previousBackStackEntry
                                 ?.savedStateHandle
-                                ?.set("track_added", true)
+                                ?.set(Destinations.TrackAddedKey, true)
                             navController.popBackStack()
                         },
                     )
@@ -194,7 +197,9 @@ fun VinilosNavHost() {
                     route = Destinations.ArtistDetail,
                     arguments = listOf(navArgument(Destinations.ArtistDetailArg) { type = NavType.IntType }),
                 ) { backStackEntry ->
-                    val id = backStackEntry.arguments?.getInt(Destinations.ArtistDetailArg) ?: return@composable
+                    val id = checkNotNull(backStackEntry.arguments?.getInt(Destinations.ArtistDetailArg)) {
+                        "Falta argumento ${Destinations.ArtistDetailArg} en ${Destinations.ArtistDetail}"
+                    }
                     val refreshFlag by backStackEntry.savedStateHandle
                         .getStateFlow(Destinations.RefreshMusicianDetailKey, false)
                         .collectAsStateWithLifecycle()
@@ -230,7 +235,9 @@ fun VinilosNavHost() {
                     route = Destinations.CollectorDetail,
                     arguments = listOf(navArgument(Destinations.CollectorDetailArg) { type = NavType.IntType }),
                 ) { entry ->
-                    val collectorId = entry.arguments?.getInt(Destinations.CollectorDetailArg) ?: return@composable
+                    val collectorId = checkNotNull(entry.arguments?.getInt(Destinations.CollectorDetailArg)) {
+                        "Falta argumento ${Destinations.CollectorDetailArg} en ${Destinations.CollectorDetail}"
+                    }
                     val refreshFlag by entry.savedStateHandle
                         .getStateFlow(Destinations.RefreshCollectorDetailKey, false)
                         .collectAsStateWithLifecycle()
@@ -279,7 +286,9 @@ fun VinilosNavHost() {
                     route = Destinations.BandDetail,
                     arguments = listOf(navArgument(Destinations.BandDetailArg) { type = NavType.IntType }),
                 ) { entry ->
-                    val bandId = entry.arguments?.getInt(Destinations.BandDetailArg) ?: return@composable
+                    val bandId = checkNotNull(entry.arguments?.getInt(Destinations.BandDetailArg)) {
+                        "Falta argumento ${Destinations.BandDetailArg} en ${Destinations.BandDetail}"
+                    }
                     val refreshFlag by entry.savedStateHandle
                         .getStateFlow(Destinations.RefreshBandDetailKey, false)
                         .collectAsStateWithLifecycle()
