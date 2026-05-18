@@ -15,12 +15,12 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -33,13 +33,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -186,31 +184,45 @@ private fun AlbumDetailContent(
     onAddPerformer: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize().testTag("album_detail_root")) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-        ) {
+        // Surface card overlaps the cover by CardOverlap via a negative offset.
+        // LazyColumn items are independent, so the single continuous surface is
+        // reproduced by giving every content item the surface background +
+        // horizontal padding and shifting them all up by CardOverlap; only the
+        // first content item gets the rounded-top clip + top padding, and a
+        // trailing spacer of (original bottom 32.dp + CardOverlap) keeps the net
+        // scroll length unchanged with no gap at the bottom.
+        val surfaceColor = MaterialTheme.colorScheme.surface
+        val contentItemModifier = Modifier
+            .fillMaxWidth()
+            .offset(y = -CardOverlap)
+            .background(surfaceColor)
+            .padding(horizontal = 24.dp)
+        val firstContentItemModifier = Modifier
+            .fillMaxWidth()
+            .offset(y = -CardOverlap)
+            .clip(RoundedCornerShape(topStart = CardRadius, topEnd = CardRadius))
+            .background(surfaceColor)
+            .padding(horizontal = 24.dp)
+            .padding(top = 28.dp)
+
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
             // Cover image
-            Box(modifier = Modifier.fillMaxWidth().height(CoverHeight)) {
-                AsyncImage(
-                    model = album.coverUrl,
-                    contentDescription = stringResource(R.string.cd_album_cover_of, album.name),
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
+            item {
+                Box(modifier = Modifier.fillMaxWidth().height(CoverHeight)) {
+                    AsyncImage(
+                        model = album.coverUrl,
+                        contentDescription = stringResource(R.string.cd_album_cover_of, album.name),
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
             }
 
-            // Content card overlapping the image
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .offset(y = -CardOverlap),
-                shape = RoundedCornerShape(topStart = CardRadius, topEnd = CardRadius),
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 0.dp,
-            ) {
-                Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 28.dp)) {
+            // Static header content: title → add-comment button → performers,
+            // plus the tracks section header (the track rows themselves are
+            // virtualized below).
+            item {
+                Column(modifier = firstContentItemModifier) {
                     // Title + artist
                     Text(
                         text = album.name,
@@ -270,24 +282,44 @@ private fun AlbumDetailContent(
                         onAddPerformer = onAddPerformer,
                     )
 
-                    // Tracks
+                    // Tracks header
                     Spacer(Modifier.height(28.dp))
-                    TracksSection(
-                        tracks = album.tracks,
-                        onAddTrack = onAddTrack,
-                        onRemoveTrack = onRemoveTrack,
-                    )
+                    TracksHeader(trackCount = album.tracks.size, onAddTrack = onAddTrack)
+                    Spacer(Modifier.height(12.dp))
+                }
+            }
 
-                    // Comments
-                    if (album.comments.isNotEmpty()) {
+            // Tracks (virtualized)
+            itemsIndexed(album.tracks, key = { _, t -> t.id }) { index, track ->
+                Column(modifier = contentItemModifier) {
+                    TrackRow(index = index + 1, track = track, onRemove = onRemoveTrack)
+                    Spacer(Modifier.height(8.dp))
+                }
+            }
+
+            // Comments section header (only if comments non-empty)
+            if (album.comments.isNotEmpty()) {
+                item {
+                    Column(modifier = contentItemModifier) {
                         Spacer(Modifier.height(28.dp))
-                        CommentsSection(
-                            comments = album.comments,
-                            onRemoveComment = onRemoveComment,
-                        )
+                        SectionHeader(stringResource(R.string.detail_section_comments))
+                        Spacer(Modifier.height(12.dp))
                     }
+                }
 
-                    // Record label
+                // Comments (virtualized). Original list used Arrangement.spacedBy(12.dp);
+                // reproduced with a 12.dp leading spacer on every card after the first.
+                itemsIndexed(album.comments, key = { _, c -> c.id }) { index, comment ->
+                    Column(modifier = contentItemModifier) {
+                        if (index > 0) Spacer(Modifier.height(12.dp))
+                        CommentCard(comment, onRemoveComment)
+                    }
+                }
+            }
+
+            // Record label + trailing spacer (compensates the negative offset)
+            item {
+                Column(modifier = contentItemModifier) {
                     if (album.recordLabel.isNotBlank()) {
                         Spacer(Modifier.height(24.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -306,7 +338,10 @@ private fun AlbumDetailContent(
                         }
                     }
 
-                    Spacer(Modifier.height(32.dp))
+                    // Original trailing Spacer(32.dp) + bottom padding(28.dp) of the
+                    // card, plus CardOverlap to offset the negative shift so the net
+                    // scroll length is identical and there is no gap at the bottom.
+                    Spacer(Modifier.height(32.dp + 28.dp + CardOverlap))
                 }
             }
         }
@@ -358,11 +393,7 @@ private fun MetadataChip(label: String) {
 }
 
 @Composable
-private fun TracksSection(
-    tracks: List<Track>,
-    onAddTrack: () -> Unit,
-    onRemoveTrack: (Track) -> Unit,
-) {
+private fun TracksHeader(trackCount: Int, onAddTrack: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -371,7 +402,7 @@ private fun TracksSection(
         SectionHeader(stringResource(R.string.detail_section_tracks))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = stringResource(R.string.detail_tracks_total, tracks.size).uppercase(),
+                text = stringResource(R.string.detail_tracks_total, trackCount).uppercase(),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.outlineVariant,
             )
@@ -383,13 +414,6 @@ private fun TracksSection(
                     tint = MaterialTheme.colorScheme.primary,
                 )
             }
-        }
-    }
-    Spacer(Modifier.height(12.dp))
-    tracks.forEachIndexed { index, track ->
-        key(track.id) {
-            TrackRow(index = index + 1, track = track, onRemove = onRemoveTrack)
-            Spacer(Modifier.height(8.dp))
         }
     }
 }
@@ -509,19 +533,6 @@ private fun PerformerChip(performer: Performer) {
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface,
         )
-    }
-}
-
-@Composable
-private fun CommentsSection(comments: List<Comment>, onRemoveComment: (Comment) -> Unit) {
-    SectionHeader(stringResource(R.string.detail_section_comments))
-    Spacer(Modifier.height(12.dp))
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        comments.forEach { comment ->
-            key(comment.id) {
-                CommentCard(comment, onRemoveComment)
-            }
-        }
     }
 }
 
