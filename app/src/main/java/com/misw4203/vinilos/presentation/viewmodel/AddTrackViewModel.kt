@@ -62,6 +62,12 @@ class AddTrackViewModel @Inject constructor(
         }
     }
 
+    fun resetError() {
+        if (_uiState.value is AddTrackUiState.Error) {
+            _uiState.value = AddTrackUiState.Idle
+        }
+    }
+
     internal fun isValidDuration(value: String): Boolean {
         val match = Regex("""^(\d{1,2}):(\d{2})$""").matchEntire(value) ?: return false
         return match.groupValues[2].toInt() < 60

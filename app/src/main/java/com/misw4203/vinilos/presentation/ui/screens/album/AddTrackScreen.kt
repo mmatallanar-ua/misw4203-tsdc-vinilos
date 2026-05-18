@@ -96,6 +96,7 @@ fun AddTrackScreen(
                     DomainFailure.SERVER -> serverMessage
                 }
                 snackbarHostState.showSnackbar(message)
+                viewModel.resetError()
             }
             else -> Unit
         }
