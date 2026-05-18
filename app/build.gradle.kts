@@ -28,6 +28,11 @@ android {
     }
     fun keystoreValue(propKey: String, envKey: String): String? =
         keystoreProps.getProperty(propKey) ?: System.getenv(envKey)
+    // Cuando faltan credenciales el release queda *unsigned* (deuda tolerada,
+    // ver plan A4): NO se asigna el signingConfig incompleto, porque AGP 9
+    // falla `packageRelease` con un signingConfig presente-pero-sin-storeFile
+    // en vez de empaquetar sin firmar.
+    var releaseSigningConfigured = false
 
     signingConfigs {
         create("release") {
@@ -41,6 +46,7 @@ android {
                 storePassword = storePw
                 keyAlias = alias
                 keyPassword = keyPw
+                releaseSigningConfigured = true
             } else {
                 logger.warn(
                     "[vinilos] Credenciales de firma de release ausentes — copia " +
@@ -57,8 +63,11 @@ android {
             buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:3000/\"")
         }
         release {
-            isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            if (releaseSigningConfigured) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
