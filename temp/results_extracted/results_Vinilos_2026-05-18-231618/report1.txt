@@ -1,0 +1,67 @@
+A continuación, encontrarás una lista de oportunidades para mejorar la accesibilidad de Vinilos. Cada elemento corresponde a un área descrita en la captura de pantalla adjunta.
+
+Contraste del texto
+[216,382][673,431]
+¿Por qué no aumentas la relación de contraste entre el color de fondo y de primer plano del texto de este elemento?
+La relación de contraste del texto del elemento es 2.64. Esta cifra se basa en una estimación del color #9CA0A0 del primer plano y del color #FFFFFF del segundo plano. Te recomendamos que uses colores que aumenten la relación de contraste más de 4.50 para textos de pequeño tamaño o a 3.00 para textos de gran tamaño.
+
+Contraste del texto
+[72,574][1008,609]
+¿Por qué no aumentas la relación de contraste entre el color de fondo y de primer plano del texto de este elemento?
+La relación de contraste del texto del elemento es 4.04. Esta cifra se basa en una estimación del color #757C7D del primer plano y del color #F9F9F9 del segundo plano. Te recomendamos que uses colores que aumenten la relación de contraste más de 4.50 para textos de pequeño tamaño o a 3.00 para textos de gran tamaño.
+
+Contraste del texto
+[360,865][596,900]
+¿Por qué no aumentas la relación de contraste entre el color de fondo y de primer plano del texto de este elemento?
+La relación de contraste del texto del elemento es 4.04. Esta cifra se basa en una estimación del color #757C7D del primer plano y del color #F9F9F9 del segundo plano. Te recomendamos que uses colores que aumenten la relación de contraste más de 4.50 para textos de pequeño tamaño o a 3.00 para textos de gran tamaño. Es posible que este elemento quede oculto por el contenido que aparece en pantalla. Comprueba el contraste del elemento manualmente.
+
+Contraste del texto
+[360,1177][596,1212]
+¿Por qué no aumentas la relación de contraste entre el color de fondo y de primer plano del texto de este elemento?
+La relación de contraste del texto del elemento es 4.04. Esta cifra se basa en una estimación del color #757C7D del primer plano y del color #F9F9F9 del segundo plano. Te recomendamos que uses colores que aumenten la relación de contraste más de 4.50 para textos de pequeño tamaño o a 3.00 para textos de gran tamaño. Es posible que este elemento quede oculto por el contenido que aparece en pantalla. Comprueba el contraste del elemento manualmente.
+
+Contraste del texto
+[360,1489][578,1524]
+¿Por qué no aumentas la relación de contraste entre el color de fondo y de primer plano del texto de este elemento?
+La relación de contraste del texto del elemento es 4.04. Esta cifra se basa en una estimación del color #757C7D del primer plano y del color #F9F9F9 del segundo plano. Te recomendamos que uses colores que aumenten la relación de contraste más de 4.50 para textos de pequeño tamaño o a 3.00 para textos de gran tamaño. Es posible que este elemento quede oculto por el contenido que aparece en pantalla. Comprueba el contraste del elemento manualmente.
+
+Contraste del texto
+[360,1801][578,1836]
+¿Por qué no aumentas la relación de contraste entre el color de fondo y de primer plano del texto de este elemento?
+La relación de contraste del texto del elemento es 4.04. Esta cifra se basa en una estimación del color #757C7D del primer plano y del color #F9F9F9 del segundo plano. Te recomendamos que uses colores que aumenten la relación de contraste más de 4.50 para textos de pequeño tamaño o a 3.00 para textos de gran tamaño. Es posible que este elemento quede oculto por el contenido que aparece en pantalla. Comprueba el contraste del elemento manualmente.
+
+Contraste del texto
+[360,2113][578,2148]
+¿Por qué no aumentas la relación de contraste entre el color de fondo y de primer plano del texto de este elemento?
+La relación de contraste del texto del elemento es 4.04. Esta cifra se basa en una estimación del color #757C7D del primer plano y del color #F9F9F9 del segundo plano. Te recomendamos que uses colores que aumenten la relación de contraste más de 4.50 para textos de pequeño tamaño o a 3.00 para textos de gran tamaño. Es posible que este elemento quede oculto por el contenido que aparece en pantalla. Comprueba el contraste del elemento manualmente.
+
+Contraste del texto
+[320,2401][467,2436]
+¿Por qué no aumentas la relación de contraste entre el color de fondo y de primer plano del texto de este elemento?
+La relación de contraste del texto del elemento es 2.02. Esta cifra se basa en una estimación del color #ADB3B4 del primer plano y del color #F9F9F9 del segundo plano. Te recomendamos que uses colores que aumenten la relación de contraste más de 4.50 para textos de pequeño tamaño o a 3.00 para textos de gran tamaño. Es posible que este elemento quede oculto por el contenido que aparece en pantalla. Comprueba el contraste del elemento manualmente.
+
+Contraste del texto
+[552,2401][779,2436]
+¿Por qué no aumentas la relación de contraste entre el color de fondo y de primer plano del texto de este elemento?
+La relación de contraste del texto del elemento es 2.02. Esta cifra se basa en una estimación del color #ADB3B4 del primer plano y del color #F9F9F9 del segundo plano. Te recomendamos que uses colores que aumenten la relación de contraste más de 4.50 para textos de pequeño tamaño o a 3.00 para textos de gran tamaño. Es posible que este elemento quede oculto por el contenido que aparece en pantalla. Comprueba el contraste del elemento manualmente.
+
+Contraste del texto
+[865,2401][989,2436]
+¿Por qué no aumentas la relación de contraste entre el color de fondo y de primer plano del texto de este elemento?
+La relación de contraste del texto del elemento es 2.02. Esta cifra se basa en una estimación del color #ADB3B4 del primer plano y del color #F9F9F9 del segundo plano. Te recomendamos que uses colores que aumenten la relación de contraste más de 4.50 para textos de pequeño tamaño o a 3.00 para textos de gran tamaño. Es posible que este elemento quede oculto por el contenido que aparece en pantalla. Comprueba el contraste del elemento manualmente.
+
+Tipo de elemento no admitido
+[0,0][1080,2640]
+Es posible que el tipo de este elemento no se admita.
+Puede que el tipo u30 de este elemento no sea compatible con los servicios de accesibilidad. Utiliza un tipo que se especifique en el SDK de Android.
+
+Texto no expuesto
+[72,693][1008,933]
+Posible texto detectado: MER
+Comprueba que la etiqueta de accesibilidad de este elemento incluya su texto de forma visible.
+
+Texto no expuesto
+[72,1005][1008,1245]
+Posible texto detectado: blodes
+Comprueba que la etiqueta de accesibilidad de este elemento incluya su texto de forma visible.
+

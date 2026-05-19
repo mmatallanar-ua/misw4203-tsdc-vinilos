@@ -223,12 +223,12 @@ private fun AlbumHeaderCard(album: AlbumDetail) {
     ) {
         AsyncImage(
             model = album.coverUrl,
-            contentDescription = null,
+            contentDescription = album.name,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(56.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                .background(MaterialTheme.colorScheme.outline),
         )
         Column {
             Text(

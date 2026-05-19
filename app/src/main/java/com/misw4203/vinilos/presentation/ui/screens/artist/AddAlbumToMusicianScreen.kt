@@ -270,12 +270,12 @@ private fun AlbumRow(
     ) {
         AsyncImage(
             model = album.coverUrl,
-            contentDescription = null,
+            contentDescription = album.name,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(52.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                .background(MaterialTheme.colorScheme.outline),
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -340,12 +340,12 @@ private fun CurrentAlbumItem(
     ) {
         AsyncImage(
             model = album.coverUrl,
-            contentDescription = null,
+            contentDescription = album.name,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(52.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                .background(MaterialTheme.colorScheme.outline),
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(

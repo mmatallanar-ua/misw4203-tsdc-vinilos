@@ -96,7 +96,7 @@ private fun NavTab(
     modifier: Modifier = Modifier,
 ) {
     val tint = if (active) MaterialTheme.colorScheme.onSurface
-    else MaterialTheme.colorScheme.outlineVariant
+    else MaterialTheme.colorScheme.onSurfaceVariant
     Column(
         modifier = modifier
             .clickable(onClick = onClick)
