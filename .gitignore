@@ -94,3 +94,6 @@ lint/tmp/
 
 # Mac
 .DS_Store
+
+# Other files
+temp-accesibilidad/
