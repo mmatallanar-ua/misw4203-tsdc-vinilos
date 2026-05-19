@@ -1,5 +1,6 @@
 package com.misw4203.vinilos.presentation.ui.screens.collector
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -54,7 +56,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -93,6 +97,8 @@ fun AddAlbumToCollectorScreen(
 ) {
     val form by viewModel.form.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    BackHandler { onBack() }
+
     val snackbarHostState = remember { SnackbarHostState() }
 
     val successTemplate = stringResource(R.string.add_album_collector_success)
@@ -188,7 +194,19 @@ private fun ScreenContent(
     onStatusChange: (String) -> Unit,
     onConfirm: () -> Unit,
 ) {
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(form.selectedAlbum?.id) {
+        if (form.selectedAlbum != null) {
+            // form item is at: 2 (header + search) + albums in list
+            val formIndex = 2 + form.filteredAvailable.size
+            scope.launch { listState.animateScrollToItem(formIndex) }
+        }
+    }
+
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
