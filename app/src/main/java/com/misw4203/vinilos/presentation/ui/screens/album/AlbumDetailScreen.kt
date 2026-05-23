@@ -47,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -549,6 +550,7 @@ private fun CommentCard(comment: Comment, onRemove: (Comment) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         val ratingDesc = stringResource(R.string.cd_rating, comment.rating)
+        val commenterLabel = comment.commenter?.name ?: "${comment.rating} ★"
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -558,7 +560,7 @@ private fun CommentCard(comment: Comment, onRemove: (Comment) -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier
                     .weight(1f)
-                    .semantics { contentDescription = ratingDesc },
+                    .clearAndSetSemantics { contentDescription = ratingDesc },
             ) {
                 repeat(5) { index ->
                     Text(
@@ -579,7 +581,7 @@ private fun CommentCard(comment: Comment, onRemove: (Comment) -> Unit) {
             ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = stringResource(R.string.album_remove_comment_cd),
+                    contentDescription = stringResource(R.string.album_remove_comment_by_cd, commenterLabel),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(16.dp),
                 )

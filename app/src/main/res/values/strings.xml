@@ -37,6 +37,7 @@
     <string name="detail_section_comments">Comentarios</string>
     <string name="album_remove_track_cd">Eliminar canción %s</string>
     <string name="album_remove_comment_cd">Eliminar comentario</string>
+    <string name="album_remove_comment_by_cd">Eliminar comentario de %s</string>
     <string name="album_remove_confirm_title">¿Eliminar?</string>
     <string name="album_remove_track_confirm_body">¿Eliminar la canción «%s» del álbum?</string>
     <string name="album_remove_comment_confirm_body">¿Eliminar este comentario del álbum?</string>
@@ -262,6 +263,7 @@
     <string name="add_album_musician_error_network">Sin conexión. Intenta de nuevo.</string>
     <string name="add_album_musician_error_server">No pudimos agregar el álbum. Inténtalo de nuevo.</string>
     <string name="cd_add_album_to_musician">Agregar %s a la discografía</string>
+    <string name="cd_open_date_picker">Abrir calendario de fechas</string>
     <plurals name="musician_albums_count">
         <item quantity="one">%d álbum en la discografía</item>
         <item quantity="other">%d álbumes en la discografía</item>

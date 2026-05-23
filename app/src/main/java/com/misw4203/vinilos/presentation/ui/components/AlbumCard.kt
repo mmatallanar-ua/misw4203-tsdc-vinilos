@@ -55,7 +55,7 @@ fun AlbumCard(
         ) {
             AsyncImage(
                 model = album.coverUrl,
-                contentDescription = null,
+                contentDescription = album.name,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.size(72.dp),
             )

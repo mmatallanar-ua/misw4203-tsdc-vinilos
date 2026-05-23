@@ -634,7 +634,7 @@ private fun ReleaseDateField(
             IconButton(onClick = onClick) {
                 Icon(
                     imageVector = Icons.Outlined.DateRange,
-                    contentDescription = stringResource(R.string.create_album_field_release_date),
+                    contentDescription = stringResource(R.string.cd_open_date_picker),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
