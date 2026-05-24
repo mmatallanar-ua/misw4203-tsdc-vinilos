@@ -27,7 +27,7 @@ local.properties
 proguard/
 
 # Log Files
-*.log
+#*.log
 
 # Monkey: artefactos de corridas de exploración aleatoria (evidencia local/efímera)
 #scripts/monkey-results/
