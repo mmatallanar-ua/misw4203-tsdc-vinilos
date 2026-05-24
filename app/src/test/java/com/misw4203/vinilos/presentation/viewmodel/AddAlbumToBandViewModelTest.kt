@@ -40,6 +40,7 @@ class AddAlbumToBandViewModelTest {
             addResult.getOrThrow()
             added += bandId to albumId
         }
+        override suspend fun addPrizeToBand(bandId: Int, prizeId: Int, premiationDate: String) {}
     }
 
     private class FakeAlbumRepo(
@@ -47,9 +48,13 @@ class AddAlbumToBandViewModelTest {
     ) : AlbumRepository {
         override suspend fun getAlbums(): List<Album> = albums
         override suspend fun getAlbumById(id: Long) = error("not used")
-        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.data.remote.dto.CreateTrackRequest) = error("not used")
+        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.domain.model.NewTrack) = error("not used")
         override suspend fun addComment(albumId: Long, description: String, rating: Int, collectorId: Int) = error("not used")
         override suspend fun createAlbum(input: com.misw4203.vinilos.domain.model.CreateAlbumInput) = error("not used")
+        override suspend fun removeTrack(albumId: Long, trackId: Long) {}
+        override suspend fun removeComment(albumId: Long, commentId: Long) {}
+        override suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) {}
+        override suspend fun addBandToAlbum(albumId: Long, bandId: Int) {}
     }
 
     private fun buildViewModel(
@@ -87,8 +92,8 @@ class AddAlbumToBandViewModelTest {
         advanceUntilIdle()
 
         vm.events.test {
-            vm.onAddAlbum(2)
-            assertEquals(AddAlbumToBandUiState.Adding(2), vm.uiState.value)
+            vm.onAddAlbum(2L)
+            assertEquals(AddAlbumToBandUiState.Adding(2L), vm.uiState.value)
             advanceUntilIdle()
             assertEquals(AddAlbumToBandEvent.AddedSuccessfully("Siembra"), awaitItem())
             cancelAndIgnoreRemainingEvents()
@@ -106,13 +111,13 @@ class AddAlbumToBandViewModelTest {
         advanceUntilIdle()
 
         vm.events.test {
-            vm.onAddAlbum(2)
+            vm.onAddAlbum(2L)
             advanceUntilIdle()
             assertEquals(AddAlbumToBandEvent.AddFailed(isNetworkError = true), awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
         assertEquals(
-            AddAlbumToBandUiState.Error(isNetworkError = true, albumId = 2),
+            AddAlbumToBandUiState.Error(isNetworkError = true, albumId = 2L),
             vm.uiState.value,
         )
     }

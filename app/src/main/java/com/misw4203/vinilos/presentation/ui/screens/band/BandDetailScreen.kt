@@ -70,9 +70,9 @@ fun BandDetailScreen(
     onBack: () -> Unit,
     onMusicianClick: (Int) -> Unit,
     onAddMusicians: () -> Unit,
+    modifier: Modifier = Modifier,
     onAddAlbum: () -> Unit = {},
     onAwardPrize: () -> Unit = {},
-    modifier: Modifier = Modifier,
     refreshKey: Boolean = false,
     onRefreshHandled: () -> Unit = {},
     viewModel: BandDetailViewModel = hiltViewModel(),
@@ -305,6 +305,7 @@ private fun PrizesSection(prizes: List<MusicianPrize>, onAwardPrize: () -> Unit)
                         .clip(RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.surfaceContainerLow)
                         .padding(12.dp)
+                        .semantics(mergeDescendants = true) {}
                         .testTag("band_prize_${prize.id}"),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {

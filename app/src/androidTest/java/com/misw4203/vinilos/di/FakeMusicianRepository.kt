@@ -23,7 +23,7 @@ class FakeMusicianRepository @Inject constructor() : MusicianRepository {
         prizes = emptyList(),
     )
 
-    override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+    override suspend fun addAlbumToMusician(musicianId: Int, albumId: Long) = Unit
 
     override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) = Unit
 }

@@ -56,7 +56,7 @@ class AddPrizeToMusicianScreenTest {
         val musicianRepo = object : MusicianRepository {
             override suspend fun getMusicians(): List<MusicianSummary> = error("not used")
             override suspend fun getMusicianDetail(id: Int): Musician = musician
-            override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+            override suspend fun addAlbumToMusician(musicianId: Int, albumId: Long) = Unit
             override suspend fun addPrizeToMusician(mId: Int, prizeId: Int, date: String) =
                 addPrize(mId, prizeId, date)
         }
@@ -181,7 +181,7 @@ class AddPrizeToMusicianScreenTest {
         val musicianRepo = object : MusicianRepository {
             override suspend fun getMusicians(): List<MusicianSummary> = error("not used")
             override suspend fun getMusicianDetail(id: Int): Musician = throw java.io.IOException("offline")
-            override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+            override suspend fun addAlbumToMusician(musicianId: Int, albumId: Long) = Unit
             override suspend fun addPrizeToMusician(mId: Int, prizeId: Int, date: String) = Unit
         }
         val prizeRepo = object : PrizeRepository {

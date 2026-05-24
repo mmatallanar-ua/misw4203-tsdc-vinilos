@@ -8,9 +8,10 @@ import com.misw4203.vinilos.domain.model.Prize
 import com.misw4203.vinilos.domain.usecase.AddPrizeToBandUseCase
 import com.misw4203.vinilos.domain.usecase.GetBandDetailUseCase
 import com.misw4203.vinilos.domain.usecase.GetPrizesUseCase
+import com.misw4203.vinilos.presentation.common.DomainResult
+import com.misw4203.vinilos.presentation.common.runCatchingDomain
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -20,8 +21,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import java.text.Normalizer
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -94,34 +93,36 @@ class AddPrizeToBandViewModel @Inject constructor(
 
         _uiState.value = AddPrizeToBandUiState.Adding(prize.id)
         viewModelScope.launch {
-            try {
-                addPrizeToBand(bandId, prize.id, premiationDate)
-                val newPrize = MusicianPrize(
-                    id = prize.id,
-                    name = prize.name,
-                    organization = prize.organization,
-                    description = prize.description,
-                    premiationDate = premiationDate,
-                )
-                _form.value = _form.value.copy(
-                    currentPrizes = _form.value.currentPrizes + newPrize,
-                    selectedPrize = null,
-                    premiationDate = null,
-                    dateError = null,
-                )
-                _uiState.value = AddPrizeToBandUiState.Ready
-                _events.tryEmit(AddPrizeToBandEvent.AddedSuccessfully(prize.name))
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IOException) {
-                _uiState.value = AddPrizeToBandUiState.Error(isNetworkError = true, prizeId = prize.id)
-                _events.tryEmit(AddPrizeToBandEvent.AddFailed(isNetworkError = true))
-            } catch (e: HttpException) {
-                _uiState.value = AddPrizeToBandUiState.Error(isNetworkError = false, prizeId = prize.id)
-                _events.tryEmit(AddPrizeToBandEvent.AddFailed(isNetworkError = false))
-            } catch (e: Exception) {
-                _uiState.value = AddPrizeToBandUiState.Error(isNetworkError = false, prizeId = prize.id)
-                _events.tryEmit(AddPrizeToBandEvent.AddFailed(isNetworkError = false))
+            when (runCatchingDomain { addPrizeToBand(bandId, prize.id, premiationDate) }) {
+                is DomainResult.Ok -> {
+                    val newPrize = MusicianPrize(
+                        id = prize.id,
+                        name = prize.name,
+                        organization = prize.organization,
+                        description = prize.description,
+                        premiationDate = premiationDate,
+                    )
+                    _form.value = _form.value.copy(
+                        currentPrizes = _form.value.currentPrizes + newPrize,
+                        selectedPrize = null,
+                        premiationDate = null,
+                        dateError = null,
+                    )
+                    _uiState.value = AddPrizeToBandUiState.Ready
+                    _events.tryEmit(AddPrizeToBandEvent.AddedSuccessfully(prize.name))
+                }
+                DomainResult.Network -> {
+                    _uiState.value = AddPrizeToBandUiState.Error(isNetworkError = true, prizeId = prize.id)
+                    _events.tryEmit(AddPrizeToBandEvent.AddFailed(isNetworkError = true))
+                }
+                DomainResult.NotFound -> {
+                    _uiState.value = AddPrizeToBandUiState.Error(isNetworkError = false, prizeId = prize.id)
+                    _events.tryEmit(AddPrizeToBandEvent.AddFailed(isNetworkError = false))
+                }
+                DomainResult.Server -> {
+                    _uiState.value = AddPrizeToBandUiState.Error(isNetworkError = false, prizeId = prize.id)
+                    _events.tryEmit(AddPrizeToBandEvent.AddFailed(isNetworkError = false))
+                }
             }
         }
     }
@@ -133,7 +134,7 @@ class AddPrizeToBandViewModel @Inject constructor(
     private fun loadInitial() {
         _uiState.value = AddPrizeToBandUiState.Loading
         viewModelScope.launch {
-            try {
+            when (runCatchingDomain {
                 coroutineScope {
                     val bandAsync = async { getBandDetail(bandId) }
                     val prizesAsync = async { getPrizes() }
@@ -148,14 +149,11 @@ class AddPrizeToBandViewModel @Inject constructor(
                     )
                     _uiState.value = AddPrizeToBandUiState.Ready
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IOException) {
-                _uiState.value = AddPrizeToBandUiState.Error(isNetworkError = true)
-            } catch (e: HttpException) {
-                _uiState.value = AddPrizeToBandUiState.Error(isNetworkError = false)
-            } catch (e: Exception) {
-                _uiState.value = AddPrizeToBandUiState.Error(isNetworkError = false)
+            }) {
+                is DomainResult.Ok -> Unit
+                DomainResult.Network -> _uiState.value = AddPrizeToBandUiState.Error(isNetworkError = true)
+                DomainResult.NotFound -> _uiState.value = AddPrizeToBandUiState.Error(isNetworkError = false)
+                DomainResult.Server -> _uiState.value = AddPrizeToBandUiState.Error(isNetworkError = false)
             }
         }
     }

@@ -38,7 +38,7 @@ class AddAlbumToMusicianViewModelTest {
     ) : MusicianRepository {
         override suspend fun getMusicians(): List<MusicianSummary> = emptyList()
         override suspend fun getMusicianDetail(id: Int): Musician = musicianResult.getOrThrow()
-        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = addResult.getOrThrow()
+        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Long) = addResult.getOrThrow()
         override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) = Unit
     }
 
@@ -47,9 +47,13 @@ class AddAlbumToMusicianViewModelTest {
     ) : AlbumRepository {
         override suspend fun getAlbums(): List<Album> = albums
         override suspend fun getAlbumById(id: Long) = error("not used")
-        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.data.remote.dto.CreateTrackRequest) = error("not used")
+        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.domain.model.NewTrack) = error("not used")
         override suspend fun addComment(albumId: Long, description: String, rating: Int, collectorId: Int) = error("not used")
         override suspend fun createAlbum(input: com.misw4203.vinilos.domain.model.CreateAlbumInput) = error("not used")
+        override suspend fun removeTrack(albumId: Long, trackId: Long) {}
+        override suspend fun removeComment(albumId: Long, commentId: Long) {}
+        override suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) {}
+        override suspend fun addBandToAlbum(albumId: Long, bandId: Int) {}
     }
 
     private fun buildViewModel(
@@ -117,9 +121,9 @@ class AddAlbumToMusicianViewModelTest {
             advanceUntilIdle()
             assertEquals(AddAlbumToMusicianUiState.Ready, awaitItem())
 
-            vm.onAddAlbum(2)
+            vm.onAddAlbum(2L)
 
-            assertEquals(AddAlbumToMusicianUiState.Adding(2), awaitItem())
+            assertEquals(AddAlbumToMusicianUiState.Adding(2L), awaitItem())
             advanceUntilIdle()
             assertEquals(AddAlbumToMusicianUiState.Ready, awaitItem())
             cancelAndIgnoreRemainingEvents()
@@ -140,9 +144,9 @@ class AddAlbumToMusicianViewModelTest {
             assertEquals(AddAlbumToMusicianUiState.Ready, awaitItem())
 
             vm.events.test {
-                vm.onAddAlbum(2)
+                vm.onAddAlbum(2L)
                 // Adding is set synchronously on uiState, not emitted as an event.
-                assertEquals(AddAlbumToMusicianUiState.Adding(2), vm.uiState.value)
+                assertEquals(AddAlbumToMusicianUiState.Adding(2L), vm.uiState.value)
                 advanceUntilIdle()
                 capturedEvent = awaitItem()
                 cancelAndIgnoreRemainingEvents()

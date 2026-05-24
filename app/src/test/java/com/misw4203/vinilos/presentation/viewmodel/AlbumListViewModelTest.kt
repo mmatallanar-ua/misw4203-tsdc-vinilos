@@ -34,7 +34,7 @@ class AlbumListViewModelTest {
             return nextResult.getOrThrow()
         }
         override suspend fun getAlbumById(id: Long): AlbumDetail = error("not used")
-        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.data.remote.dto.CreateTrackRequest) =
+        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.domain.model.NewTrack) =
             error("not used")
         override suspend fun addComment(
             albumId: Long,
@@ -43,6 +43,10 @@ class AlbumListViewModelTest {
             collectorId: Int,
         ): Comment = error("not used")
         override suspend fun createAlbum(input: com.misw4203.vinilos.domain.model.CreateAlbumInput): Album = error("not used")
+        override suspend fun removeTrack(albumId: Long, trackId: Long) {}
+        override suspend fun removeComment(albumId: Long, commentId: Long) {}
+        override suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) {}
+        override suspend fun addBandToAlbum(albumId: Long, bandId: Int) {}
     }
 
     private fun sampleAlbums() = listOf(

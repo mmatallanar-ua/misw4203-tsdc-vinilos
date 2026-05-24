@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -19,12 +22,39 @@ android {
         testInstrumentationRunner = "com.misw4203.vinilos.HiltTestRunner"
     }
 
+    val keystorePropsFile = rootProject.file("keystore.properties")
+    val keystoreProps = Properties().apply {
+        if (keystorePropsFile.exists()) FileInputStream(keystorePropsFile).use { load(it) }
+    }
+    fun keystoreValue(propKey: String, envKey: String): String? =
+        keystoreProps.getProperty(propKey) ?: System.getenv(envKey)
+    // Cuando faltan credenciales el release queda *unsigned* (deuda tolerada,
+    // ver plan A4): NO se asigna el signingConfig incompleto, porque AGP 9
+    // falla `packageRelease` con un signingConfig presente-pero-sin-storeFile
+    // en vez de empaquetar sin firmar.
+    var releaseSigningConfigured = false
+
     signingConfigs {
         create("release") {
-            storeFile = file("vinilos-release.jks")
-            storePassword = "vinilos123"
-            keyAlias = "vinilos"
-            keyPassword = "vinilos123"
+            val storePw = keystoreValue("storePassword", "VINILOS_STORE_PASSWORD")
+            val keyPw = keystoreValue("keyPassword", "VINILOS_KEY_PASSWORD")
+            val alias = keystoreValue("keyAlias", "VINILOS_KEY_ALIAS")
+            val storePath = keystoreValue("storeFile", "VINILOS_STORE_FILE")
+                ?: "vinilos-release.jks"
+            if (storePw != null && keyPw != null && alias != null) {
+                storeFile = file(storePath)
+                storePassword = storePw
+                keyAlias = alias
+                keyPassword = keyPw
+                releaseSigningConfigured = true
+            } else {
+                logger.warn(
+                    "[vinilos] Credenciales de firma de release ausentes — copia " +
+                        "keystore.properties.example a keystore.properties o define las " +
+                        "variables de entorno VINILOS_STORE_PASSWORD/VINILOS_KEY_PASSWORD/" +
+                        "VINILOS_KEY_ALIAS. El build de release no quedará firmado.",
+                )
+            }
         }
     }
 
@@ -33,8 +63,11 @@ android {
             buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:3000/\"")
         }
         release {
-            isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            if (releaseSigningConfigured) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -60,6 +93,15 @@ android {
     testOptions {
         unitTests.isReturnDefaultValues = true
     }
+}
+
+// --- Compose compiler: reportes de estabilidad/metrics (B3, medición) ---
+// Plugin org.jetbrains.kotlin.plugin.compose ya aplicado (alias libs.plugins.kotlin.compose),
+// así que el DSL composeCompiler {} está disponible sin nuevas dependencias.
+// Costo cero en runtime; hace la medición de strong skipping reproducible.
+composeCompiler {
+    metricsDestination = layout.buildDirectory.dir("compose_metrics")
+    reportsDestination = layout.buildDirectory.dir("compose_reports")
 }
 
 dependencies {

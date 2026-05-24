@@ -1,0 +1,13 @@
+Monkey run 20260523-135210
+package=com.misw4203.vinilos events=30000 throttle=200ms seeds=[1 42 123 2024 7777]
+modo=recolectar-y-continuar (no gate)
+------------------------------------------------------------
+SEED     EVENTS   STATUS     CRASHES  ANRs   LOG
+1        30000    CLEAN      0        0      seed-1.log
+42       30000    CLEAN      0        0      seed-42.log
+123      30000    CLEAN      0        0      seed-123.log
+2024     30000    CLEAN      0        0      seed-2024.log
+7777     30000    CLEAN      0        0      seed-7777.log
+------------------------------------------------------------
+TOTAL: crashes=0 anrs=0
+Artefactos: /Users/mmatallana/projects/misw4203-tsdc-vinilos/scripts/monkey-results/20260523-135210

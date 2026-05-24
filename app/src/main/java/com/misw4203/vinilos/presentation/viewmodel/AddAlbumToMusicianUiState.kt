@@ -3,8 +3,8 @@ package com.misw4203.vinilos.presentation.viewmodel
 sealed interface AddAlbumToMusicianUiState {
     data object Loading : AddAlbumToMusicianUiState
     data object Ready : AddAlbumToMusicianUiState
-    data class Adding(val albumId: Int) : AddAlbumToMusicianUiState
-    data class Error(val isNetworkError: Boolean, val albumId: Int?) : AddAlbumToMusicianUiState
+    data class Adding(val albumId: Long) : AddAlbumToMusicianUiState
+    data class Error(val isNetworkError: Boolean, val albumId: Long?) : AddAlbumToMusicianUiState
 }
 
 sealed interface AddAlbumToMusicianEvent {

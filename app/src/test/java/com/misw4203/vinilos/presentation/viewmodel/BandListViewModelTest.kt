@@ -34,6 +34,8 @@ class BandListViewModelTest {
         }
         override suspend fun getBandDetail(id: Int): Band = error("not used")
         override suspend fun addMusicianToBand(bandId: Int, musicianId: Int) = error("not used")
+        override suspend fun addAlbumToBand(bandId: Int, albumId: Long) {}
+        override suspend fun addPrizeToBand(bandId: Int, prizeId: Int, premiationDate: String) {}
     }
 
     private fun buildVm(repo: FakeBandRepository) = BandListViewModel(GetBandsUseCase(repo))

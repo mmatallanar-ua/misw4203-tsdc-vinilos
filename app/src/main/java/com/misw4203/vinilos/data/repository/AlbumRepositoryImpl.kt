@@ -10,14 +10,17 @@ import com.misw4203.vinilos.data.remote.dto.CreateAlbumRequestDto
 import com.misw4203.vinilos.data.remote.dto.CreateCommentRequest
 import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
 import com.misw4203.vinilos.domain.model.Album
+import com.misw4203.vinilos.domain.model.NewTrack
 import com.misw4203.vinilos.domain.model.AlbumDetail
 import com.misw4203.vinilos.domain.model.CollectorSummary
 import com.misw4203.vinilos.domain.model.Comment
 import com.misw4203.vinilos.domain.model.CreateAlbumInput
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.Track
+import com.misw4203.vinilos.core.logging.AppLogger
+import com.misw4203.vinilos.di.IoDispatcher
 import com.misw4203.vinilos.domain.repository.AlbumRepository
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import java.io.IOException
 import javax.inject.Inject
@@ -25,9 +28,11 @@ import javax.inject.Inject
 class AlbumRepositoryImpl @Inject constructor(
     private val api: VinilosApiService,
     private val dao: AlbumDao,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val logger: AppLogger,
 ) : AlbumRepository {
 
-    override suspend fun getAlbums(): List<Album> = withContext(Dispatchers.IO) {
+    override suspend fun getAlbums(): List<Album> = withContext(ioDispatcher) {
         try {
             val albums = api.getAlbums().map { it.toAlbum() }
             dao.replaceAlbums(albums.map { AlbumEntity.fromDomain(it) })
@@ -38,7 +43,7 @@ class AlbumRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAlbumById(id: Long): AlbumDetail = withContext(Dispatchers.IO) {
+    override suspend fun getAlbumById(id: Long): AlbumDetail = withContext(ioDispatcher) {
         try {
             val detail = api.getAlbum(id).toAlbumDetail()
             dao.upsertDetail(AlbumDetailEntity.fromDomain(detail))
@@ -48,10 +53,10 @@ class AlbumRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun addTrack(albumId: Long, request: CreateTrackRequest): Track =
-        withContext(Dispatchers.IO) {
-            val dto = api.addTrack(albumId, request)
-            val track = Track(
+    override suspend fun addTrack(albumId: Long, track: NewTrack): Track =
+        withContext(ioDispatcher) {
+            val dto = api.addTrack(albumId, CreateTrackRequest(track.name, track.duration))
+            val created = Track(
                 id = dto.id,
                 name = dto.name.orEmpty(),
                 duration = dto.duration.orEmpty(),
@@ -60,10 +65,10 @@ class AlbumRepositoryImpl @Inject constructor(
             // lo actualizamos con el nuevo track para evitar lectura stale
             // antes del próximo getAlbumById().
             dao.getDetailById(albumId)?.let { cached ->
-                val updated = cached.toDomain().copy(tracks = cached.tracks + track)
+                val updated = cached.toDomain().copy(tracks = cached.tracks + created)
                 dao.upsertDetail(AlbumDetailEntity.fromDomain(updated))
             }
-            track
+            created
         }
 
     override suspend fun addComment(
@@ -71,7 +76,7 @@ class AlbumRepositoryImpl @Inject constructor(
         description: String,
         rating: Int,
         collectorId: Int,
-    ): Comment = withContext(Dispatchers.IO) {
+    ): Comment = withContext(ioDispatcher) {
         val response = api.addComment(
             albumId = albumId,
             request = CreateCommentRequest(
@@ -94,7 +99,7 @@ class AlbumRepositoryImpl @Inject constructor(
         comment
     }
 
-    override suspend fun removeTrack(albumId: Long, trackId: Long) = withContext(Dispatchers.IO) {
+    override suspend fun removeTrack(albumId: Long, trackId: Long) = withContext(ioDispatcher) {
         api.removeTrack(albumId, trackId)
         // Write-through cache prune: ver nota en addTrack.
         dao.getDetailById(albumId)?.let { cached ->
@@ -105,7 +110,7 @@ class AlbumRepositoryImpl @Inject constructor(
         Unit
     }
 
-    override suspend fun removeComment(albumId: Long, commentId: Long) = withContext(Dispatchers.IO) {
+    override suspend fun removeComment(albumId: Long, commentId: Long) = withContext(ioDispatcher) {
         api.removeComment(albumId, commentId)
         dao.getDetailById(albumId)?.let { cached ->
             val updated = cached.toDomain()
@@ -116,13 +121,13 @@ class AlbumRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             api.addMusicianToAlbum(albumId, musicianId)
             invalidateDetailCache(albumId)
         }
 
     override suspend fun addBandToAlbum(albumId: Long, bandId: Int) =
-        withContext(Dispatchers.IO) {
+        withContext(ioDispatcher) {
             api.addBandToAlbum(albumId, bandId)
             invalidateDetailCache(albumId)
         }
@@ -135,12 +140,12 @@ class AlbumRepositoryImpl @Inject constructor(
             val fresh = api.getAlbum(albumId).toAlbumDetail()
             dao.upsertDetail(AlbumDetailEntity.fromDomain(fresh))
         } catch (e: IOException) {
-            // offline: leave the cache; next online getAlbumById reconciles it
+            logger.w("AlbumRepositoryImpl", "invalidateDetailCache offline; se reconcilia en el próximo getAlbumById", e)
         }
         Unit
     }
 
-    override suspend fun createAlbum(input: CreateAlbumInput): Album = withContext(Dispatchers.IO) {
+    override suspend fun createAlbum(input: CreateAlbumInput): Album = withContext(ioDispatcher) {
         val dto = api.createAlbum(
             CreateAlbumRequestDto(
                 name = input.name,

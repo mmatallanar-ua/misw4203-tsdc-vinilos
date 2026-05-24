@@ -9,10 +9,13 @@ import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.CollectorAlbum
 import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.PerformerKind
+import com.misw4203.vinilos.testsupport.RecordingAppLogger
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.slot
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -23,6 +26,7 @@ import retrofit2.HttpException
 import retrofit2.Response
 import java.io.IOException
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class CollectorRepositoryImplTest {
 
     private lateinit var api: VinilosApiService
@@ -33,7 +37,7 @@ class CollectorRepositoryImplTest {
     fun setUp() {
         api = mockk()
         dao = mockk(relaxed = true)
-        repository = CollectorRepositoryImpl(api, dao)
+        repository = CollectorRepositoryImpl(api, dao, UnconfinedTestDispatcher(), RecordingAppLogger())
     }
 
     // -- getCollectors (HU05) ------------------------------------------------
@@ -118,7 +122,7 @@ class CollectorRepositoryImplTest {
 
     @Test
     fun `removeAlbumFromCollector delegates to API and prunes cached album`() = runTest {
-        coEvery { api.removeAlbumFromCollector(100, 8) } returns Unit
+        coEvery { api.removeAlbumFromCollector(100, 8L) } returns Unit
         coEvery { dao.getDetailById(100) } returns detailEntity(
             albums = listOf(
                 CollectorAlbum(1, 10.0, "Active", Album(5L, "Keep", "", "", "", "")),
@@ -128,9 +132,9 @@ class CollectorRepositoryImplTest {
         val captured = slot<CollectorDetailEntity>()
         coEvery { dao.upsertDetail(capture(captured)) } returns Unit
 
-        repository.removeAlbumFromCollector(100, 8)
+        repository.removeAlbumFromCollector(100, 8L)
 
-        coVerify(exactly = 1) { api.removeAlbumFromCollector(100, 8) }
+        coVerify(exactly = 1) { api.removeAlbumFromCollector(100, 8L) }
         assertEquals(listOf(5L), captured.captured.collectorAlbums.mapNotNull { it.album?.id })
     }
 

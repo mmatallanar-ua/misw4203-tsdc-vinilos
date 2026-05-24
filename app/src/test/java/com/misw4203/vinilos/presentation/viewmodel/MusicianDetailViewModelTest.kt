@@ -1,11 +1,13 @@
 package com.misw4203.vinilos.presentation.viewmodel
 
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.misw4203.vinilos.MainDispatcherRule
 import com.misw4203.vinilos.domain.model.Musician
 import com.misw4203.vinilos.domain.model.MusicianSummary
 import com.misw4203.vinilos.domain.repository.MusicianRepository
 import com.misw4203.vinilos.domain.usecase.GetMusicianDetailUseCase
+import com.misw4203.vinilos.presentation.navigation.Destinations
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -29,32 +31,23 @@ class MusicianDetailViewModelTest {
         var detailResult: Result<Musician> = Result.success(sampleMusician())
         override suspend fun getMusicians(): List<MusicianSummary> = emptyList()
         override suspend fun getMusicianDetail(id: Int): Musician = detailResult.getOrThrow()
-        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Long) = Unit
         override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) = Unit
     }
 
-    private fun buildViewModel(repo: FakeMusicianRepository) =
-        MusicianDetailViewModel(GetMusicianDetailUseCase(repo))
+    private fun buildViewModel(repo: FakeMusicianRepository, musicianId: Int = 2) =
+        MusicianDetailViewModel(
+            GetMusicianDetailUseCase(repo),
+            SavedStateHandle(mapOf(Destinations.ArtistDetailArg to musicianId)),
+        )
 
     @Test
-    fun `initial state is Loading`() = runTest {
+    fun `starts in Loading then emits Success with musician data`() = runTest {
         val repo = FakeMusicianRepository()
         val viewModel = buildViewModel(repo)
 
         viewModel.uiState.test {
             assertEquals(MusicianDetailUiState.Loading, awaitItem())
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `loadMusician emits Success when repository returns musician`() = runTest {
-        val repo = FakeMusicianRepository()
-        val viewModel = buildViewModel(repo)
-
-        viewModel.uiState.test {
-            assertEquals(MusicianDetailUiState.Loading, awaitItem())
-            viewModel.loadMusician(2)
             advanceUntilIdle()
             val state = awaitItem()
             assertTrue(state is MusicianDetailUiState.Success)
@@ -64,7 +57,7 @@ class MusicianDetailViewModelTest {
     }
 
     @Test
-    fun `loadMusician emits NotFound on 404 HttpException`() = runTest {
+    fun `emits NotFound on 404 HttpException`() = runTest {
         val repo = FakeMusicianRepository().apply {
             detailResult = Result.failure(
                 HttpException(Response.error<Any>(404, "".toResponseBody("text/plain".toMediaType())))
@@ -74,7 +67,6 @@ class MusicianDetailViewModelTest {
 
         viewModel.uiState.test {
             assertEquals(MusicianDetailUiState.Loading, awaitItem())
-            viewModel.loadMusician(99)
             advanceUntilIdle()
             assertEquals(MusicianDetailUiState.NotFound, awaitItem())
             cancelAndIgnoreRemainingEvents()
@@ -82,7 +74,7 @@ class MusicianDetailViewModelTest {
     }
 
     @Test
-    fun `loadMusician emits network Error on IOException`() = runTest {
+    fun `emits network Error on IOException`() = runTest {
         val repo = FakeMusicianRepository().apply {
             detailResult = Result.failure(IOException("offline"))
         }
@@ -90,7 +82,6 @@ class MusicianDetailViewModelTest {
 
         viewModel.uiState.test {
             assertEquals(MusicianDetailUiState.Loading, awaitItem())
-            viewModel.loadMusician(2)
             advanceUntilIdle()
             assertEquals(MusicianDetailUiState.Error(isNetworkError = true), awaitItem())
             cancelAndIgnoreRemainingEvents()
@@ -98,7 +89,7 @@ class MusicianDetailViewModelTest {
     }
 
     @Test
-    fun `loadMusician emits server Error on non-404 HttpException`() = runTest {
+    fun `emits server Error on non-404 HttpException`() = runTest {
         val repo = FakeMusicianRepository().apply {
             detailResult = Result.failure(
                 HttpException(Response.error<Any>(500, "".toResponseBody("text/plain".toMediaType())))
@@ -108,7 +99,6 @@ class MusicianDetailViewModelTest {
 
         viewModel.uiState.test {
             assertEquals(MusicianDetailUiState.Loading, awaitItem())
-            viewModel.loadMusician(2)
             advanceUntilIdle()
             assertEquals(MusicianDetailUiState.Error(isNetworkError = false), awaitItem())
             cancelAndIgnoreRemainingEvents()
@@ -124,12 +114,12 @@ class MusicianDetailViewModelTest {
 
         viewModel.uiState.test {
             assertEquals(MusicianDetailUiState.Loading, awaitItem())
-            viewModel.loadMusician(2)
             advanceUntilIdle()
             assertEquals(MusicianDetailUiState.Error(isNetworkError = true), awaitItem())
 
             repo.detailResult = Result.success(sampleMusician())
             viewModel.retry()
+
             assertEquals(MusicianDetailUiState.Loading, awaitItem())
             advanceUntilIdle()
             assertTrue(awaitItem() is MusicianDetailUiState.Success)
@@ -138,25 +128,31 @@ class MusicianDetailViewModelTest {
     }
 
     @Test
-    fun `loadMusician with different id cancels previous job and loads new`() = runTest {
-        val repo = FakeMusicianRepository()
+    fun `refresh reloads the musician`() = runTest {
+        val repo = FakeMusicianRepository().apply {
+            detailResult = Result.failure(IOException("offline"))
+        }
         val viewModel = buildViewModel(repo)
 
         viewModel.uiState.test {
             assertEquals(MusicianDetailUiState.Loading, awaitItem())
-            viewModel.loadMusician(2)
             advanceUntilIdle()
-            assertTrue(awaitItem() is MusicianDetailUiState.Success)
+            assertEquals(MusicianDetailUiState.Error(isNetworkError = true), awaitItem())
 
-            repo.detailResult = Result.success(sampleMusician().copy(name = "Otro"))
-            viewModel.loadMusician(3)
+            repo.detailResult = Result.success(sampleMusician())
+            viewModel.refresh()
+
             assertEquals(MusicianDetailUiState.Loading, awaitItem())
             advanceUntilIdle()
-            val state = awaitItem()
-            assertEquals("Otro", (state as MusicianDetailUiState.Success).musician.name)
+            assertTrue(awaitItem() is MusicianDetailUiState.Success)
             cancelAndIgnoreRemainingEvents()
         }
     }
+
+    // NOTE: The "different id cancels previous job" test is not applicable under the
+    // SavedStateHandle pattern. A different musician id means a new navigation entry,
+    // which creates a new ViewModel instance — there is no in-place reload with a
+    // different id.
 }
 
 private fun sampleMusician() = Musician(

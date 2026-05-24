@@ -34,6 +34,8 @@ class BandDetailViewModelTest {
             return nextResult.getOrThrow()
         }
         override suspend fun addMusicianToBand(bandId: Int, musicianId: Int) = error("not used")
+        override suspend fun addAlbumToBand(bandId: Int, albumId: Long) {}
+        override suspend fun addPrizeToBand(bandId: Int, prizeId: Int, premiationDate: String) {}
     }
 
     companion object {

@@ -24,7 +24,7 @@ class RemoveCollectorUseCasesTest {
 
     @Test
     fun `RemoveAlbumFromCollectorUseCase delegates to repository`() = runTest {
-        RemoveAlbumFromCollectorUseCase(repository).invoke(100, 8)
-        coVerify(exactly = 1) { repository.removeAlbumFromCollector(100, 8) }
+        RemoveAlbumFromCollectorUseCase(repository).invoke(100, 8L)
+        coVerify(exactly = 1) { repository.removeAlbumFromCollector(100, 8L) }
     }
 }

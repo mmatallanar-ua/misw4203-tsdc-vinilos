@@ -7,9 +7,10 @@ import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.usecase.AddAlbumToMusicianUseCase
 import com.misw4203.vinilos.domain.usecase.GetAlbumsUseCase
 import com.misw4203.vinilos.domain.usecase.GetMusicianDetailUseCase
+import com.misw4203.vinilos.presentation.common.DomainResult
+import com.misw4203.vinilos.presentation.common.runCatchingDomain
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,8 +20,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import java.text.Normalizer
 import javax.inject.Inject
 
@@ -56,33 +55,35 @@ class AddAlbumToMusicianViewModel @Inject constructor(
         )
     }
 
-    fun onAddAlbum(albumId: Int) {
+    fun onAddAlbum(albumId: Long) {
         if (_uiState.value is AddAlbumToMusicianUiState.Adding) return
         _uiState.value = AddAlbumToMusicianUiState.Adding(albumId)
         viewModelScope.launch {
-            try {
-                addAlbumToMusician(musicianId, albumId)
-                val album = _form.value.allAlbums.firstOrNull { it.id == albumId.toLong() }
-                val newIds = _form.value.currentAlbumIds + albumId.toLong()
-                _form.value = _form.value.copy(
-                    currentAlbumIds = newIds,
-                    filteredAvailable = computeFiltered(_form.value.allAlbums, newIds, _form.value.query),
-                )
-                _uiState.value = AddAlbumToMusicianUiState.Ready
-                if (album != null) {
-                    _events.tryEmit(AddAlbumToMusicianEvent.AddedSuccessfully(album.name))
+            when (runCatchingDomain { addAlbumToMusician(musicianId, albumId) }) {
+                is DomainResult.Ok -> {
+                    val album = _form.value.allAlbums.firstOrNull { it.id == albumId }
+                    val newIds = _form.value.currentAlbumIds + albumId
+                    _form.value = _form.value.copy(
+                        currentAlbumIds = newIds,
+                        filteredAvailable = computeFiltered(_form.value.allAlbums, newIds, _form.value.query),
+                    )
+                    _uiState.value = AddAlbumToMusicianUiState.Ready
+                    if (album != null) {
+                        _events.tryEmit(AddAlbumToMusicianEvent.AddedSuccessfully(album.name))
+                    }
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IOException) {
-                _uiState.value = AddAlbumToMusicianUiState.Error(isNetworkError = true, albumId = albumId)
-                _events.tryEmit(AddAlbumToMusicianEvent.AddFailed(isNetworkError = true))
-            } catch (e: HttpException) {
-                _uiState.value = AddAlbumToMusicianUiState.Error(isNetworkError = false, albumId = albumId)
-                _events.tryEmit(AddAlbumToMusicianEvent.AddFailed(isNetworkError = false))
-            } catch (e: Exception) {
-                _uiState.value = AddAlbumToMusicianUiState.Error(isNetworkError = false, albumId = albumId)
-                _events.tryEmit(AddAlbumToMusicianEvent.AddFailed(isNetworkError = false))
+                DomainResult.Network -> {
+                    _uiState.value = AddAlbumToMusicianUiState.Error(isNetworkError = true, albumId = albumId)
+                    _events.tryEmit(AddAlbumToMusicianEvent.AddFailed(isNetworkError = true))
+                }
+                DomainResult.NotFound -> {
+                    _uiState.value = AddAlbumToMusicianUiState.Error(isNetworkError = false, albumId = albumId)
+                    _events.tryEmit(AddAlbumToMusicianEvent.AddFailed(isNetworkError = false))
+                }
+                DomainResult.Server -> {
+                    _uiState.value = AddAlbumToMusicianUiState.Error(isNetworkError = false, albumId = albumId)
+                    _events.tryEmit(AddAlbumToMusicianEvent.AddFailed(isNetworkError = false))
+                }
             }
         }
     }
@@ -94,7 +95,7 @@ class AddAlbumToMusicianViewModel @Inject constructor(
     private fun loadInitial() {
         _uiState.value = AddAlbumToMusicianUiState.Loading
         viewModelScope.launch {
-            try {
+            when (runCatchingDomain {
                 coroutineScope {
                     val albumsAsync = async { getAlbums() }
                     val musicianAsync = async { getMusicianDetail(musicianId) }
@@ -108,14 +109,11 @@ class AddAlbumToMusicianViewModel @Inject constructor(
                     )
                     _uiState.value = AddAlbumToMusicianUiState.Ready
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IOException) {
-                _uiState.value = AddAlbumToMusicianUiState.Error(isNetworkError = true, albumId = null)
-            } catch (e: HttpException) {
-                _uiState.value = AddAlbumToMusicianUiState.Error(isNetworkError = false, albumId = null)
-            } catch (e: Exception) {
-                _uiState.value = AddAlbumToMusicianUiState.Error(isNetworkError = false, albumId = null)
+            }) {
+                is DomainResult.Ok -> Unit
+                DomainResult.Network -> _uiState.value = AddAlbumToMusicianUiState.Error(isNetworkError = true, albumId = null)
+                DomainResult.NotFound -> _uiState.value = AddAlbumToMusicianUiState.Error(isNetworkError = false, albumId = null)
+                DomainResult.Server -> _uiState.value = AddAlbumToMusicianUiState.Error(isNetworkError = false, albumId = null)
             }
         }
     }

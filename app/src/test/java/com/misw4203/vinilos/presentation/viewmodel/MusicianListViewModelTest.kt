@@ -33,7 +33,7 @@ class MusicianListViewModelTest {
             return nextResult.getOrThrow()
         }
         override suspend fun getMusicianDetail(id: Int): Musician = error("not used")
-        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Long) = Unit
         override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) = Unit
     }
 

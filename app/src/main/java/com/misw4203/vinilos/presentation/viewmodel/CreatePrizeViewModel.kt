@@ -5,14 +5,17 @@ import androidx.lifecycle.viewModelScope
 import com.misw4203.vinilos.domain.model.Prize
 import com.misw4203.vinilos.domain.usecase.CreatePrizeUseCase
 import com.misw4203.vinilos.domain.usecase.GetPrizesUseCase
+import com.misw4203.vinilos.presentation.common.DomainFailure
+import com.misw4203.vinilos.presentation.common.DomainResult
+import com.misw4203.vinilos.presentation.common.runCatchingDomain
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,6 +27,9 @@ class CreatePrizeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<CreatePrizeUiState>(CreatePrizeUiState.LoadingPrizes)
     val uiState: StateFlow<CreatePrizeUiState> = _uiState.asStateFlow()
 
+    private val _events = MutableSharedFlow<CreatePrizeEvent>(extraBufferCapacity = 1)
+    val events: SharedFlow<CreatePrizeEvent> = _events.asSharedFlow()
+
     init {
         loadPrizes()
     }
@@ -31,21 +37,20 @@ class CreatePrizeViewModel @Inject constructor(
     fun loadPrizes() {
         _uiState.value = CreatePrizeUiState.LoadingPrizes
         viewModelScope.launch {
-            _uiState.value = try {
-                CreatePrizeUiState.Ready(getPrizes())
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IOException) {
-                CreatePrizeUiState.Ready(emptyList())
-            } catch (e: Exception) {
-                CreatePrizeUiState.Ready(emptyList())
+            // fallo silencioso: la lista de premios es opcional para el formulario
+            val r = runCatchingDomain { getPrizes() }
+            _uiState.value = when (r) {
+                is DomainResult.Ok -> CreatePrizeUiState.Ready(r.value)
+                DomainResult.Network -> CreatePrizeUiState.Ready(emptyList())
+                DomainResult.NotFound -> CreatePrizeUiState.Ready(emptyList())
+                DomainResult.Server -> CreatePrizeUiState.Ready(emptyList())
             }
         }
     }
 
     fun submit(name: String, description: String, organization: String) {
         if (name.isBlank() || organization.isBlank() || description.isBlank()) {
-            _uiState.value = CreatePrizeUiState.Error("Todos los campos son obligatorios.")
+            _events.tryEmit(CreatePrizeEvent.ValidationFailed(PrizeValidation.BLANK_FIELDS))
             return
         }
 
@@ -53,23 +58,20 @@ class CreatePrizeViewModel @Inject constructor(
         val existingPrizes = if (current is CreatePrizeUiState.Ready) current.existingPrizes else emptyList()
 
         if (isDuplicate(name, organization, existingPrizes)) {
-            _uiState.value = CreatePrizeUiState.Error("Ya existe un premio con ese nombre y organización.")
+            _events.tryEmit(CreatePrizeEvent.ValidationFailed(PrizeValidation.DUPLICATE))
             return
         }
 
         _uiState.value = CreatePrizeUiState.Submitting
         viewModelScope.launch {
-            _uiState.value = try {
-                createPrize(name.trim(), description.trim(), organization.trim())
-                CreatePrizeUiState.Success
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IOException) {
-                CreatePrizeUiState.Error("Sin conexión a internet. Inténtalo de nuevo.")
-            } catch (e: HttpException) {
-                CreatePrizeUiState.Error("Error del servidor (${e.code()}). Verifica los datos.")
-            } catch (e: Exception) {
-                CreatePrizeUiState.Error("Ocurrió un error inesperado.")
+            when (runCatchingDomain { createPrize(name.trim(), description.trim(), organization.trim()) }) {
+                is DomainResult.Ok -> {
+                    _uiState.value = CreatePrizeUiState.Ready(existingPrizes)
+                    _events.tryEmit(CreatePrizeEvent.Submitted)
+                }
+                DomainResult.Network -> _uiState.value = CreatePrizeUiState.Error(DomainFailure.NETWORK)
+                DomainResult.NotFound -> _uiState.value = CreatePrizeUiState.Error(DomainFailure.NOT_FOUND)
+                DomainResult.Server -> _uiState.value = CreatePrizeUiState.Error(DomainFailure.SERVER)
             }
         }
     }

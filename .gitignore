@@ -27,10 +27,10 @@ local.properties
 proguard/
 
 # Log Files
-*.log
+#*.log
 
 # Monkey: artefactos de corridas de exploración aleatoria (evidencia local/efímera)
-scripts/monkey-results/
+#scripts/monkey-results/
 
 # Android Studio Navigation editor temp files
 .navigation/
@@ -43,9 +43,9 @@ captures/
 .idea/*
 
 # Keystore files
-# Uncomment the following lines if you do not want to check your keystore files in.
-#*.jks
-#*.keystore
+*.jks
+*.keystore
+keystore.properties
 
 # External native build folder generated in Android Studio 2.2 and later
 .externalNativeBuild
@@ -94,3 +94,6 @@ lint/tmp/
 
 # Mac
 .DS_Store
+
+# Other files
+temp-accesibilidad/

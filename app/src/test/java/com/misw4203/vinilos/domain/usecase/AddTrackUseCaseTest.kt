@@ -1,6 +1,6 @@
 package com.misw4203.vinilos.domain.usecase
 
-import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
+import com.misw4203.vinilos.domain.model.NewTrack
 import com.misw4203.vinilos.domain.model.Track
 import com.misw4203.vinilos.domain.repository.AlbumRepository
 import io.mockk.coEvery
@@ -29,7 +29,7 @@ class AddTrackUseCaseTest {
 
     @Test
     fun `invoke returns track from repository`() = runTest {
-        val request = CreateTrackRequest("Get Lucky", "04:08")
+        val request = NewTrack("Get Lucky", "04:08")
         val expected = Track(1L, "Get Lucky", "04:08")
         coEvery { repository.addTrack(100L, request) } returns expected
 
@@ -42,7 +42,7 @@ class AddTrackUseCaseTest {
     @Test(expected = IOException::class)
     fun `invoke propagates IOException`() = runTest {
         coEvery { repository.addTrack(any(), any()) } throws IOException("offline")
-        useCase(100L, CreateTrackRequest("X", "01:00"))
+        useCase(100L, NewTrack("X", "01:00"))
     }
 
     @Test(expected = HttpException::class)
@@ -50,6 +50,6 @@ class AddTrackUseCaseTest {
         coEvery { repository.addTrack(any(), any()) } throws HttpException(
             Response.error<Any>(404, "".toResponseBody("text/plain".toMediaType()))
         )
-        useCase(999L, CreateTrackRequest("X", "01:00"))
+        useCase(999L, NewTrack("X", "01:00"))
     }
 }

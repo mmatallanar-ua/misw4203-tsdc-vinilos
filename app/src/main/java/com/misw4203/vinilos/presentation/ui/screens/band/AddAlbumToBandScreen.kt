@@ -146,9 +146,9 @@ fun AddAlbumToBandScreen(
 @Composable
 private fun ScreenContent(
     form: AddAlbumToBandFormState,
-    addingId: Int?,
+    addingId: Long?,
     onQueryChange: (String) -> Unit,
-    onAdd: (Int) -> Unit,
+    onAdd: (Long) -> Unit,
 ) {
     val currentAlbums = form.allAlbums.filter { it.id in form.currentAlbumIds }
 
@@ -201,8 +201,8 @@ private fun ScreenContent(
             items(form.filteredAvailable, key = { it.id }) { album ->
                 AlbumRow(
                     album = album,
-                    isAdding = addingId == album.id.toInt(),
-                    onAdd = { onAdd(album.id.toInt()) },
+                    isAdding = addingId == album.id,
+                    onAdd = { onAdd(album.id) },
                     modifier = Modifier.testTag("available_album_band_${album.id}"),
                 )
                 HorizontalDivider(
@@ -269,12 +269,12 @@ private fun AlbumRow(
     ) {
         AsyncImage(
             model = album.coverUrl,
-            contentDescription = null,
+            contentDescription = album.name,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(52.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                .background(MaterialTheme.colorScheme.outline),
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -339,12 +339,12 @@ private fun CurrentAlbumItem(
     ) {
         AsyncImage(
             model = album.coverUrl,
-            contentDescription = null,
+            contentDescription = album.name,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(52.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                .background(MaterialTheme.colorScheme.outline),
         )
         Column(modifier = Modifier.weight(1f)) {
             Text(

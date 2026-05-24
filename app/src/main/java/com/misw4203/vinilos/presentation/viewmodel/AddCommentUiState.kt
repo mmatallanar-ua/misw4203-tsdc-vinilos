@@ -1,12 +1,15 @@
 package com.misw4203.vinilos.presentation.viewmodel
 
-import com.misw4203.vinilos.domain.model.Comment
+import com.misw4203.vinilos.presentation.common.DomainFailure
 
 sealed interface AddCommentUiState {
     data object Idle : AddCommentUiState
-    data object Loading : AddCommentUiState
-    data class Success(val comment: Comment) : AddCommentUiState
-    data class Error(val isNetworkError: Boolean) : AddCommentUiState
+    data object Submitting : AddCommentUiState
+    data class Error(val category: DomainFailure) : AddCommentUiState
+}
+
+sealed interface AddCommentEvent {
+    data object Submitted : AddCommentEvent
 }
 
 data class AddCommentFormState(

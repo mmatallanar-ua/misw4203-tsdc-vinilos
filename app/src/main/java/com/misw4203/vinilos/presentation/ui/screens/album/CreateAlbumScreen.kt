@@ -81,6 +81,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.misw4203.vinilos.R
 import com.misw4203.vinilos.domain.model.CreateAlbumInput
+import com.misw4203.vinilos.presentation.common.DomainFailure
+import com.misw4203.vinilos.presentation.viewmodel.CreateAlbumEvent
 import com.misw4203.vinilos.presentation.viewmodel.CreateAlbumUiState
 import com.misw4203.vinilos.presentation.viewmodel.CreateAlbumViewModel
 import java.time.Instant
@@ -97,6 +99,9 @@ fun CreateAlbumScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val networkMsg = stringResource(R.string.create_album_error_network)
+    val serverMsg = stringResource(R.string.create_album_error_server)
 
     var name by rememberSaveable { mutableStateOf("") }
     var cover by rememberSaveable { mutableStateOf("") }
@@ -116,15 +121,25 @@ fun CreateAlbumScreen(
     val datePickerState = rememberDatePickerState()
     val isSubmitting = uiState is CreateAlbumUiState.Submitting
 
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                CreateAlbumEvent.Submitted -> onAlbumCreated()
+            }
+        }
+    }
+
     LaunchedEffect(uiState) {
         when (val state = uiState) {
-            is CreateAlbumUiState.Success -> {
-                onAlbumCreated()
-                viewModel.resetState()
-            }
             is CreateAlbumUiState.Error -> {
-                snackbarHostState.showSnackbar(state.message)
-                viewModel.resetState()
+                val message = when (state.category) {
+                    DomainFailure.NETWORK -> networkMsg
+                    // POST create no tiene semántica de 404; se trata como error de servidor.
+                    DomainFailure.NOT_FOUND -> serverMsg
+                    DomainFailure.SERVER -> serverMsg
+                }
+                snackbarHostState.showSnackbar(message)
+                viewModel.resetError()
             }
             else -> Unit
         }
@@ -619,7 +634,7 @@ private fun ReleaseDateField(
             IconButton(onClick = onClick) {
                 Icon(
                     imageVector = Icons.Outlined.DateRange,
-                    contentDescription = stringResource(R.string.create_album_field_release_date),
+                    contentDescription = stringResource(R.string.cd_open_date_picker),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }

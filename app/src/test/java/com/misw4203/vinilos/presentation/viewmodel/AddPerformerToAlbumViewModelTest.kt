@@ -44,7 +44,7 @@ class AddPerformerToAlbumViewModelTest {
         val addedBands = mutableListOf<Pair<Long, Int>>()
         override suspend fun getAlbums(): List<Album> = emptyList()
         override suspend fun getAlbumById(id: Long): AlbumDetail = detailResult.getOrThrow()
-        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.data.remote.dto.CreateTrackRequest): Track = error("unused")
+        override suspend fun addTrack(albumId: Long, request: com.misw4203.vinilos.domain.model.NewTrack): Track = error("unused")
         override suspend fun addComment(albumId: Long, description: String, rating: Int, collectorId: Int): Comment = error("unused")
         override suspend fun createAlbum(input: CreateAlbumInput): Album = error("unused")
         override suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) {
@@ -55,13 +55,15 @@ class AddPerformerToAlbumViewModelTest {
             addError?.let { throw it }
             addedBands += albumId to bandId
         }
+        override suspend fun removeTrack(albumId: Long, trackId: Long) {}
+        override suspend fun removeComment(albumId: Long, commentId: Long) {}
     }
 
     private class FakeMusicianRepo : MusicianRepository {
         var all: List<MusicianSummary> = emptyList()
         override suspend fun getMusicians(): List<MusicianSummary> = all
         override suspend fun getMusicianDetail(id: Int) = error("unused")
-        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Int) = Unit
+        override suspend fun addAlbumToMusician(musicianId: Int, albumId: Long) = Unit
         override suspend fun addPrizeToMusician(musicianId: Int, prizeId: Int, premiationDate: String) = Unit
     }
 
@@ -70,6 +72,8 @@ class AddPerformerToAlbumViewModelTest {
         override suspend fun getBands(): List<BandSummary> = all
         override suspend fun getBandDetail(id: Int) = error("unused")
         override suspend fun addMusicianToBand(bandId: Int, musicianId: Int) = Unit
+        override suspend fun addAlbumToBand(bandId: Int, albumId: Long) {}
+        override suspend fun addPrizeToBand(bandId: Int, prizeId: Int, premiationDate: String) {}
     }
 
     private fun build(

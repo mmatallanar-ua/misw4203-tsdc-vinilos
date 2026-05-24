@@ -7,9 +7,10 @@ import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.usecase.AddAlbumToCollectorUseCase
 import com.misw4203.vinilos.domain.usecase.GetAlbumsUseCase
 import com.misw4203.vinilos.domain.usecase.GetCollectorDetailUseCase
+import com.misw4203.vinilos.presentation.common.DomainResult
+import com.misw4203.vinilos.presentation.common.runCatchingDomain
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,8 +20,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import java.text.Normalizer
 import javax.inject.Inject
 
@@ -76,31 +75,33 @@ class AddAlbumToCollectorViewModel @Inject constructor(
         val f = _form.value
         if (!f.isFormReady || _uiState.value is AddAlbumToCollectorUiState.Adding) return
         val album = f.selectedAlbum ?: return
-        _uiState.value = AddAlbumToCollectorUiState.Adding(album.id.toInt())
+        _uiState.value = AddAlbumToCollectorUiState.Adding(album.id)
         viewModelScope.launch {
-            try {
-                addAlbumToCollector(collectorId, album.id.toInt(), f.price.toDouble(), f.status)
-                val newIds = f.currentAlbumIds + album.id
-                _form.value = f.copy(
-                    currentAlbumIds = newIds,
-                    filteredAvailable = computeFiltered(f.allAlbums, newIds, f.query),
-                    selectedAlbum = null,
-                    price = "",
-                    status = "Active",
-                )
-                _uiState.value = AddAlbumToCollectorUiState.Ready
-                _events.tryEmit(AddAlbumToCollectorEvent.AddedSuccessfully(album.name))
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IOException) {
-                _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = true, albumId = album.id.toInt())
-                _events.tryEmit(AddAlbumToCollectorEvent.AddFailed(isNetworkError = true))
-            } catch (e: HttpException) {
-                _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = false, albumId = album.id.toInt())
-                _events.tryEmit(AddAlbumToCollectorEvent.AddFailed(isNetworkError = false))
-            } catch (e: Exception) {
-                _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = false, albumId = album.id.toInt())
-                _events.tryEmit(AddAlbumToCollectorEvent.AddFailed(isNetworkError = false))
+            when (runCatchingDomain { addAlbumToCollector(collectorId, album.id, f.price.toDouble(), f.status) }) {
+                is DomainResult.Ok -> {
+                    val newIds = f.currentAlbumIds + album.id
+                    _form.value = f.copy(
+                        currentAlbumIds = newIds,
+                        filteredAvailable = computeFiltered(f.allAlbums, newIds, f.query),
+                        selectedAlbum = null,
+                        price = "",
+                        status = "Active",
+                    )
+                    _uiState.value = AddAlbumToCollectorUiState.Ready
+                    _events.tryEmit(AddAlbumToCollectorEvent.AddedSuccessfully(album.name))
+                }
+                DomainResult.Network -> {
+                    _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = true, albumId = album.id)
+                    _events.tryEmit(AddAlbumToCollectorEvent.AddFailed(isNetworkError = true))
+                }
+                DomainResult.NotFound -> {
+                    _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = false, albumId = album.id)
+                    _events.tryEmit(AddAlbumToCollectorEvent.AddFailed(isNetworkError = false))
+                }
+                DomainResult.Server -> {
+                    _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = false, albumId = album.id)
+                    _events.tryEmit(AddAlbumToCollectorEvent.AddFailed(isNetworkError = false))
+                }
             }
         }
     }
@@ -112,7 +113,7 @@ class AddAlbumToCollectorViewModel @Inject constructor(
     private fun loadInitial() {
         _uiState.value = AddAlbumToCollectorUiState.Loading
         viewModelScope.launch {
-            try {
+            when (runCatchingDomain {
                 coroutineScope {
                     val albumsAsync = async { getAlbums() }
                     val collectorAsync = async { getCollectorDetail(collectorId) }
@@ -126,14 +127,11 @@ class AddAlbumToCollectorViewModel @Inject constructor(
                     )
                     _uiState.value = AddAlbumToCollectorUiState.Ready
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IOException) {
-                _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = true, albumId = null)
-            } catch (e: HttpException) {
-                _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = false, albumId = null)
-            } catch (e: Exception) {
-                _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = false, albumId = null)
+            }) {
+                is DomainResult.Ok -> Unit
+                DomainResult.Network -> _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = true, albumId = null)
+                DomainResult.NotFound -> _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = false, albumId = null)
+                DomainResult.Server -> _uiState.value = AddAlbumToCollectorUiState.Error(isNetworkError = false, albumId = null)
             }
         }
     }

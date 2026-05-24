@@ -3,7 +3,7 @@ package com.misw4203.vinilos.presentation.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.misw4203.vinilos.MainDispatcherRule
-import com.misw4203.vinilos.data.remote.dto.CreateTrackRequest
+import com.misw4203.vinilos.domain.model.NewTrack
 import com.misw4203.vinilos.domain.model.Album
 import com.misw4203.vinilos.domain.model.AlbumDetail
 import com.misw4203.vinilos.domain.model.Comment
@@ -11,6 +11,7 @@ import com.misw4203.vinilos.domain.model.Performer
 import com.misw4203.vinilos.domain.model.Track
 import com.misw4203.vinilos.domain.repository.AlbumRepository
 import com.misw4203.vinilos.domain.usecase.AddTrackUseCase
+import com.misw4203.vinilos.presentation.common.DomainFailure
 import com.misw4203.vinilos.presentation.navigation.Destinations
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -38,7 +39,7 @@ class AddTrackViewModelTest {
         override suspend fun getAlbumById(id: Long): AlbumDetail = AlbumDetail(
             id, "", "", "", "", "", "", "", emptyList(), emptyList(), emptyList()
         )
-        override suspend fun addTrack(albumId: Long, request: CreateTrackRequest): Track =
+        override suspend fun addTrack(albumId: Long, request: NewTrack): Track =
             result.getOrThrow()
         override suspend fun addComment(
             albumId: Long,
@@ -47,6 +48,10 @@ class AddTrackViewModelTest {
             collectorId: Int,
         ): com.misw4203.vinilos.domain.model.Comment = error("not used")
         override suspend fun createAlbum(input: com.misw4203.vinilos.domain.model.CreateAlbumInput): Album = error("not used")
+        override suspend fun removeTrack(albumId: Long, trackId: Long) {}
+        override suspend fun removeComment(albumId: Long, commentId: Long) {}
+        override suspend fun addMusicianToAlbum(albumId: Long, musicianId: Int) {}
+        override suspend fun addBandToAlbum(albumId: Long, bandId: Int) {}
     }
 
     private fun buildViewModel(repo: FakeRepo, albumId: Long = 100L) = AddTrackViewModel(
@@ -78,43 +83,42 @@ class AddTrackViewModelTest {
     }
 
     @Test
-    fun `submit with valid data emits Loading then Success`() = runTest {
+    fun `submit with valid data emits Submitting then Idle and fires Submitted event`() = runTest {
         val track = Track(1L, "Get Lucky", "04:08")
-        val vm = buildViewModel(FakeRepo(Result.success(track)))
+        val repo = FakeRepo(Result.success(track))
+        val vm = buildViewModel(repo)
         vm.name = "Get Lucky"
         vm.duration = "04:08"
 
-        vm.uiState.test {
-            assertEquals(AddTrackUiState.Idle, awaitItem())
+        vm.events.test {
             vm.submit()
-            assertEquals(AddTrackUiState.Loading, awaitItem())
             advanceUntilIdle()
-            val state = awaitItem()
-            assertTrue(state is AddTrackUiState.Success)
-            assertEquals(track, (state as AddTrackUiState.Success).track)
+            assertEquals(AddTrackEvent.Submitted, awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
+
+        assertEquals(AddTrackUiState.Idle, vm.uiState.value)
     }
 
     @Test
-    fun `submit with IOException emits Error with isNetworkError true`() = runTest {
+    fun `submit with IOException emits Error with NETWORK category`() = runTest {
         val vm = buildViewModel(FakeRepo(Result.failure(IOException("offline"))))
         vm.name = "Get Lucky"
         vm.duration = "04:08"
 
         vm.uiState.test {
-            awaitItem()
+            awaitItem() // Idle
             vm.submit()
-            awaitItem()
+            awaitItem() // Submitting
             advanceUntilIdle()
             val state = awaitItem() as AddTrackUiState.Error
-            assertTrue(state.isNetworkError)
+            assertEquals(DomainFailure.NETWORK, state.category)
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `submit with 404 HttpException emits Error with album not found message`() = runTest {
+    fun `submit with 404 HttpException emits Error with NOT_FOUND category`() = runTest {
         val http404 = HttpException(
             Response.error<Any>(404, "".toResponseBody("text/plain".toMediaType()))
         )
@@ -123,30 +127,29 @@ class AddTrackViewModelTest {
         vm.duration = "04:08"
 
         vm.uiState.test {
-            awaitItem()
+            awaitItem() // Idle
             vm.submit()
-            awaitItem()
+            awaitItem() // Submitting
             advanceUntilIdle()
             val state = awaitItem() as AddTrackUiState.Error
-            assertTrue(state.message.contains("no encontrado", ignoreCase = true))
-            assertTrue(!state.isNetworkError)
+            assertEquals(DomainFailure.NOT_FOUND, state.category)
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
-    fun `submit with generic Exception emits Error with isNetworkError false`() = runTest {
+    fun `submit with generic Exception emits Error with SERVER category`() = runTest {
         val vm = buildViewModel(FakeRepo(Result.failure(RuntimeException("server"))))
         vm.name = "Get Lucky"
         vm.duration = "04:08"
 
         vm.uiState.test {
-            awaitItem()
+            awaitItem() // Idle
             vm.submit()
-            awaitItem()
+            awaitItem() // Submitting
             advanceUntilIdle()
             val state = awaitItem() as AddTrackUiState.Error
-            assertTrue(!state.isNetworkError)
+            assertEquals(DomainFailure.SERVER, state.category)
             cancelAndIgnoreRemainingEvents()
         }
     }
